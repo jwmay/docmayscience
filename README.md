@@ -11,6 +11,8 @@ slab buttons, and a Bohr-atom hero.
 ```
 docmayscience/
 ├── index.html          Homepage (hero, apps, resources, about)
+├── lewis-lab/
+│   └── index.html      Lewis·Lab — touch-first Lewis structure builder; fully self-contained app, served at /lewis-lab/
 ├── css/
 │   └── styles.css      All site styles — design tokens live in :root at the top
 ├── js/
@@ -42,7 +44,10 @@ docmayscience/
   off-domain (not docmayscience.com), add `target="_blank"
   rel="noopener noreferrer"` so it opens in a new tab. Unreleased apps use a
   `<span class="soon">` badge instead — swap it for a Launch button when the
-  app goes live.
+  app goes live. Apps hosted on this site live in their own folder
+  (`lewis-lab/index.html` → `docmayscience.com/lewis-lab/`) and are linked
+  with a relative href (`href="lewis-lab/"`) — same-domain, so no
+  `target="_blank"`.
 - **Teaching resources**: each `res-card` in `#resources` shows a
   `<span class="soon">` badge until its Drive folder is shared — swap the
   badge for an "Open in Drive" button (`<a class="btn btn--sm"
@@ -90,6 +95,10 @@ As the portfolio expands, suggested conventions:
 
 - New pages (e.g. `apps.html`, `resources.html`) go in the project root and
   share `css/styles.css`.
+- Self-contained apps get their own folder with an `index.html`
+  (e.g. `lewis-lab/`) so they serve at a clean URL like `/lewis-lab/`.
+  They keep their own inline styles — an app's UI doesn't need to share the
+  site stylesheet. `npm run lint` covers them via the `*/index.html` glob.
 - Page-specific styles get their own file (e.g. `css/apps.css`) linked after
   the shared stylesheet.
 - Images and downloads go under `assets/` in a folder per category
@@ -159,7 +168,7 @@ Opening the project in VS Code auto-starts the dev server
 The same checks CI runs on PRs, runnable locally:
 
 ```bash
-npm run lint    # html-validate on all root-level pages
+npm run lint    # html-validate on root-level pages + app pages (*/index.html)
 npm run links   # linkinator: catches broken internal links/images
 npm run check   # both
 ```

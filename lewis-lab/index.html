@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<meta name="description" content="Lewis·Lab — a touch-first Lewis structure builder with octet checking, formal charges, and shareable save codes. From Doc May Science.">
+<title>Lewis·Lab · Doc May Science</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<style>
+  :root{
+    color-scheme:light only;
+    --ink:#16202a;
+    --paper:#f6f2e9;
+    --line:#d8cfbc;
+    --accent:#2b6f6a;
+    --accent-soft:#cfe3e0;
+    --bond:#2a3640;
+    --dot:#c24a30;
+    --warn:#b0701a;
+    --good:#3f7d4e;
+    --shadow:rgba(34,46,40,.14);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;}
+  body{
+    font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    display:flex;flex-direction:column;
+    height:100dvh;
+    touch-action:none;
+    overscroll-behavior:none;
+    -webkit-user-select:none;user-select:none;
+    -webkit-touch-callout:none;
+  }
+  /* re-enable selection and normal touch where it's actually useful (text fields, scrollers) */
+  input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;touch-action:auto;}
+  header{
+    padding:10px 14px;
+    display:flex;align-items:center;gap:10px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#fbf8f1,#f3eee2);
+    min-height:44px;
+  }
+  header h1{
+    font-size:18px;margin:0;letter-spacing:.5px;
+    font-weight:800;white-space:nowrap;flex:0 0 auto;
+  }
+  header h1 a{color:inherit;text-decoration:none;}
+  header h1 .e{color:var(--accent);}
+  header .sub{font-size:11px;color:#8a8270;letter-spacing:.3px;
+    white-space:nowrap;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;}
+  .helpbtn{flex:0 0 auto;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);
+    background:#fff;color:var(--accent);font-weight:800;font-size:13px;line-height:1;
+    display:flex;align-items:center;justify-content:center;padding:0;}
+  .helpbtn:active{background:var(--accent-soft);}
+  #status{
+    margin-left:auto;font-size:12px;font-weight:600;
+    padding:4px 10px;border-radius:999px;
+    background:var(--accent-soft);color:var(--accent);
+    max-width:46vw;text-align:right;line-height:1.2;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;
+  }
+  #status.warn{background:#f3e3c4;color:var(--warn);}
+  #status.good{background:#d6ecd9;color:var(--good);}
+
+  /* canvas */
+  #stage{position:relative;flex:1;overflow:hidden;touch-action:none;background:#ffffff;}
+  #world{position:absolute;left:0;top:0;width:2400px;height:2400px;transform-origin:0 0;
+    will-change:transform;}
+  #grid{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;}
+  #board{position:absolute;inset:0;width:100%;height:100%;z-index:2;}
+  .fitbtn{position:absolute;left:10px;top:8px;z-index:4;border:1px solid var(--line);
+    background:rgba(255,255,255,.92);border-radius:999px;padding:5px 11px;font-size:12px;
+    font-weight:700;color:#6a6450;box-shadow:0 1px 3px var(--shadow);}
+  .fitbtn:active{background:#f0ebe0;}
+  .ecount{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:4;
+    background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;
+    padding:4px 12px;font-size:12px;font-weight:700;color:#6a6450;pointer-events:none;
+    box-shadow:0 1px 3px var(--shadow);}
+  .ecount.balanced{color:var(--good);border-color:#bcdcc1;background:#eef7ef;}
+  .chargectl{position:absolute;top:8px;right:10px;z-index:4;display:flex;align-items:center;gap:2px;
+    background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;
+    padding:2px;box-shadow:0 1px 3px var(--shadow);}
+  .chargectl button{width:26px;height:26px;border:none;background:#f0ebe0;border-radius:50%;
+    font-size:16px;font-weight:800;color:var(--ink);line-height:1;}
+  .chargectl button:active{background:#e4ddcc;}
+  .chargectl #chVal{min-width:26px;text-align:center;font-size:13px;font-weight:800;color:#6a6450;}
+  .chargectl.charged #chVal{color:var(--accent);}
+  .check-body{font-size:14px;line-height:1.5;color:var(--ink);}
+  .help-body{font-size:13px;line-height:1.45;color:var(--ink);max-height:64vh;overflow:auto;touch-action:pan-y;}
+  .help-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);}
+  .help-row:last-child{border-bottom:none;}
+  .help-row .help-k{flex:0 0 88px;font-weight:800;color:var(--accent);}
+  .check-body .ok{color:var(--good);font-weight:700;}
+  .check-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);}
+  .check-row:last-child{border-bottom:none;}
+  .check-row .pill{flex:0 0 auto;min-width:30px;text-align:center;font-weight:800;
+    border-radius:7px;padding:3px 7px;font-size:13px;}
+  .check-row .pill.short{background:#cfe3f5;color:#1f6f8b;}
+  .check-row .pill.over{background:#f6d9c9;color:#b03a2e;}
+  .check-row .pill.good{background:#d6ecd9;color:var(--good);}
+  .check-summary{margin-top:12px;font-size:13px;color:#6a6450;}
+  .save-block{margin-bottom:16px;}
+  .save-label{font-weight:800;font-size:13px;margin-bottom:6px;}
+  .save-hint{font-weight:600;color:#9a917c;font-size:11px;}
+  .save-row{display:flex;gap:8px;margin-bottom:6px;}
+  .save-row input{flex:1;min-width:0;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;
+    font-size:16px;background:#faf7f0;color:var(--ink);}
+  .save-row .btn{flex:0 0 auto;}
+  .slot-list{display:flex;flex-direction:column;gap:6px;max-height:30vh;overflow:auto;touch-action:pan-y;}
+  .slot{display:flex;align-items:center;gap:8px;padding:9px 11px;border:1.5px solid var(--line);
+    border-radius:10px;background:#fff;}
+  .slot .nm{flex:1;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .slot button{flex:0 0 auto;border:none;border-radius:7px;padding:6px 10px;font-weight:700;font-size:12px;}
+  .slot .load{background:var(--accent);color:#fff;}
+  .slot .del{background:#f0ebe0;color:var(--dot);}
+  .slot-empty{color:#9a917c;font-size:13px;padding:4px 2px;}
+  .fc{position:absolute;z-index:5;font-size:12px;font-weight:800;width:18px;height:18px;
+    border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:#fff;border:1.5px solid;pointer-events:none;}
+  .fc.pos{color:#b03a2e;border-color:#e2a39b;}
+  .fc.neg{color:#1f6f8b;border-color:#9fc6d4;}
+  .fc.zero{display:none;}
+  .atom{
+    position:absolute;width:52px;height:52px;margin:-26px 0 0 -26px;
+    border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:20px;
+    background:#fff;border:2px solid var(--ink);
+    box-shadow:0 3px 8px var(--shadow);
+    user-select:none;touch-action:none;z-index:3;
+    transition:box-shadow .12s,transform .12s;
+  }
+  .atom.sel{box-shadow:0 0 0 4px var(--accent-soft),0 3px 8px var(--shadow);border-color:var(--accent);}
+  .atom.bad{border-color:var(--dot);}
+  .atom.target{box-shadow:0 0 0 5px #ffe3a3,0 3px 8px var(--shadow);border-color:var(--warn);}
+  /* bare (textbook) mode: hide circles, keep letters/bonds/dots */
+  body.bare .atom{background:transparent;border-color:transparent;box-shadow:none;font-size:30px;}
+  body.bare .atom .lab{background:#fff;border-radius:50%;padding:3px 7px;}
+  body.bare .atom.sel{box-shadow:0 0 0 3px var(--accent-soft);}
+  body.bare .atom.bad .lab{color:var(--dot);}
+  body.bare .atom.target{box-shadow:0 0 0 4px #ffe3a3;}
+  .atom .lab{display:inline-block;line-height:1;}
+  .chip.lpchip .sym{font-size:24px;line-height:.6;letter-spacing:2px;}
+  .chip.lpchip{background:#fbf5e8;border-color:#e7d4a8;}
+  .lp-ghost{font-size:26px;letter-spacing:2px;background:#fbf5e8;border-color:#e7d4a8;}
+  .atom .lp{
+    position:absolute;width:7px;height:7px;border-radius:50%;background:var(--ink);
+  }
+  .hint{
+    position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);
+    text-align:center;color:#b3aa95;font-size:14px;pointer-events:none;
+    width:80%;line-height:1.5;
+  }
+  .hint b{color:var(--accent);}
+
+  /* tray */
+  #tray{
+    border-top:1px solid var(--line);
+    background:linear-gradient(180deg,#f3eee2,#ece5d6);
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+  }
+  .trayrow{display:flex;gap:6px;overflow-x:auto;padding:2px 6px;scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;touch-action:pan-x;}
+  .trayrow::-webkit-scrollbar{display:none;}
+  .chip{
+    flex:0 0 auto;width:52px;height:56px;border-radius:12px;
+    background:#fff;border:1.5px solid var(--line);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    box-shadow:0 2px 4px var(--shadow);user-select:none;touch-action:pan-x;
+  }
+  .chip .sym{font-weight:800;font-size:19px;}
+  .chip .val{font-size:9px;color:#9a917c;margin-top:1px;}
+  .chip.armed{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 2px var(--accent-soft),0 2px 4px var(--shadow);}
+  .toolbar{display:flex;gap:8px;padding:8px 8px 4px;}
+  .toolbar2{padding-top:0;padding-bottom:6px;}
+  .btn{
+    flex:1;padding:11px;border-radius:11px;border:1.5px solid var(--line);
+    background:#fff;font-weight:700;font-size:13px;color:var(--ink);
+    box-shadow:0 2px 4px var(--shadow);
+  }
+  .btn.small{padding:9px;font-size:12px;}
+  .btn:active{transform:translateY(1px);}
+  .btn:disabled{opacity:.4;box-shadow:none;}
+  .btn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+  .btn.danger{color:var(--dot);}
+  .btn.go{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .sheet{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-end;justify-content:center;
+    background:rgba(20,32,42,.32);}
+  .sheet.hidden{display:none;}
+  .sheet-card{width:100%;max-width:520px;background:#fff;border-radius:18px 18px 0 0;
+    padding:14px 14px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -6px 24px var(--shadow);
+    animation:rise .18s ease;}
+  .pt-card{max-width:100%;}
+  @keyframes rise{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+  .sheet-head{display:flex;align-items:center;gap:8px;font-weight:800;font-size:16px;margin:2px 4px 12px;}
+  .pt-hint{font-weight:600;font-size:11px;color:#9a917c;}
+  .sheet-x{margin-left:auto;border:none;background:#f0ebe0;width:30px;height:30px;border-radius:50%;
+    font-size:14px;font-weight:700;color:var(--ink);flex:0 0 auto;}
+  .pt-scroll{overflow:auto;-webkit-overflow-scrolling:touch;max-height:60vh;touch-action:pan-x pan-y;
+    border:1px solid var(--line);border-radius:12px;padding:8px;background:#faf7f0;}
+  .pt-grid{display:grid;grid-template-columns:repeat(18,40px);grid-auto-rows:40px;gap:3px;
+    width:max-content;}
+  .pt-cell{border-radius:6px;border:1px solid rgba(0,0,0,.12);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;line-height:1;user-select:none;}
+  .pt-cell .z{font-size:7px;color:#5c5648;}
+  .pt-cell .s{font-size:14px;font-weight:800;color:var(--ink);}
+  .pt-cell.sel{outline:3px solid var(--accent);outline-offset:-1px;}
+  .pt-cell:active{filter:brightness(.94);}
+  .cat-nonmetal{background:#d8ecd9;}
+  .cat-noble{background:#e6dcf3;}
+  .cat-alkali{background:#f6d9c9;}
+  .cat-alkaline{background:#f7e6c4;}
+  .cat-metalloid{background:#d4e6e3;}
+  .cat-halogen{background:#cfe3f5;}
+  .cat-post{background:#e3e6ea;}
+  .cat-transition{background:#eadfe0;}
+  .cat-lanthanide{background:#f0dcec;}
+  .cat-actinide{background:#f3dad3;}
+  .drag-ghost{
+    position:fixed;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;
+    background:#fff;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:20px;z-index:50;pointer-events:none;box-shadow:0 6px 14px var(--shadow);
+    opacity:.95;
+  }
+
+  /* ---------- desktop / Chromebook ---------- */
+  /* Hover affordances only where a real pointer exists (not touch) */
+  @media (hover:hover) and (pointer:fine){
+    .btn{cursor:pointer;transition:background .12s,border-color .12s;}
+    .btn:hover{border-color:var(--accent);}
+    .btn.go:hover{background:#24605c;}
+    .btn.danger:hover{background:#fbeeea;}
+    .chip,.pt-cell,.helpbtn,.fitbtn,.sheet-x,.slot button,.chargectl button,.preset-btn{cursor:pointer;}
+    .chip{transition:border-color .12s,box-shadow .12s;}
+    .chip:hover{border-color:var(--accent);}
+    .pt-cell{cursor:pointer;transition:filter .1s;}
+    .pt-cell:hover{filter:brightness(.93);}
+    .atom{cursor:grab;}
+    .atom:active{cursor:grabbing;}
+    .fitbtn:hover,.helpbtn:hover{border-color:var(--accent);}
+  }
+  /* On wider screens keep the control bars in a centered column so they don't stretch */
+  @media (min-width:820px){
+    .toolbar,.toolbar2,.trayrow{max-width:760px;margin-left:auto;margin-right:auto;}
+    .btn{font-size:14px;padding:12px;}
+    .btn.small{font-size:13px;padding:11px;}
+    .chip{width:58px;height:62px;}
+    .chip .sym{font-size:21px;}
+    header{padding:12px 22px;}
+    header h1{font-size:20px;}
+    #status{max-width:340px;font-size:13px;}
+    .sheet-card{max-width:600px;border-radius:18px;margin-bottom:24px;}
+    .pt-card{max-width:820px;}
+    .sheet{align-items:center;} /* center dialogs on desktop instead of bottom-sheet */
+  }
+  @media (min-width:1200px){
+    .toolbar,.toolbar2,.trayrow{max-width:900px;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1><a href="../" title="docmayscience.com">Lewis<span class="e">·</span>Lab</a></h1>
+  <span class="sub">drag · bond · dot</span>
+  <button type="button" id="helpBtn" class="helpbtn" aria-label="how to use">?</button>
+  <span id="status">Drag an atom in</span>
+</header>
+
+<div id="stage">
+  <div id="world">
+    <svg id="grid"></svg>
+    <svg id="board"></svg>
+  </div>
+  <div id="ecount" class="ecount">0 / 0 valence e⁻</div>
+  <div id="chargeCtl" class="chargectl">
+    <button type="button" id="chMinus" aria-label="decrease charge">−</button>
+    <span id="chVal">0</span>
+    <button type="button" id="chPlus" aria-label="increase charge">+</button>
+  </div>
+  <button type="button" id="fitBtn" class="fitbtn" aria-label="fit view">⤢ Fit</button>
+  <div class="hint" id="hint">Drag atoms up from the tray, or tap one then tap the canvas.<br>Tap <b>two atoms</b> to bond · tap a <b>bond</b> to change it.<br>Drag the <b>:</b> chip onto an atom for a lone pair · double-tap to clear them.<br><b>Long-press</b> an atom to delete it · drag empty space to pan, pinch to zoom.</div>
+</div>
+
+<div id="ptSheet" class="sheet hidden">
+  <div class="sheet-card pt-card">
+    <div class="sheet-head">Periodic table<span class="pt-hint">tap an element, then tap the canvas</span><button type="button" class="sheet-x" id="ptClose">✕</button></div>
+    <div class="pt-scroll">
+      <div class="pt-grid" id="ptGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div id="checkSheet" class="sheet hidden">
+  <div class="sheet-card">
+    <div class="sheet-head" id="checkTitle">Check<button type="button" class="sheet-x" id="checkClose">✕</button></div>
+    <div id="checkBody" class="check-body"></div>
+  </div>
+</div>
+
+<div id="helpSheet" class="sheet hidden">
+  <div class="sheet-card">
+    <div class="sheet-head">How to use<button type="button" class="sheet-x" id="helpClose">✕</button></div>
+    <div class="help-body">
+      <div class="help-row"><span class="help-k">Add an atom</span><span>Tap an element in the bottom bar, then tap the canvas — or drag it up. It stays selected so you can place several.</span></div>
+      <div class="help-row"><span class="help-k">Periodic table</span><span>Tap it for any element, then tap the canvas to place.</span></div>
+      <div class="help-row"><span class="help-k">Bond</span><span>Tap one atom, then another. Tap the bond to cycle single → double → triple → none.</span></div>
+      <div class="help-row"><span class="help-k">Lone pair</span><span>Tap the <b>:</b> chip, then tap an atom (repeat to add more). Double-tap an atom to clear its lone pairs.</span></div>
+      <div class="help-row"><span class="help-k">Move / Replace</span><span>Drag an atom to move it. Drop it on another atom — or place a new element on top — to replace.</span></div>
+      <div class="help-row"><span class="help-k">Delete</span><span>Long-press an atom to remove it and its bonds.</span></div>
+      <div class="help-row"><span class="help-k">Charge</span><span>Use − / + at the top right to set the ion's overall charge.</span></div>
+      <div class="help-row"><span class="help-k">Navigate</span><span>Drag empty space to pan, pinch to zoom, double-tap to zoom in/out. <b>Fit</b> recenters everything.</span></div>
+      <div class="help-row"><span class="help-k">Check</span><span>Verifies octets, electron count, and whether formal charges could be lowered.</span></div>
+      <div class="help-row"><span class="help-k">More</span><span>Charges shows formal charges · Hide circles for a textbook look · Copy saves a PNG · Save / Load keeps structures or shares a code.</span></div>
+    </div>
+  </div>
+</div>
+
+<div id="saveSheet" class="sheet hidden">
+  <div class="sheet-card">
+    <div class="sheet-head">Save / Load<button type="button" class="sheet-x" id="saveClose">✕</button></div>
+    <div class="save-block">
+      <div class="save-label">Save current structure</div>
+      <div class="save-row">
+        <input id="saveName" type="text" placeholder="Name (e.g. Water)" maxlength="40">
+        <button type="button" class="btn small go" id="saveDoBtn">Save</button>
+      </div>
+    </div>
+    <div class="save-block">
+      <div class="save-label">Saved on this device</div>
+      <div id="slotList" class="slot-list"></div>
+    </div>
+    <div class="save-block">
+      <div class="save-label">Share code <span class="save-hint">paste to load, or copy yours to hand out</span></div>
+      <div class="save-row">
+        <input id="shareCode" type="text" placeholder="Paste a code…" spellcheck="false">
+      </div>
+      <div class="save-row">
+        <button type="button" class="btn small" id="copyCodeBtn">Copy my code</button>
+        <button type="button" class="btn small go" id="loadCodeBtn">Load code</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tray">
+  <div class="toolbar">
+    <button type="button" class="btn" id="ptBtn">Periodic table</button>
+    <button type="button" class="btn" id="undoBtn" disabled>Undo</button>
+    <button type="button" class="btn go" id="checkBtn">Check</button>
+  </div>
+  <div class="toolbar toolbar2">
+    <button type="button" class="btn small" id="styleBtn">Hide circles</button>
+    <button type="button" class="btn small" id="chargeBtn">Charges</button>
+    <button type="button" class="btn small" id="saveBtn">Save / Load</button>
+    <button type="button" class="btn small" id="copyBtn">Copy</button>
+    <button type="button" class="btn small danger" id="clearBtn">Clear</button>
+  </div>
+  <div class="trayrow" id="trayrow"></div>
+</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg";
+
+// Full periodic table. Each: Z, name, group(1-18), period, category, ve(valence e- for main group), need(octet target)
+// ve for main-group = group electrons; transition/inner metals default ve:2 (used loosely for the dot model)
+const PT=[
+  ["H",1,"Hydrogen",1,1,"nonmetal",1,2],
+  ["He",2,"Helium",18,1,"noble",2,2],
+  ["Li",3,"Lithium",1,2,"alkali",1,2],
+  ["Be",4,"Beryllium",2,2,"alkaline",2,4],
+  ["B",5,"Boron",13,2,"metalloid",3,6],
+  ["C",6,"Carbon",14,2,"nonmetal",4,8],
+  ["N",7,"Nitrogen",15,2,"nonmetal",5,8],
+  ["O",8,"Oxygen",16,2,"nonmetal",6,8],
+  ["F",9,"Fluorine",17,2,"halogen",7,8],
+  ["Ne",10,"Neon",18,2,"noble",8,8],
+  ["Na",11,"Sodium",1,3,"alkali",1,2],
+  ["Mg",12,"Magnesium",2,3,"alkaline",2,4],
+  ["Al",13,"Aluminum",13,3,"post",3,6],
+  ["Si",14,"Silicon",14,3,"metalloid",4,8],
+  ["P",15,"Phosphorus",15,3,"nonmetal",5,8],
+  ["S",16,"Sulfur",16,3,"nonmetal",6,8],
+  ["Cl",17,"Chlorine",17,3,"halogen",7,8],
+  ["Ar",18,"Argon",18,3,"noble",8,8],
+  ["K",19,"Potassium",1,4,"alkali",1,2],
+  ["Ca",20,"Calcium",2,4,"alkaline",2,4],
+  ["Sc",21,"Scandium",3,4,"transition",2,8],
+  ["Ti",22,"Titanium",4,4,"transition",2,8],
+  ["V",23,"Vanadium",5,4,"transition",2,8],
+  ["Cr",24,"Chromium",6,4,"transition",2,8],
+  ["Mn",25,"Manganese",7,4,"transition",2,8],
+  ["Fe",26,"Iron",8,4,"transition",2,8],
+  ["Co",27,"Cobalt",9,4,"transition",2,8],
+  ["Ni",28,"Nickel",10,4,"transition",2,8],
+  ["Cu",29,"Copper",11,4,"transition",1,8],
+  ["Zn",30,"Zinc",12,4,"transition",2,8],
+  ["Ga",31,"Gallium",13,4,"post",3,6],
+  ["Ge",32,"Germanium",14,4,"metalloid",4,8],
+  ["As",33,"Arsenic",15,4,"metalloid",5,8],
+  ["Se",34,"Selenium",16,4,"nonmetal",6,8],
+  ["Br",35,"Bromine",17,4,"halogen",7,8],
+  ["Kr",36,"Krypton",18,4,"noble",8,8],
+  ["Rb",37,"Rubidium",1,5,"alkali",1,2],
+  ["Sr",38,"Strontium",2,5,"alkaline",2,4],
+  ["Y",39,"Yttrium",3,5,"transition",2,8],
+  ["Zr",40,"Zirconium",4,5,"transition",2,8],
+  ["Nb",41,"Niobium",5,5,"transition",2,8],
+  ["Mo",42,"Molybdenum",6,5,"transition",2,8],
+  ["Tc",43,"Technetium",7,5,"transition",2,8],
+  ["Ru",44,"Ruthenium",8,5,"transition",2,8],
+  ["Rh",45,"Rhodium",9,5,"transition",2,8],
+  ["Pd",46,"Palladium",10,5,"transition",2,8],
+  ["Ag",47,"Silver",11,5,"transition",1,8],
+  ["Cd",48,"Cadmium",12,5,"transition",2,8],
+  ["In",49,"Indium",13,5,"post",3,6],
+  ["Sn",50,"Tin",14,5,"post",4,8],
+  ["Sb",51,"Antimony",15,5,"metalloid",5,8],
+  ["Te",52,"Tellurium",16,5,"metalloid",6,8],
+  ["I",53,"Iodine",17,5,"halogen",7,8],
+  ["Xe",54,"Xenon",18,5,"noble",8,8],
+  ["Cs",55,"Cesium",1,6,"alkali",1,2],
+  ["Ba",56,"Barium",2,6,"alkaline",2,4],
+  ["La",57,"Lanthanum",3,6,"lanthanide",2,8],
+  ["Ce",58,"Cerium",4,9,"lanthanide",2,8],
+  ["Pr",59,"Praseodymium",5,9,"lanthanide",2,8],
+  ["Nd",60,"Neodymium",6,9,"lanthanide",2,8],
+  ["Pm",61,"Promethium",7,9,"lanthanide",2,8],
+  ["Sm",62,"Samarium",8,9,"lanthanide",2,8],
+  ["Eu",63,"Europium",9,9,"lanthanide",2,8],
+  ["Gd",64,"Gadolinium",10,9,"lanthanide",2,8],
+  ["Tb",65,"Terbium",11,9,"lanthanide",2,8],
+  ["Dy",66,"Dysprosium",12,9,"lanthanide",2,8],
+  ["Ho",67,"Holmium",13,9,"lanthanide",2,8],
+  ["Er",68,"Erbium",14,9,"lanthanide",2,8],
+  ["Tm",69,"Thulium",15,9,"lanthanide",2,8],
+  ["Yb",70,"Ytterbium",16,9,"lanthanide",2,8],
+  ["Lu",71,"Lutetium",17,9,"lanthanide",2,8],
+  ["Hf",72,"Hafnium",4,6,"transition",2,8],
+  ["Ta",73,"Tantalum",5,6,"transition",2,8],
+  ["W",74,"Tungsten",6,6,"transition",2,8],
+  ["Re",75,"Rhenium",7,6,"transition",2,8],
+  ["Os",76,"Osmium",8,6,"transition",2,8],
+  ["Ir",77,"Iridium",9,6,"transition",2,8],
+  ["Pt",78,"Platinum",10,6,"transition",2,8],
+  ["Au",79,"Gold",11,6,"transition",1,8],
+  ["Hg",80,"Mercury",12,6,"transition",2,8],
+  ["Tl",81,"Thallium",13,6,"post",3,6],
+  ["Pb",82,"Lead",14,6,"post",4,8],
+  ["Bi",83,"Bismuth",15,6,"post",5,8],
+  ["Po",84,"Polonium",16,6,"post",6,8],
+  ["At",85,"Astatine",17,6,"halogen",7,8],
+  ["Rn",86,"Radon",18,6,"noble",8,8],
+  ["Fr",87,"Francium",1,7,"alkali",1,2],
+  ["Ra",88,"Radium",2,7,"alkaline",2,4],
+  ["Ac",89,"Actinium",3,7,"actinide",2,8],
+  ["Th",90,"Thorium",4,10,"actinide",2,8],
+  ["Pa",91,"Protactinium",5,10,"actinide",2,8],
+  ["U",92,"Uranium",6,10,"actinide",2,8],
+  ["Np",93,"Neptunium",7,10,"actinide",2,8],
+  ["Pu",94,"Plutonium",8,10,"actinide",2,8],
+  ["Am",95,"Americium",9,10,"actinide",2,8],
+  ["Cm",96,"Curium",10,10,"actinide",2,8],
+  ["Bk",97,"Berkelium",11,10,"actinide",2,8],
+  ["Cf",98,"Californium",12,10,"actinide",2,8],
+  ["Es",99,"Einsteinium",13,10,"actinide",2,8],
+  ["Fm",100,"Fermium",14,10,"actinide",2,8],
+  ["Md",101,"Mendelevium",15,10,"actinide",2,8],
+  ["No",102,"Nobelium",16,10,"actinide",2,8],
+  ["Lr",103,"Lawrencium",17,10,"actinide",2,8],
+  ["Rf",104,"Rutherfordium",4,7,"transition",2,8],
+  ["Db",105,"Dubnium",5,7,"transition",2,8],
+  ["Sg",106,"Seaborgium",6,7,"transition",2,8],
+  ["Bh",107,"Bohrium",7,7,"transition",2,8],
+  ["Hs",108,"Hassium",8,7,"transition",2,8],
+  ["Mt",109,"Meitnerium",9,7,"transition",2,8],
+  ["Ds",110,"Darmstadtium",10,7,"transition",2,8],
+  ["Rg",111,"Roentgenium",11,7,"transition",2,8],
+  ["Cn",112,"Copernicium",12,7,"transition",2,8],
+  ["Nh",113,"Nihonium",13,7,"post",3,6],
+  ["Fl",114,"Flerovium",14,7,"post",4,8],
+  ["Mc",115,"Moscovium",15,7,"post",5,8],
+  ["Lv",116,"Livermorium",16,7,"post",6,8],
+  ["Ts",117,"Tennessine",17,7,"halogen",7,8],
+  ["Og",118,"Oganesson",18,7,"noble",8,8],
+];
+// build ELEMENTS lookup from PT
+const ELEMENTS={};
+PT.forEach(([sym,z,name,group,period,cat,ve,need])=>{
+  ELEMENTS[sym]={z,name,group,period,cat,ve,need};
+});
+// Pauling electronegativity (common main-group; used for formal-charge tie-breaks)
+const EN={H:2.20,Li:0.98,Be:1.57,B:2.04,C:2.55,N:3.04,O:3.44,F:3.98,
+  Na:0.93,Mg:1.31,Al:1.61,Si:1.90,P:2.19,S:2.58,Cl:3.16,
+  K:0.82,Ca:1.00,Ga:1.81,Ge:2.01,As:2.18,Se:2.55,Br:2.96,
+  Rb:0.82,Sr:0.95,In:1.78,Sn:1.96,Sb:2.05,Te:2.10,I:2.66,
+  Cs:0.79,Ba:0.89,Tl:1.62,Pb:2.33,Bi:2.02,Po:2.00,At:2.20};
+Object.keys(EN).forEach(s=>{ if(ELEMENTS[s])ELEMENTS[s].en=EN[s]; });
+// common bank shown in the tray
+const ORDER=["H","C","N","O","F","Cl","Br","S","P"];
+
+const board=document.getElementById("board");
+const stage=document.getElementById("stage");
+const world=document.getElementById("world");
+const statusEl=document.getElementById("status");
+const hint=document.getElementById("hint");
+
+/* ---------- viewport (pan + zoom) ---------- */
+let panX=0, panY=0, zoom=1;
+const MINZ=0.4, MAXZ=2.5;
+const WORLD=2400;
+function clampPan(){
+  const r=stage.getBoundingClientRect();
+  if(!r.width)return; // not laid out yet
+  const worldW=WORLD*zoom, worldH=WORLD*zoom;
+  // Keep the world covering the whole viewport: its left edge can't move right of
+  // the screen's left, and its right edge can't move left of the screen's right.
+  // (If the world is somehow smaller than the viewport, center it.)
+  if(worldW>=r.width){ panX=Math.max(r.width-worldW, Math.min(0, panX)); }
+  else { panX=(r.width-worldW)/2; }
+  if(worldH>=r.height){ panY=Math.max(r.height-worldH, Math.min(0, panY)); }
+  else { panY=(r.height-worldH)/2; }
+}
+function applyView(){ clampPan(); world.style.transform=`translate(${panX}px,${panY}px) scale(${zoom})`; }
+// screen (clientX/Y) → world coordinates
+function toWorld(clientX,clientY){
+  const r=stage.getBoundingClientRect();
+  return { x:(clientX-r.left-panX)/zoom, y:(clientY-r.top-panY)/zoom };
+}
+
+let atoms=[]; // {id,el,x,y,node}
+let bonds=[]; // {a,b,order,line}
+let nextId=1;
+let selected=null;
+let molCharge=0; // net charge of the whole structure
+
+/* ---------- undo (snapshot based) ---------- */
+const undoStack=[];
+function serialize(){
+  const idx=new Map(atoms.map((a,i)=>[a,i]));
+  return JSON.stringify({
+    atoms:atoms.map(a=>({el:a.el,x:a.x,y:a.y,lp:a.lp||0})),
+    bonds:bonds.map(b=>({a:idx.get(b.a),b:idx.get(b.b),order:b.order})),
+    charge:molCharge,
+  });
+}
+function pushUndo(){
+  undoStack.push(serialize());
+  if(undoStack.length>60)undoStack.shift();
+  const ub=document.getElementById("undoBtn");
+  if(ub)ub.disabled=false;
+}
+function wipe(){
+  atoms.forEach(a=>a.node.remove());
+  bonds.forEach(b=>b.group.remove());
+  atoms=[];bonds=[];selected=null;
+}
+function restore(json){
+  wipe();
+  const state=JSON.parse(json);
+  molCharge=state.charge||0;
+  const made=[];
+  state.atoms.forEach(s=>{ addAtomRaw(s.el,s.x,s.y,s.lp); made.push(atoms[atoms.length-1]); });
+  state.bonds.forEach(s=>{
+    const bd=makeBond(made[s.a],made[s.b]);
+    bd.order=s.order; drawBond(bd);
+  });
+  render();
+}
+function doUndo(){
+  if(undoStack.length===0)return;
+  const prev=undoStack.pop();
+  restore(prev);
+  if(undoStack.length===0)document.getElementById("undoBtn").disabled=true;
+  setStatus("Undone",null);
+}
+
+/* ---------- tray ---------- */
+const trayrow=document.getElementById("trayrow");
+
+// lone-pair chip first
+const lpChip=document.createElement("div");
+lpChip.className="chip lpchip";
+lpChip.innerHTML=`<div class="sym">:</div><div class="val">lone pair</div>`;
+lpChip.addEventListener("pointerdown",e=>startTrayDrag(e,"LP",lpChip,"lp"));
+trayrow.appendChild(lpChip);
+
+ORDER.forEach(sym=>{
+  const c=document.createElement("div");
+  c.className="chip";
+  c.innerHTML=`<div class="sym">${sym}</div><div class="val">${ELEMENTS[sym].ve}e⁻</div>`;
+  c.addEventListener("pointerdown",e=>startTrayDrag(e,sym,c,"atom"));
+  trayrow.appendChild(c);
+});
+
+/* ---------- tray drag to create ---------- */
+function atomAt(clientX,clientY){
+  const w=toWorld(clientX,clientY);
+  let hit=null,best=1e9;
+  atoms.forEach(a=>{
+    const d=Math.hypot(a.x-w.x,a.y-w.y);
+    if(d<30&&d<best){best=d;hit=a;}
+  });
+  return hit;
+}
+function atomAtExcept(clientX,clientY,except){
+  const w=toWorld(clientX,clientY);
+  let hit=null,best=1e9;
+  atoms.forEach(a=>{
+    if(a===except)return;
+    const d=Math.hypot(a.x-w.x,a.y-w.y);
+    if(d<34&&d<best){best=d;hit=a;}
+  });
+  return hit;
+}
+// nearest other atom to a given atom, by world-space center distance
+function nearestAtomTo(a){
+  let hit=null,best=1e9;
+  atoms.forEach(o=>{
+    if(o===a)return;
+    const d=Math.hypot(o.x-a.x,o.y-a.y);
+    if(d<best){best=d;hit=o;}
+  });
+  return {atom:hit,dist:best};
+}
+function replaceAtomElement(a,sym){
+  a.el=sym;
+  const lab=a.node.querySelector(".lab");
+  if(lab)lab.textContent=sym; else a.node.textContent=sym;
+  updateBondsFor(a);
+  render();
+}
+function removeAtom(a){
+  // drop any bonds touching this atom
+  bonds.filter(b=>b.a===a||b.b===a).forEach(removeBond);
+  a.node.remove();
+  atoms=atoms.filter(x=>x!==a);
+  if(selected===a)selected=null;
+}
+function placeOrReplace(sym,clientX,clientY){
+  const target=atomAt(clientX,clientY);
+  if(target){
+    pushUndo();
+    replaceAtomElement(target,sym);
+    render();
+    setStatus(`Replaced with ${sym}`,null);
+    return target;
+  }
+  const w=toWorld(clientX,clientY);
+  const p=snap(w.x,w.y);
+  addAtom(sym,p.x,p.y); // addAtom pushes undo itself
+  return atoms[atoms.length-1];
+}
+function startTrayDrag(e,sym,chip,kind){
+  const startX=e.clientX, startY=e.clientY, pid=e.pointerId;
+  let armed=false, ghost=null;
+  let liveAtom=null;        // for element drags: the real atom we create on arm and drag live
+  let placedUndo=false;     // whether we've pushed the undo snapshot for this placement
+
+  const move=ev=>{
+    if(ev.pointerId!==pid)return;
+    const dx=ev.clientX-startX, dy=ev.clientY-startY;
+    if(!armed){
+      if(dy<-8 && Math.abs(dy)>Math.abs(dx)){
+        armed=true;
+        if(kind==="lp"){
+          ghost=document.createElement("div");
+          ghost.className="drag-ghost lp-ghost";
+          ghost.textContent=":";
+          document.body.appendChild(ghost);
+        }else{
+          // create the real atom right away and drag it live, reusing the proven
+          // continuous bump-to-bond path. Place it at the current pointer position.
+          pushUndo(); placedUndo=true;
+          const w=toWorld(ev.clientX,ev.clientY);
+          liveAtom=addAtomRaw(sym, w.x, w.y, 0);
+          liveAtom.node.classList.add("dragging");
+          render();
+        }
+      }else if(Math.abs(dx)>10){
+        teardown();return; // horizontal swipe → let tray scroll
+      }
+    }
+    if(armed){
+      ev.preventDefault();
+      if(kind==="lp"){
+        ghost.style.left=ev.clientX+"px";
+        ghost.style.top=ev.clientY+"px";
+        const t=atomAt(ev.clientX,ev.clientY);
+        atoms.forEach(a=>a.node.classList.toggle("target",a===t));
+      }else if(liveAtom){
+        // move the live atom with the pointer (world coords)
+        const w=toWorld(ev.clientX,ev.clientY);
+        liveAtom.x=Math.max(28,Math.min(2400-28,w.x));
+        liveAtom.y=Math.max(28,Math.min(2400-28,w.y));
+        liveAtom.node.style.left=liveAtom.x+"px";
+        liveAtom.node.style.top=liveAtom.y+"px";
+        updateBondsFor(liveAtom);
+        // live bump-to-bond: form the bond the instant circles touch, same as dragging
+        // an existing atom (the release handler will tidy the spacing afterward)
+        const near=nearestAtomTo(liveAtom);
+        if(near.atom && near.dist<BUMP_DIST && near.dist>REPLACE_DIST && !findBond(liveAtom,near.atom)){
+          makeBond(liveAtom,near.atom);
+          updateBondsFor(liveAtom);
+          if(navigator.vibrate)try{navigator.vibrate(8);}catch(_){}
+          setStatus(`Bonded ${liveAtom.el}–${near.atom.el}`,null);
+        }
+        // highlight the atom we'd bond to (or replace) on release
+        const over=atomAtExcept(ev.clientX,ev.clientY,liveAtom);
+        atoms.forEach(o=>{
+          if(o===liveAtom){o.node.classList.remove("target");return;}
+          o.node.classList.toggle("target", o===over || (near.atom===o && near.dist<=70));
+        });
+      }
+    }
+  };
+  const up=ev=>{
+    if(!armed && ev.pointerId!==pid) return;
+    const moved=Math.hypot(ev.clientX-startX,ev.clientY-startY)>8;
+    if(armed){
+      if(kind==="lp"){
+        const t=atomAt(ev.clientX,ev.clientY);
+        if(t){pushUndo();t.lp=Math.min(4,(t.lp||0)+1);render();}
+      }else if(liveAtom){
+        liveAtom.node.classList.remove("dragging");
+        // Use the live atom's OWN world position for all decisions (reliable across devices),
+        // not the cursor position.
+        let nearest=null,nd=1e9;
+        atoms.forEach(o=>{ if(o===liveAtom)return; const d=Math.hypot(o.x-liveAtom.x,o.y-liveAtom.y); if(d<nd){nd=d;nearest=o;} });
+        if(nearest && nd<REPLACE_DIST){
+          // dropped essentially on top of another atom → replace that atom, discard the dragged one
+          const keepEl=liveAtom.el;
+          removeAtom(liveAtom);
+          replaceAtomElement(nearest,keepEl);
+          render();
+          setStatus(`Replaced with ${keepEl}`,null);
+        }else if(nearest && nd<=130){
+          // dropped reasonably near an atom → settle at a clean two-cell bonded position
+          // (separated circles, visible bond). Generous range so it's easy to trigger.
+          let dirx=liveAtom.x-nearest.x, diry=liveAtom.y-nearest.y;
+          const dl=Math.hypot(dirx,diry)||1; dirx/=dl; diry/=dl;
+          const ang=Math.round(Math.atan2(diry,dirx)/(Math.PI/4))*(Math.PI/4); // 8 compass dirs
+          let nx=nearest.x+Math.cos(ang)*GRID*2, ny=nearest.y+Math.sin(ang)*GRID*2;
+          const ps=snap(nx,ny); nx=ps.x; ny=ps.y;
+          if(atoms.some(o=>o!==liveAtom && o.x===nx && o.y===ny)){ const f=snap(liveAtom.x,liveAtom.y); nx=f.x; ny=f.y; }
+          liveAtom.x=nx; liveAtom.y=ny;
+          liveAtom.node.style.left=nx+"px"; liveAtom.node.style.top=ny+"px";
+          if(!findBond(liveAtom,nearest)) makeBond(liveAtom,nearest);
+          updateBondsFor(liveAtom); positionLonePairs(); render();
+          setStatus(`Bonded ${liveAtom.el}–${nearest.el}`,null);
+        }else{
+          // not near anything → just snap to grid where dropped
+          const p=snap(liveAtom.x,liveAtom.y);
+          liveAtom.x=Math.max(GRID,Math.min(2400-GRID,p.x));
+          liveAtom.y=Math.max(GRID,Math.min(2400-GRID,p.y));
+          liveAtom.node.style.left=liveAtom.x+"px";
+          liveAtom.node.style.top=liveAtom.y+"px";
+          updateBondsFor(liveAtom); positionLonePairs(); render();
+        }
+      }
+    }else if(!moved){
+      // a tap (no drag): toggle this chip's armed state, like the periodic table
+      if(chip.classList.contains("armed")){
+        disarm();
+        setStatus("Deselected",null);
+      }else if(kind==="lp"){ armLonePair(chip); }
+      else { armElement(sym,chip); }
+    }
+    teardown();
+  };
+  function teardown(){
+    window.removeEventListener("pointermove",move);
+    window.removeEventListener("pointerup",up);
+    window.removeEventListener("pointercancel",up);
+    atoms.forEach(a=>a.node.classList.remove("target"));
+    if(ghost){ghost.remove();ghost=null;}
+  }
+  window.addEventListener("pointermove",move,{passive:false});
+  window.addEventListener("pointerup",up);
+  window.addEventListener("pointercancel",up);
+}
+
+
+
+/* ---------- grid + snapping ---------- */
+const GRID=40;
+const REPLACE_DIST=34; // centers closer than this = "dropped on top" → replace
+const BUMP_DIST=56;    // centers within this (circles touching) → auto-bond
+function snap(x,y){return {x:Math.round(x/GRID)*GRID, y:Math.round(y/GRID)*GRID};}
+function drawGrid(){
+  const grid=document.getElementById("grid");
+  const W=2400, H=2400;
+  grid.setAttribute("width",W);grid.setAttribute("height",H);
+  grid.innerHTML="";
+  for(let x=GRID;x<W;x+=GRID){
+    const l=document.createElementNS(NS,"line");
+    l.setAttribute("x1",x);l.setAttribute("y1",0);l.setAttribute("x2",x);l.setAttribute("y2",H);
+    l.setAttribute("stroke","#e8eaed");l.setAttribute("stroke-width","1");grid.appendChild(l);
+  }
+  for(let y=GRID;y<H;y+=GRID){
+    const l=document.createElementNS(NS,"line");
+    l.setAttribute("x1",0);l.setAttribute("y1",y);l.setAttribute("x2",W);l.setAttribute("y2",y);
+    l.setAttribute("stroke","#e8eaed");l.setAttribute("stroke-width","1");grid.appendChild(l);
+  }
+}
+window.addEventListener("resize",()=>{}); // grid is fixed-size now
+
+/* ---------- atoms ---------- */
+function addAtomRaw(sym,x,y,lp){
+  const a={id:nextId++,el:sym,x,y,lp:lp||0};
+  const node=document.createElement("div");
+  node.className="atom";
+  const lab=document.createElement("span");
+  lab.className="lab"; lab.textContent=sym;
+  node.appendChild(lab);
+  node.style.left=x+"px";node.style.top=y+"px";
+  world.appendChild(node);
+  a.node=node;
+  atoms.push(a);
+  attachAtomHandlers(a);
+  hint.style.display="none";
+  return a;
+}
+function addAtom(sym,x,y){
+  pushUndo();
+  addAtomRaw(sym,x,y,0);
+  render();
+}
+
+function attachAtomHandlers(a){
+  let moved=false,downT=0,startX,startY;
+  a.node.addEventListener("pointerdown",e=>{
+    e.preventDefault();
+    moved=false;downT=Date.now();
+    startX=e.clientX;startY=e.clientY;
+    const snapAtStart=serialize(); // capture pre-drag state
+    a.node.setPointerCapture(e.pointerId);
+    const r=stage.getBoundingClientRect();
+    let consumed=false; // set true if long-press deletes the atom
+    let lpTimer=setTimeout(()=>{
+      if(moved||consumed)return;
+      consumed=true;
+      pushUndo();
+      removeAtom(a);
+      render();
+      setStatus(`Deleted ${a.el}`,null);
+      if(navigator.vibrate)try{navigator.vibrate(15);}catch(_){}
+    },550);
+    const clearLP=()=>{ if(lpTimer){clearTimeout(lpTimer);lpTimer=null;} };
+    const onMove=ev=>{
+      if(Math.hypot(ev.clientX-startX,ev.clientY-startY)>10){moved=true;clearLP();}
+      if(consumed)return;
+      if(!moved)return; // ignore sub-threshold jitter so a click stays a click
+      const w=toWorld(ev.clientX,ev.clientY);
+      a.x=Math.max(28,Math.min(2400-28,w.x));
+      a.y=Math.max(28,Math.min(2400-28,w.y));
+      a.node.style.left=a.x+"px";a.node.style.top=a.y+"px";
+      updateBondsFor(a);positionLonePairs();
+      // highlight an atom we'd replace
+      const over=atomAtExcept(ev.clientX,ev.clientY,a);
+      atoms.forEach(o=>{if(o!==a)o.node.classList.toggle("target",o===over);});
+      // bump-to-bond: when the dragged atom's circle nearly touches another,
+      // form a single bond instantly (magnetic). Skip if already bonded or
+      // landing directly on top (that's a replace, handled on release).
+      const near=nearestAtomTo(a);
+      if(near.atom && near.dist<BUMP_DIST && near.dist>REPLACE_DIST && !findBond(a,near.atom)){
+        makeBond(a,near.atom); // no separate undo: the drag's snapshot covers it
+        updateBondsFor(a);
+        if(navigator.vibrate)try{navigator.vibrate(8);}catch(_){}
+        setStatus(`Bonded ${a.el}–${near.atom.el}`,null);
+      }
+    };
+    const onUp=ev=>{
+      clearLP();
+      try{a.node.releasePointerCapture(e.pointerId);}catch(_){}
+      a.node.removeEventListener("pointermove",onMove);
+      a.node.removeEventListener("pointerup",onUp);
+      atoms.forEach(o=>o.node.classList.remove("target"));
+      if(consumed)return; // long-press already deleted it
+      if(!moved){ tapAtom(a); return; }
+      // a real drag happened — commit the pre-drag snapshot for undo
+      undoStack.push(snapAtStart);
+      if(undoStack.length>60)undoStack.shift();
+      document.getElementById("undoBtn").disabled=false;
+      // replace if dropped onto another atom
+      const target=atomAtExcept(ev.clientX,ev.clientY,a);
+      if(target){
+        replaceAtomElement(target,a.el);
+        removeAtom(a);
+        render();
+        setStatus(`Replaced with ${target.el}`,null);
+        return;
+      }
+      const p=snap(a.x,a.y);
+      a.x=Math.max(GRID,Math.min(2400-GRID,p.x));
+      a.y=Math.max(GRID,Math.min(2400-GRID,p.y));
+      a.node.style.left=a.x+"px";a.node.style.top=a.y+"px";
+      updateBondsFor(a);positionLonePairs();
+    };
+    a.node.addEventListener("pointermove",onMove);
+    a.node.addEventListener("pointerup",onUp);
+    a.node.addEventListener("pointercancel",()=>{clearLP();},{once:true});
+  });
+}
+
+function tapAtom(a){
+  if(armedKind)return; // armed placement (element or lone pair) handled by stage pointerup
+  // double-tap clears this atom's lone pairs
+  const now=Date.now();
+  if(a._lastTap && now-a._lastTap<320){
+    a._lastTap=0;
+    if(a.lp>0){ pushUndo(); a.lp=0; if(selected){selected.node.classList.remove("sel");selected=null;} render(); setStatus("Lone pairs cleared",null); return; }
+  }
+  a._lastTap=now;
+  if(selected===null){
+    selected=a;a.node.classList.add("sel");
+    setStatus("Tap another atom to bond",null);
+  }else if(selected===a){
+    selected.node.classList.remove("sel");selected=null;
+    render();
+  }else{
+    toggleBond(selected,a);
+    selected.node.classList.remove("sel");selected=null;
+    render();
+  }
+}
+
+/* ---------- bonds ---------- */
+function findBond(a,b){
+  return bonds.find(bd=>(bd.a===a&&bd.b===b)||(bd.a===b&&bd.b===a));
+}
+function makeBond(a,b){
+  const g=document.createElementNS(NS,"g");
+  board.appendChild(g);
+  const bd={a,b,order:1,group:g};
+  bonds.push(bd);
+  g.style.cursor="pointer";
+  g.addEventListener("pointerdown",e=>{e.stopPropagation();cycleBond(bd);});
+  drawBond(bd);
+  return bd;
+}
+function toggleBond(a,b){
+  if(findBond(a,b))return; // already bonded; change order by tapping the bond
+  pushUndo();
+  makeBond(a,b);
+}
+function cycleBond(bd){
+  pushUndo();
+  bd.order++;
+  if(bd.order>3){removeBond(bd);}
+  else drawBond(bd);
+  render();
+}
+function removeBond(bd){
+  bd.group.remove();
+  bonds=bonds.filter(x=>x!==bd);
+}
+function updateBondsFor(a){bonds.forEach(bd=>{if(bd.a===a||bd.b===a)drawBond(bd);});}
+function drawBond(bd){
+  const {a,b,order,group}=bd;
+  group.innerHTML="";
+  const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1;
+  const ox=-dy/len,oy=dx/len; // perpendicular
+  // trim to atom edge (shorter in bare mode so bonds reach the letter)
+  const bare=(typeof bareMode!=="undefined"&&bareMode);
+  let r=bare?20:27;
+  // for short bonds (e.g. atoms one cell apart) shrink the trim so a segment stays visible
+  const maxTrim=(len-12)/2; // always leave ~12px of line in the middle
+  if(maxTrim<r) r=Math.max(0,maxTrim);
+  const ax=a.x+dx/len*r,ay=a.y+dy/len*r,bx=b.x-dx/len*r,by=b.y-dy/len*r;
+  const offs= order===1?[0]: order===2?[-4,4]:[-6,0,6];
+  // hit area
+  const hit=document.createElementNS(NS,"line");
+  hit.setAttribute("x1",ax);hit.setAttribute("y1",ay);
+  hit.setAttribute("x2",bx);hit.setAttribute("y2",by);
+  hit.setAttribute("stroke","transparent");hit.setAttribute("stroke-width","22");
+  group.appendChild(hit);
+  offs.forEach(o=>{
+    const l=document.createElementNS(NS,"line");
+    l.setAttribute("x1",ax+ox*o);l.setAttribute("y1",ay+oy*o);
+    l.setAttribute("x2",bx+ox*o);l.setAttribute("y2",by+oy*o);
+    l.setAttribute("stroke","#1c2630");l.setAttribute("stroke-width","3");
+    l.setAttribute("stroke-linecap","round");
+    group.appendChild(l);
+  });
+}
+
+/* ---------- lone pairs / electron tracking ---------- */
+function bondElectrons(a){
+  let n=0;bonds.forEach(bd=>{if(bd.a===a||bd.b===a)n+=bd.order*2;});return n;
+}
+function bondOrderSum(a){
+  let n=0;bonds.forEach(bd=>{if(bd.a===a||bd.b===a)n+=bd.order;});return n;
+}
+function bondAngles(a){
+  // directions (radians) from atom a toward each bonded neighbor
+  const angs=[];
+  bonds.forEach(bd=>{
+    let other=null;
+    if(bd.a===a)other=bd.b; else if(bd.b===a)other=bd.a;
+    if(other)angs.push(Math.atan2(other.y-a.y,other.x-a.x));
+  });
+  return angs;
+}
+function positionLonePairs(){
+  atoms.forEach(a=>{
+    a.node.querySelectorAll(".lp").forEach(n=>n.remove());
+    const pairs=Math.min(4,a.lp||0);
+    if(pairs===0)return;
+    const occupied=bondAngles(a).slice(); // angles to avoid (grows as we place pairs)
+    const R=bareMode?20:37;
+    for(let i=0;i<pairs;i++){
+      // search candidate angles, pick the one maximizing distance to nearest occupied direction
+      let bestAng=-Math.PI/2, bestScore=-1;
+      for(let deg=0;deg<360;deg+=6){
+        const ang=deg*Math.PI/180;
+        let nearest=Math.PI;
+        occupied.forEach(o=>{
+          let d=Math.abs(((ang-o+Math.PI)%(2*Math.PI))-Math.PI); // angular distance
+          if(d<nearest)nearest=d;
+        });
+        // prefer the canonical top/right/bottom/left when nothing is occupied, via tiny tie-break
+        const tie=0.001*Math.cos(2*ang);
+        if(occupied.length===0){
+          // no bonds: fall back to fixed top,bottom,right,left order
+          break;
+        }
+        if(nearest>bestScore+1e-6 || (Math.abs(nearest-bestScore)<1e-6 && tie>0)){
+          bestScore=nearest;bestAng=ang;
+        }
+      }
+      let ang;
+      if(occupied.length===0){
+        const fixed=[-90,90,0,180];
+        ang=fixed[i]*Math.PI/180;
+      }else{
+        ang=bestAng;
+      }
+      occupied.push(ang); // subsequent pairs also avoid this one
+      const cx=26+Math.cos(ang)*R, cy=26+Math.sin(ang)*R;
+      const tx=Math.cos(ang+Math.PI/2),ty=Math.sin(ang+Math.PI/2);
+      const sp=bareMode?4:5; // within-pair dot spacing
+      [-sp,sp].forEach(off=>{
+        const d=document.createElement("div");
+        d.className="lp";
+        d.style.left=(cx+tx*off-3.5)+"px";
+        d.style.top=(cy+ty*off-3.5)+"px";
+        a.node.appendChild(d);
+      });
+    }
+  });
+}
+
+/* ---------- status / validity ---------- */
+function setStatus(text,kind){
+  statusEl.textContent=text;
+  statusEl.className="";
+  if(kind)statusEl.classList.add(kind);
+}
+function formalCharge(a){
+  // FC = valence electrons - (lone-pair electrons + bonds)
+  const ve=ELEMENTS[a.el].ve;
+  const lpElectrons=(a.lp||0)*2;
+  const bondingCount=bondOrderSum(a); // number of bonds (each shared pair counts once)
+  return ve-lpElectrons-bondingCount;
+}
+function updateFormalCharges(){
+  atoms.forEach(a=>{
+    let badge=a.node.querySelector(".fc");
+    if(!showCharges){ if(badge)badge.remove(); return; }
+    const fc=formalCharge(a);
+    if(!badge){ badge=document.createElement("div"); badge.className="fc"; a.node.appendChild(badge); }
+    badge.classList.remove("pos","neg","zero");
+    if(fc>0){badge.classList.add("pos");badge.textContent=fc>1?("+"+fc):"+";}
+    else if(fc<0){badge.classList.add("neg");badge.textContent=fc<-1?String(fc):"–";}
+    else{badge.classList.add("zero");}
+    // place top-right of the atom
+    badge.style.left="36px"; badge.style.top="-2px";
+  });
+}
+function updateElectronCount(){
+  const el=document.getElementById("ecount");
+  if(atoms.length===0){el.textContent="0 / 0 valence e⁻";el.classList.remove("balanced");return;}
+  let available=0; atoms.forEach(a=>available+=ELEMENTS[a.el].ve);
+  available-=molCharge; // +1 ion = one fewer electron; -1 = one more
+  let placed=0;
+  bonds.forEach(b=>placed+=b.order*2);   // electrons in bonds
+  atoms.forEach(a=>placed+=(a.lp||0)*2); // electrons in lone pairs
+  const chargeTag = molCharge!==0 ? `  ·  ${chargeLabel(molCharge)}` : "";
+  el.textContent=`${placed} / ${available} valence e⁻${chargeTag}`;
+  el.classList.toggle("balanced", placed===available && available>0);
+}
+function chargeLabel(c){
+  if(c===0)return "neutral";
+  const mag=Math.abs(c);
+  return (mag>1?mag:"")+(c>0?"+":"\u2212"); // e.g. 2+, -, +
+}
+function render(){
+  positionLonePairs();
+  atoms.forEach(a=>a.node.classList.remove("bad"));
+  updateFormalCharges();
+  updateElectronCount();
+  updateChargeUI();
+  if(atoms.length===0){setStatus("Drag an atom in",null);hint.style.display="block";return;}
+  setStatus(`${atoms.length} atom${atoms.length>1?"s":""} · ${bonds.length} bond${bonds.length!==1?"s":""}`,null);
+}
+
+function canExpandOctet(el){
+  const e=ELEMENTS[el];
+  if(!e)return false;
+  return e.period>=3 && e.ve>=4;
+}
+
+/* ---------- formal-charge optimizer ----------
+   On a fixed skeleton + fixed electron budget, search bond-order assignments.
+   For each assignment: bonding electrons per atom are known; remaining electrons
+   become lone pairs (must be a whole, non-negative number and satisfy octet rules).
+   Score = sum of |formal charge|; tie-break: negative FC on more electronegative atoms. */
+function optimizeFormalCharge(){
+  const n=atoms.length;
+  if(n===0||bonds.length===0)return null;
+  const idx=new Map(atoms.map((a,i)=>[a,i]));
+  const edges=bonds.map(b=>({i:idx.get(b.a),j:idx.get(b.b)}));
+  const E=edges.length;
+  if(E>8)return null; // keep search bounded for classroom-size molecules
+
+  const ve=atoms.map(a=>ELEMENTS[a.el].ve);
+  const need=atoms.map(a=>ELEMENTS[a.el].need);
+  const expand=atoms.map(a=>canExpandOctet(a.el));
+  const en=atoms.map(a=>ELEMENTS[a.el].en||0);
+  // total electrons available (matches the validated budget)
+  let totalE=0; ve.forEach(v=>totalE+=v); totalE-=molCharge;
+
+  let best=null;
+  const order=new Array(E).fill(1);
+  function evaluate(){
+    const b=new Array(n).fill(0);
+    let bondElec=0;
+    for(let e=0;e<E;e++){ b[edges[e].i]+=order[e]; b[edges[e].j]+=order[e]; bondElec+=order[e]*2; }
+    let lpElectrons=totalE-bondElec;
+    if(lpElectrons<0)return;
+    // Each atom first gets lone pairs to *complete* its octet/duet given its bonds.
+    const lp=new Array(n).fill(0);
+    let used=0;
+    for(let i=0;i<n;i++){
+      let fill=need[i]-2*b[i];        // electrons needed to reach target
+      if(fill<0){
+        if(expand[i]) fill=0;         // expandable atom already past octet via bonds — fine
+        else return;                  // period-2 atom with too many bonds — invalid
+      }
+      lp[i]=fill;
+      used+=fill;
+    }
+    let leftover=lpElectrons-used;
+    if(leftover<0)return;             // not enough electrons to complete all octets
+    // distribute any leftover (pairs) onto expandable atoms
+    for(let i=0;i<n && leftover>0;i++){
+      if(expand[i]){ lp[i]+=2; leftover-=2; }
+    }
+    // may need multiple rounds for big leftovers
+    let guard=0;
+    while(leftover>0 && guard++<20){
+      let placedAny=false;
+      for(let i=0;i<n && leftover>0;i++){
+        if(expand[i] && b[i]*2+lp[i]+2<=12){ lp[i]+=2; leftover-=2; placedAny=true; }
+      }
+      if(!placedAny)break;
+    }
+    if(leftover!==0)return;           // couldn't place all electrons validly
+    // validate shells
+    for(let i=0;i<n;i++){
+      const tot=b[i]*2+lp[i];
+      if(tot<need[i])return;
+      if(tot>need[i] && !expand[i])return;
+      if(tot>12)return;
+    }
+    let fcSum=0, enPenalty=0;
+    for(let i=0;i<n;i++){
+      const fc=ve[i]-lp[i]-b[i];
+      fcSum+=Math.abs(fc);
+      enPenalty+= fc*en[i];
+    }
+    const cand={fcSum,enPenalty,order:order.slice(),lp:lp.slice(),b:b.slice()};
+    if(!best || cand.fcSum<best.fcSum || (cand.fcSum===best.fcSum && cand.enPenalty<best.enPenalty)){
+      best=cand;
+    }
+  }
+  // enumerate orders 1..3 for each edge
+  (function rec(e){
+    if(e===E){ evaluate(); return; }
+    for(let o=1;o<=3;o++){ order[e]=o; rec(e+1); }
+    order[e]=1;
+  })(0);
+  return best;
+}
+
+function checkOctets(){
+  atoms.forEach(a=>a.node.classList.remove("bad"));
+  if(atoms.length===0){setStatus("Nothing to check",null);return;}
+  // per-atom octet/duet evaluation
+  const problems=[]; // {a, have, need, dir}
+  atoms.forEach(a=>{
+    const have=bondElectrons(a)+(a.lp||0)*2;
+    const need=ELEMENTS[a.el].need;
+    const expandable=canExpandOctet(a.el);
+    let bad=false, dir=null;
+    if(have<need){ bad=true; dir="short"; }
+    else if(have>need){
+      if(expandable){ if(have>12){ bad=true; dir="over"; } }
+      else { bad=true; dir="over"; }
+    }
+    if(bad){ a.node.classList.add("bad"); problems.push({a,have,need,dir}); }
+  });
+  // electron budget vs charge
+  let available=0; atoms.forEach(a=>available+=ELEMENTS[a.el].ve);
+  available-=molCharge;
+  let placed=0; bonds.forEach(b=>placed+=b.order*2); atoms.forEach(a=>placed+=(a.lp||0)*2);
+
+  const body=document.getElementById("checkBody");
+  const title=document.getElementById("checkTitle");
+  body.innerHTML="";
+
+  const structureValid = problems.length===0 && placed===available;
+
+  // current total |FC|
+  let currentFC=0; atoms.forEach(a=>currentFC+=Math.abs(formalCharge(a)));
+
+  if(structureValid){
+    // formal-charge optimization only meaningful on a complete, valid structure
+    const opt = optimizeFormalCharge();
+    if(opt && opt.fcSum < currentFC){
+      title.firstChild.textContent="Check — can be improved";
+      const row=document.createElement("div");
+      row.className="check-row";
+      row.innerHTML=`<span class="pill over">FC</span><span>Valid, but formal charges can be reduced.</span>`;
+      body.appendChild(row);
+      const sum=document.createElement("div");
+      sum.className="check-summary";
+      sum.innerHTML=`Your structure's total formal charge is <b>${currentFC>0?("±"+currentFC):0}</b>. A better arrangement on the same skeleton reaches <b>${opt.fcSum>0?("±"+opt.fcSum):0}</b> — try adjusting bond orders (often making a lone pair into a double bond) so charges sit closer to zero${anyHighENPositive()?", and keep any negative charge on the more electronegative atoms":""}.`;
+      body.appendChild(sum);
+      setStatus("Valid · formal charges reducible","warn");
+    }else{
+      title.firstChild.textContent="Check ✓";
+      const note = currentFC===0
+        ? "All octets satisfied, electrons accounted for, and every formal charge is zero."
+        : `All octets satisfied and electrons accounted for. Formal charges are minimized for this skeleton (total ±${currentFC})${molCharge!==0?` for a ${chargeLabel(molCharge)} ion`:""}.`;
+      body.innerHTML=`<div class="ok">${note}</div>`;
+      setStatus("✓ Structure looks correct","good");
+    }
+  }else{
+    title.firstChild.textContent="Check — issues found";
+    const groups={};
+    problems.forEach(p=>{
+      const key=p.a.el+"|"+p.dir;
+      (groups[key]=groups[key]||{el:p.a.el,dir:p.dir,count:0}).count++;
+    });
+    Object.values(groups).forEach(g=>{
+      const row=document.createElement("div");
+      row.className="check-row";
+      const cls=g.dir==="short"?"short":"over";
+      const word=g.dir==="short"?"needs more electrons":"has too many electrons";
+      row.innerHTML=`<span class="pill ${cls}">${g.el}${g.count>1?" ×"+g.count:""}</span><span>${word}</span>`;
+      body.appendChild(row);
+    });
+    const sum=document.createElement("div");
+    sum.className="check-summary";
+    let budget;
+    if(placed===available) budget=`Electron count balances (${placed}/${available}).`;
+    else if(placed<available) budget=`${available-placed} valence electron${available-placed>1?"s":""} still unplaced (${placed}/${available}).`;
+    else budget=`${placed-available} too many electrons placed (${placed}/${available}).`;
+    if(molCharge!==0) budget+=` Net charge set to ${chargeLabel(molCharge)}.`;
+    sum.textContent=budget;
+    body.appendChild(sum);
+    const nn=problems.length;
+    setStatus(`${nn||"0"} atom${nn!==1?"s":""} off${placed!==available?" · e⁻ unbalanced":""}`,"warn");
+  }
+  document.getElementById("checkSheet").classList.remove("hidden");
+}
+function anyHighENPositive(){
+  // true if a relatively electronegative atom currently carries positive FC
+  let worst=0;
+  atoms.forEach(a=>{ const fc=formalCharge(a); const en=ELEMENTS[a.el].en||0; if(fc>0 && en>=2.5)worst=1; });
+  return worst===1;
+}
+
+/* ---------- buttons ---------- */
+document.getElementById("clearBtn").onclick=()=>{
+  if(atoms.length>0)pushUndo();
+  atoms.forEach(a=>a.node.remove());bonds.forEach(b=>b.group.remove());
+  atoms=[];bonds=[];selected=null;nextId=1;molCharge=0;
+  hint.style.display="block";render();
+};
+document.getElementById("checkBtn").onclick=checkOctets;
+document.getElementById("undoBtn").onclick=doUndo;
+
+/* ---------- periodic table ---------- */
+const ptSheet=document.getElementById("ptSheet");
+const ptGrid=document.getElementById("ptGrid");
+let armedElement=null; // symbol selected (from table or tray), waiting for canvas tap
+let armedKind=null;    // "atom" | "lp"
+
+function disarm(){
+  armedElement=null; armedKind=null;
+  ptGrid.querySelectorAll(".pt-cell").forEach(c=>c.classList.remove("sel"));
+  document.querySelectorAll(".chip.armed").forEach(c=>c.classList.remove("armed"));
+}
+function armElement(sym,sourceChip){
+  disarm();
+  armedElement=sym; armedKind="atom";
+  hint.style.display="none";
+  if(sourceChip)sourceChip.classList.add("armed");
+  setStatus(`${sym} selected — tap canvas`,null);
+}
+function armLonePair(sourceChip){
+  disarm();
+  armedKind="lp";
+  hint.style.display="none";
+  if(sourceChip)sourceChip.classList.add("armed");
+  setStatus("Lone pair — tap an atom",null);
+}
+
+PT.forEach(([sym,z,name,group,period,cat])=>{
+  const cell=document.createElement("div");
+  cell.className="pt-cell cat-"+cat;
+  cell.style.gridColumn=group;
+  cell.style.gridRow=period;
+  cell.title=name;
+  cell.innerHTML=`<span class="z">${z}</span><span class="s">${sym}</span>`;
+  cell.onclick=()=>{
+    armElement(sym);
+    ptGrid.querySelectorAll(".pt-cell").forEach(c=>c.classList.remove("sel"));
+    cell.classList.add("sel");
+    ptSheet.classList.add("hidden");
+  };
+  ptGrid.appendChild(cell);
+});
+document.getElementById("ptBtn").onclick=()=>ptSheet.classList.remove("hidden");
+document.getElementById("ptClose").onclick=()=>ptSheet.classList.add("hidden");
+ptSheet.onclick=e=>{if(e.target===ptSheet)ptSheet.classList.add("hidden");};
+const checkSheet=document.getElementById("checkSheet");
+document.getElementById("checkClose").onclick=()=>checkSheet.classList.add("hidden");
+checkSheet.onclick=e=>{if(e.target===checkSheet)checkSheet.classList.add("hidden");};
+const helpSheet=document.getElementById("helpSheet");
+document.getElementById("helpBtn").onclick=()=>helpSheet.classList.remove("hidden");
+document.getElementById("helpClose").onclick=()=>helpSheet.classList.add("hidden");
+helpSheet.onclick=e=>{if(e.target===helpSheet)helpSheet.classList.add("hidden");};
+
+/* ---------- pan & pinch-zoom ---------- */
+const activePointers=new Map(); // pointerId → {x,y} for pinch
+let panning=false, panStartX=0, panStartY=0, panOrigX=0, panOrigY=0, didPan=false;
+let pinchStartDist=0, pinchStartZoom=1, pinchMidStart=null, pinchWorldAnchor=null;
+let gestureActive=false;        // true while panning/pinching this interaction
+let suppressTapUntil=0;         // ignore armed taps briefly after a gesture ends
+
+function isCanvasBackground(target){
+  // panning starts only on empty canvas (not atoms or bond hit-lines)
+  return !target.closest(".atom") && target.tagName!=="line" && !target.closest("button");
+}
+stage.addEventListener("pointerdown",e=>{
+  activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(activePointers.size===2){
+    // begin pinch
+    panning=false; gestureActive=true;
+    const pts=[...activePointers.values()];
+    pinchStartDist=Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y)||1;
+    pinchStartZoom=zoom;
+    const r=stage.getBoundingClientRect();
+    pinchMidStart={ x:(pts[0].x+pts[1].x)/2-r.left, y:(pts[0].y+pts[1].y)/2-r.top };
+    pinchWorldAnchor=toWorld((pts[0].x+pts[1].x)/2,(pts[0].y+pts[1].y)/2);
+    return;
+  }
+  if(activePointers.size===1 && isCanvasBackground(e.target)){
+    panning=true; didPan=false;
+    panStartX=e.clientX; panStartY=e.clientY; panOrigX=panX; panOrigY=panY;
+  }
+});
+stage.addEventListener("pointermove",e=>{
+  if(activePointers.has(e.pointerId)) activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(activePointers.size>=2){
+    const pts=[...activePointers.values()];
+    const dist=Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y)||1;
+    let nz=Math.max(MINZ,Math.min(MAXZ, pinchStartZoom*(dist/pinchStartDist)));
+    // keep the pinch midpoint anchored to the same world point
+    const r=stage.getBoundingClientRect();
+    const midX=(pts[0].x+pts[1].x)/2-r.left, midY=(pts[0].y+pts[1].y)/2-r.top;
+    zoom=nz;
+    panX=midX - pinchWorldAnchor.x*zoom;
+    panY=midY - pinchWorldAnchor.y*zoom;
+    applyView();
+    e.preventDefault();
+    return;
+  }
+  if(panning){
+    panX=panOrigX+(e.clientX-panStartX);
+    panY=panOrigY+(e.clientY-panStartY);
+    if(Math.hypot(e.clientX-panStartX,e.clientY-panStartY)>4){didPan=true;gestureActive=true;}
+    applyView();
+    e.preventDefault();
+  }
+});
+function endPointer(e){
+  activePointers.delete(e.pointerId);
+  if(activePointers.size<2){ pinchStartDist=0; }
+  if(activePointers.size===0){
+    panning=false;
+    if(gestureActive){ suppressTapUntil=Date.now()+250; } // ignore the lift that ends a gesture
+    gestureActive=false; didPan=false;
+  }
+}
+stage.addEventListener("pointerup",endPointer);
+stage.addEventListener("pointercancel",endPointer);
+
+// double-tap empty canvas to toggle zoom
+let lastBgTap=0;
+stage.addEventListener("pointerup",e=>{
+  if(!isCanvasBackground(e.target))return;
+  // ignore lifts that are part of (or just after) a pan/pinch, or while fingers remain
+  if(didPan || gestureActive || activePointers.size>0 || Date.now()<suppressTapUntil){ lastBgTap=0; return; }
+  const now=Date.now();
+  if(now-lastBgTap<300){
+    // zoom toward the tapped point
+    const target = zoom>1.1?1:1.8;
+    const w=toWorld(e.clientX,e.clientY);
+    const r=stage.getBoundingClientRect();
+    zoom=target;
+    panX=(e.clientX-r.left)-w.x*zoom;
+    panY=(e.clientY-r.top)-w.y*zoom;
+    applyView();
+    lastBgTap=0;
+  }else lastBgTap=now;
+});
+
+/* ---------- fit to content ---------- */
+function fitView(){
+  const r=stage.getBoundingClientRect();
+  if(atoms.length===0){
+    // center the view on the middle of the world (room to pan all directions)
+    zoom=1; panX=r.width/2-WORLD/2; panY=r.height/2-WORLD/2; applyView(); return;
+  }
+  let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+  atoms.forEach(a=>{minX=Math.min(minX,a.x);minY=Math.min(minY,a.y);maxX=Math.max(maxX,a.x);maxY=Math.max(maxY,a.y);});
+  const PAD=70;
+  minX-=PAD;minY-=PAD;maxX+=PAD;maxY+=PAD;
+  const cw=maxX-minX, ch=maxY-minY;
+  const z=Math.max(MINZ,Math.min(MAXZ, Math.min(r.width/cw, r.height/ch)));
+  zoom=z;
+  panX=(r.width-cw*z)/2 - minX*z;
+  panY=(r.height-ch*z)/2 - minY*z;
+  applyView();
+}
+document.getElementById("fitBtn").onclick=fitView;
+
+// tap canvas to use the armed element / lone pair
+stage.addEventListener("pointerup",e=>{
+  if(!armedKind)return;
+  // ignore if this was part of a pan/pinch, if other fingers are still down,
+  // or if we're in the brief window right after a gesture ended
+  if(didPan || gestureActive || activePointers.size>0 || Date.now()<suppressTapUntil) return;
+  const onAtom=e.target.closest(".atom");
+  if(armedKind==="lp"){
+    if(onAtom){
+      const target=atomAt(e.clientX,e.clientY);
+      if(target){pushUndo();target.lp=Math.min(4,(target.lp||0)+1);render();}
+    }
+    // tapping empty space with LP armed does nothing; stay armed for another atom
+    return;
+  }
+  // armedKind === "atom"
+  if(onAtom){
+    const target=atomAt(e.clientX,e.clientY);
+    if(target){pushUndo();replaceAtomElement(target,armedElement);render();setStatus(`Replaced with ${armedElement}`,null);}
+    disarm(); // replacing is a one-off correction — disarm afterward
+  }else{
+    placeOrReplace(armedElement,e.clientX,e.clientY);
+    setStatus(`${armedElement} placed — tap to add another`,null); // stay armed for repeats
+  }
+});
+
+/* ---------- style toggle (circles vs bare) ---------- */
+let bareMode=false;
+document.getElementById("styleBtn").onclick=()=>{
+  bareMode=!bareMode;
+  document.body.classList.toggle("bare",bareMode);
+  document.getElementById("styleBtn").textContent=bareMode?"Show circles":"Hide circles";
+  bonds.forEach(drawBond); // re-trim bond lengths for the new mode
+  positionLonePairs();
+};
+
+/* ---------- formal charge toggle ---------- */
+let showCharges=false;
+document.getElementById("chargeBtn").onclick=()=>{
+  showCharges=!showCharges;
+  document.getElementById("chargeBtn").classList.toggle("on",showCharges);
+  render();
+};
+
+/* ---------- molecule charge stepper ---------- */
+function updateChargeUI(){
+  const v=document.getElementById("chVal");
+  const ctl=document.getElementById("chargeCtl");
+  v.textContent=molCharge>0?("+"+molCharge):String(molCharge);
+  ctl.classList.toggle("charged",molCharge!==0);
+}
+function setCharge(c){
+  c=Math.max(-4,Math.min(4,c));
+  if(c===molCharge)return;
+  pushUndo();
+  molCharge=c;
+  updateChargeUI();
+  updateElectronCount();
+}
+document.getElementById("chPlus").onclick=()=>setCharge(molCharge+1);
+document.getElementById("chMinus").onclick=()=>setCharge(molCharge-1);
+
+/* ---------- copy to clipboard as PNG ---------- */
+function renderToCanvas(){
+  if(atoms.length===0)return null;
+  const PAD=46, AR=26; // padding, atom radius
+  let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+  atoms.forEach(a=>{minX=Math.min(minX,a.x);minY=Math.min(minY,a.y);maxX=Math.max(maxX,a.x);maxY=Math.max(maxY,a.y);});
+  const w=(maxX-minX)+PAD*2, h=(maxY-minY)+PAD*2;
+  const S=2; // supersample for crisp output
+  const cv=document.createElement("canvas");
+  cv.width=w*S; cv.height=h*S;
+  const ctx=cv.getContext("2d");
+  ctx.scale(S,S);
+  ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,w,h);
+  const ox=PAD-minX, oy=PAD-minY; // world→canvas offset
+  const X=v=>v+ox, Y=v=>v+oy;
+
+  // bonds first
+  const BASE_TRIM=bareMode?20:AR;
+  ctx.strokeStyle="#1c2630"; ctx.lineWidth=3; ctx.lineCap="round";
+  bonds.forEach(bd=>{
+    const a=bd.a,b=bd.b;
+    const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1;
+    const nx=dx/len,ny=dy/len, px=-ny,py=nx;
+    let TRIM=BASE_TRIM;
+    const maxTrim=(len-12)/2;
+    if(maxTrim<TRIM) TRIM=Math.max(0,maxTrim);
+    const ax=a.x+nx*TRIM,ay=a.y+ny*TRIM,bx=b.x-nx*TRIM,by=b.y-ny*TRIM;
+    const offs= bd.order===1?[0]: bd.order===2?[-4,4]:[-6,0,6];
+    offs.forEach(o=>{
+      ctx.beginPath();
+      ctx.moveTo(X(ax+px*o),Y(ay+py*o));
+      ctx.lineTo(X(bx+px*o),Y(by+py*o));
+      ctx.stroke();
+    });
+  });
+
+  // atoms + labels + lone pairs
+  atoms.forEach(a=>{
+    if(bareMode){
+      // white halo behind the letter so bonds don't run through it
+      const halo=17;
+      ctx.beginPath();
+      ctx.arc(X(a.x),Y(a.y),halo,0,Math.PI*2);
+      ctx.fillStyle="#ffffff"; ctx.fill();
+    }else{
+      ctx.beginPath();
+      ctx.arc(X(a.x),Y(a.y),AR,0,Math.PI*2);
+      ctx.fillStyle="#ffffff"; ctx.fill();
+      ctx.lineWidth=2; ctx.strokeStyle="#16202a"; ctx.stroke();
+    }
+    ctx.fillStyle="#16202a";
+    ctx.font=(bareMode?"800 30px":"800 20px")+" ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(a.el,X(a.x),Y(a.y)+1);
+    // lone pairs, using same angle logic as the live view
+    const pairs=Math.min(4,a.lp||0);
+    if(pairs>0){
+      const occupied=bondAngles(a).slice();
+      const R=bareMode?20:37;
+      for(let i=0;i<pairs;i++){
+        let ang;
+        if(occupied.length===0){ ang=[-90,90,0,180][i]*Math.PI/180; }
+        else{
+          let bestAng=-Math.PI/2,bestScore=-1;
+          for(let deg=0;deg<360;deg+=6){
+            const t=deg*Math.PI/180; let near=Math.PI;
+            occupied.forEach(o=>{let d=Math.abs(((t-o+Math.PI)%(2*Math.PI))-Math.PI);if(d<near)near=d;});
+            const tie=0.001*Math.cos(2*t);
+            if(near>bestScore+1e-6||(Math.abs(near-bestScore)<1e-6&&tie>0)){bestScore=near;bestAng=t;}
+          }
+          ang=bestAng;
+        }
+        occupied.push(ang);
+        const cx=a.x+Math.cos(ang)*R, cy=a.y+Math.sin(ang)*R;
+        const tx=Math.cos(ang+Math.PI/2),ty=Math.sin(ang+Math.PI/2);
+        ctx.fillStyle="#16202a";
+        const sp=bareMode?4:5;
+        [-sp,sp].forEach(off=>{
+          ctx.beginPath();
+          ctx.arc(X(cx+tx*off),Y(cy+ty*off),3.5,0,Math.PI*2);
+          ctx.fill();
+        });
+      }
+    }
+    // formal charge badge
+    if(showCharges){
+      const fc=formalCharge(a);
+      if(fc!==0){
+        const bx=X(a.x)+18, by=Y(a.y)-16;
+        ctx.beginPath(); ctx.arc(bx,by,9,0,Math.PI*2);
+        ctx.fillStyle="#fff"; ctx.fill();
+        ctx.lineWidth=1.5; ctx.strokeStyle= fc>0?"#e2a39b":"#9fc6d4"; ctx.stroke();
+        ctx.fillStyle= fc>0?"#b03a2e":"#1f6f8b";
+        ctx.font="800 11px ui-sans-serif,sans-serif";
+        const txt= fc>0?(fc>1?"+"+fc:"+"):(fc<-1?String(fc):"–");
+        ctx.fillText(txt,bx,by+1);
+      }
+    }
+  });
+  return cv;
+}
+
+document.getElementById("copyBtn").onclick=async()=>{
+  const cv=renderToCanvas();
+  if(!cv){setStatus("Nothing to copy",null);return;}
+  cv.toBlob(async blob=>{
+    if(!blob){setStatus("Copy failed",null);return;}
+    try{
+      await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
+      setStatus("✓ Copied image to clipboard","good");
+    }catch(err){
+      // fallback: download the PNG
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url; a.download="lewis-structure.png";
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      setStatus("Clipboard blocked — saved as PNG",null);
+    }
+  },"image/png");
+};
+
+/* ---------- save / load ---------- */
+const saveSheet=document.getElementById("saveSheet");
+document.getElementById("saveBtn").onclick=()=>{ saveSheet.classList.remove("hidden"); refreshSlots(); };
+document.getElementById("saveClose").onclick=()=>saveSheet.classList.add("hidden");
+saveSheet.onclick=e=>{if(e.target===saveSheet)saveSheet.classList.add("hidden");};
+
+/* Storage layer: prefer artifact window.storage, fall back to localStorage. */
+const STORE_PREFIX="lewislab:slot:";
+function storeMode(){
+  if(typeof window!=="undefined" && window.storage && typeof window.storage.set==="function") return "api";
+  try{ if(typeof localStorage!=="undefined"){ localStorage.setItem("__lltest","1"); localStorage.removeItem("__lltest"); return "local"; } }catch(_){}
+  return "none";
+}
+async function storeSet(name,val){
+  const m=storeMode();
+  if(m==="api") return window.storage.set("slot:"+name,val);
+  if(m==="local"){ localStorage.setItem(STORE_PREFIX+name,val); return true; }
+  throw new Error("no storage");
+}
+async function storeGet(name){
+  const m=storeMode();
+  if(m==="api"){ const r=await window.storage.get("slot:"+name); return r&&r.value; }
+  if(m==="local"){ return localStorage.getItem(STORE_PREFIX+name); }
+  return null;
+}
+async function storeDelete(name){
+  const m=storeMode();
+  if(m==="api") return window.storage.delete("slot:"+name);
+  if(m==="local"){ localStorage.removeItem(STORE_PREFIX+name); return true; }
+}
+async function storeList(){
+  const m=storeMode();
+  if(m==="api"){ try{ const r=await window.storage.list("slot:"); return ((r&&r.keys)||[]).map(k=>k.replace(/^slot:/,"")); }catch(_){ return []; } }
+  if(m==="local"){
+    const out=[];
+    for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith(STORE_PREFIX))out.push(k.slice(STORE_PREFIX.length)); }
+    return out;
+  }
+  return [];
+}
+
+async function refreshSlots(){
+  const list=document.getElementById("slotList");
+  list.innerHTML="";
+  if(storeMode()==="none"){ list.innerHTML='<div class="slot-empty">On-device saving isn\u2019t available here, but share codes work below.</div>'; return; }
+  let names=[];
+  try{ names=await storeList(); }catch(_){ names=[]; }
+  if(names.length===0){ list.innerHTML='<div class="slot-empty">No saved structures yet.</div>'; return; }
+  names.sort((a,b)=>a.localeCompare(b));
+  for(const name of names){
+    const row=document.createElement("div");
+    row.className="slot";
+    row.innerHTML=`<span class="nm">${name.replace(/[<>&]/g,"")}</span>`;
+    const load=document.createElement("button"); load.className="load"; load.textContent="Load";
+    load.onclick=async()=>{
+      try{ const v=await storeGet(name); if(v){ pushUndo(); restore(v); saveSheet.classList.add("hidden"); setStatus(`Loaded “${name}”`,null);} }catch(_){ setStatus("Couldn’t load",null); }
+    };
+    const del=document.createElement("button"); del.className="del"; del.textContent="Delete";
+    del.onclick=async()=>{ try{ await storeDelete(name); refreshSlots(); }catch(_){} };
+    row.appendChild(load); row.appendChild(del);
+    list.appendChild(row);
+  }
+}
+document.getElementById("saveDoBtn").onclick=async()=>{
+  const input=document.getElementById("saveName");
+  const name=(input.value||"").trim();
+  if(atoms.length===0){ setStatus("Nothing to save",null); return; }
+  if(!name){ input.focus(); setStatus("Give it a name first",null); return; }
+  if(storeMode()==="none"){ setStatus("On-device saving unavailable — use a share code",null); return; }
+  try{
+    await storeSet(name, serialize());
+    input.value="";
+    refreshSlots();
+    setStatus(`Saved “${name}”`,null);
+  }catch(_){ setStatus("Save failed",null); }
+};
+
+/* share codes: base64 of the serialized JSON */
+function encodeShare(){
+  try{ return btoa(unescape(encodeURIComponent(serialize()))); }catch(_){ return ""; }
+}
+function decodeShare(code){
+  try{ return decodeURIComponent(escape(atob(code.trim()))); }catch(_){ return null; }
+}
+document.getElementById("copyCodeBtn").onclick=async()=>{
+  if(atoms.length===0){ setStatus("Nothing to copy",null); return; }
+  const code=encodeShare();
+  document.getElementById("shareCode").value=code;
+  try{ await navigator.clipboard.writeText(code); setStatus("✓ Code copied",null); }
+  catch(_){ setStatus("Code shown below — select and copy",null); }
+};
+document.getElementById("loadCodeBtn").onclick=()=>{
+  const code=document.getElementById("shareCode").value;
+  if(!code.trim()){ setStatus("Paste a code first",null); return; }
+  const json=decodeShare(code);
+  if(!json){ setStatus("That code isn’t valid",null); return; }
+  try{
+    JSON.parse(json); // validate
+    pushUndo(); restore(json);
+    saveSheet.classList.add("hidden");
+    setStatus("Loaded from code",null);
+  }catch(_){ setStatus("That code isn’t valid",null); }
+};
+
+/* load a structure from the URL (?s=CODE) for handing out skeletons */
+(function loadFromURL(){
+  try{
+    const m=location.hash.match(/[#&]s=([^&]+)/)||location.search.match(/[?&]s=([^&]+)/);
+    if(m){ const json=decodeShare(decodeURIComponent(m[1])); if(json){ JSON.parse(json); restore(json); } }
+  }catch(_){}
+})();
+
+stage.addEventListener("contextmenu",e=>e.preventDefault());
+// Prevent iOS from interpreting downward drags on the canvas as a swipe-to-dismiss.
+stage.addEventListener("touchmove",e=>{ if(e.cancelable)e.preventDefault(); },{passive:false});
+
+// wheel / trackpad zoom (desktop)
+stage.addEventListener("wheel",e=>{
+  e.preventDefault();
+  const r=stage.getBoundingClientRect();
+  const w=toWorld(e.clientX,e.clientY);
+  const factor=e.deltaY<0?1.1:1/1.1;
+  zoom=Math.max(MINZ,Math.min(MAXZ, zoom*factor));
+  panX=(e.clientX-r.left)-w.x*zoom;
+  panY=(e.clientY-r.top)-w.y*zoom;
+  applyView();
+},{passive:false});
+
+drawGrid();
+render();
+// center the initial view on the world's working area
+(function initView(){
+  const r=stage.getBoundingClientRect();
+  if(atoms.length>0){ fitView(); }
+  else { zoom=1; panX=r.width/2-WORLD/2; panY=r.height/2-WORLD/2; applyView(); }
+})();
+</script>
+</body>
+</html>
