@@ -58,24 +58,36 @@
         </div>
       </div>
 
-      <div class="atom-stage" aria-hidden="true">
-        <!-- 70s sunburst arcs — drifts slower than the page (parallax) -->
-        <svg class="sunburst" data-parallax="0.18" viewBox="0 0 500 500" width="500" height="500" fill="none">
-          <circle cx="250" cy="250" r="238" stroke="#5b3790" stroke-width="10" opacity=".18"/>
-          <circle cx="250" cy="250" r="216" stroke="#d9672d" stroke-width="10" opacity=".18"/>
-          <circle cx="250" cy="250" r="194" stroke="#e9a63a" stroke-width="10" opacity=".22"/>
-          <circle cx="250" cy="250" r="172" stroke="#7d8c3f" stroke-width="10" opacity=".18"/>
-        </svg>
-        <!-- Bohr atom — drifts at a different rate for depth -->
-        <div class="atom" data-parallax="0.07">
-          <div class="orbit orbit-1"></div>
-          <div class="orbit orbit-2"></div>
-          <div class="orbit orbit-3"></div>
-          <div class="spinner spinner-1"><span class="electron"></span></div>
-          <div class="spinner spinner-2"><span class="electron"></span></div>
-          <div class="spinner spinner-3"><span class="electron"></span><span class="electron electron--b"></span></div>
-          <div class="nucleus">M</div>
+      <div class="atom-stage">
+        <div class="atom-scene" aria-hidden="true">
+          <!-- 70s sunburst arcs — drifts slower than the page (parallax) -->
+          <svg class="sunburst" data-parallax="0.18" viewBox="0 0 500 500" width="500" height="500" fill="none">
+            <circle cx="250" cy="250" r="238" stroke="#5b3790" stroke-width="10" opacity=".18"/>
+            <circle cx="250" cy="250" r="216" stroke="#d9672d" stroke-width="10" opacity=".18"/>
+            <circle cx="250" cy="250" r="194" stroke="#e9a63a" stroke-width="10" opacity=".22"/>
+            <circle cx="250" cy="250" r="172" stroke="#7d8c3f" stroke-width="10" opacity=".18"/>
+          </svg>
+          <!-- Bohr atom — js/main.js redraws it as a random element (H–Ar) on load
+               and on click; this carbon (2·4) markup is the no-JS fallback -->
+          <div class="atom" id="bohr-atom" data-parallax="0.07" data-shells="2">
+            <div class="orbit orbit-1"></div>
+            <div class="orbit orbit-2"></div>
+            <div class="shell shell-1" data-count="2">
+              <div class="e-arm"><span class="electron"></span></div>
+              <div class="e-arm"><span class="electron"></span></div>
+            </div>
+            <div class="shell shell-2" data-count="4">
+              <div class="e-arm"><span class="electron"></span></div>
+              <div class="e-arm"><span class="electron"></span></div>
+              <div class="e-arm"><span class="electron"></span></div>
+              <div class="e-arm"><span class="electron"></span></div>
+            </div>
+            <div class="nucleus">C</div>
+          </div>
         </div>
+        <button class="atom-caption" id="bohr-caption" type="button" aria-label="Bohr model of Carbon, element 6. Draw a new random element.">
+          <span id="bohr-caption-text">№ 6 · Carbon</span> <i class="fa-slab-duo fa-arrows-rotate" aria-hidden="true"></i>
+        </button>
       </div>
     </div>
   </div>

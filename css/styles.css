@@ -197,18 +197,26 @@
   }
   .cred b{ color:var(--orange); }
 
-  /* --- the atom --- */
+  /* --- the atom — Bohr model of a random element, drawn by js/main.js --- */
   .atom-stage{
     position:relative;
     display:grid;
     place-items:center;
+    align-content:center;
+    gap:22px;
     min-height:380px;
   }
-  .sunburst{
-    position:absolute;
-    inset:-40px;
+  .atom-scene{
+    position:relative;
     display:grid;
     place-items:center;
+  }
+  .sunburst{
+    /* centered with explicit negative margins — transform belongs to the
+       parallax script, and horizontal margin:auto refuses to go negative */
+    position:absolute;
+    top:50%; left:50%;
+    margin:-250px 0 0 -250px;
     z-index:0;
   }
   .atom{
@@ -216,6 +224,9 @@
     width:min(340px, 80vw);
     aspect-ratio:1;
     z-index:1;
+    cursor:pointer;
+    user-select:none;
+    -webkit-user-select:none;
   }
   .nucleus{
     position:absolute; top:50%; left:50%;
@@ -231,34 +242,101 @@
     font-weight:900;
     font-size:1.7rem;
   }
+  .nucleus--wide{ font-size:1.45rem; letter-spacing:-.02em; }
   .orbit{
     position:absolute; top:50%; left:50%;
+    aspect-ratio:1;
+    transform:translate(-50%,-50%);
     border:3px solid var(--ink);
     border-radius:50%;
   }
-  .orbit-1{ width:58%; aspect-ratio:1; transform:translate(-50%,-50%); }
-  .orbit-2{ width:86%; aspect-ratio:1; transform:translate(-50%,-50%) ; border-style:dashed; }
-  .orbit-3{ width:100%; aspect-ratio:1; transform:translate(-50%,-50%); }
-  .spinner{
+  .orbit-2{ border-style:dashed; }
+  /* a shell spins all of its electrons together; inner shells orbit fastest */
+  .shell{
     position:absolute; inset:0;
     animation:spin linear infinite;
   }
-  .spinner-1{ animation-duration:9s; }
-  .spinner-2{ animation-duration:15s; animation-direction:reverse; }
-  .spinner-3{ animation-duration:22s; }
+  .shell-1{ animation-duration:9s; }
+  .shell-2{ animation-duration:15s; animation-direction:reverse; }
+  .shell-3{ animation-duration:22s; }
   @keyframes spin{ to{ transform:rotate(360deg); } }
+  /* ring diameters and matching electron seats, by how many shells are occupied;
+     electron top = (100% − ring width) / 2 so its center sits on the ring line */
+  .atom[data-shells="1"] .orbit-1{ width:64%; }
+  .atom[data-shells="1"] .shell-1 .electron{ top:18%; }
+  .atom[data-shells="2"] .orbit-1{ width:52%; }
+  .atom[data-shells="2"] .shell-1 .electron{ top:24%; }
+  .atom[data-shells="2"] .orbit-2{ width:86%; }
+  .atom[data-shells="2"] .shell-2 .electron{ top:7%; }
+  .atom[data-shells="3"] .orbit-1{ width:46%; }
+  .atom[data-shells="3"] .shell-1 .electron{ top:27%; }
+  .atom[data-shells="3"] .orbit-2{ width:73%; }
+  .atom[data-shells="3"] .shell-2 .electron{ top:13.5%; }
+  .atom[data-shells="3"] .orbit-3{ width:100%; }
+  .atom[data-shells="3"] .shell-3 .electron{ top:0; }
+  /* each electron rides its own full-size arm; arms fan out to space the
+     shell's electrons evenly — arm n of k sits at (n−1)/k of a turn */
+  .e-arm{ position:absolute; inset:0; }
+  .shell[data-count="2"] .e-arm:nth-child(2){ transform:rotate(180deg); }
+  .shell[data-count="3"] .e-arm:nth-child(2){ transform:rotate(120deg); }
+  .shell[data-count="3"] .e-arm:nth-child(3){ transform:rotate(240deg); }
+  .shell[data-count="4"] .e-arm:nth-child(2){ transform:rotate(90deg); }
+  .shell[data-count="4"] .e-arm:nth-child(3){ transform:rotate(180deg); }
+  .shell[data-count="4"] .e-arm:nth-child(4){ transform:rotate(270deg); }
+  .shell[data-count="5"] .e-arm:nth-child(2){ transform:rotate(72deg); }
+  .shell[data-count="5"] .e-arm:nth-child(3){ transform:rotate(144deg); }
+  .shell[data-count="5"] .e-arm:nth-child(4){ transform:rotate(216deg); }
+  .shell[data-count="5"] .e-arm:nth-child(5){ transform:rotate(288deg); }
+  .shell[data-count="6"] .e-arm:nth-child(2){ transform:rotate(60deg); }
+  .shell[data-count="6"] .e-arm:nth-child(3){ transform:rotate(120deg); }
+  .shell[data-count="6"] .e-arm:nth-child(4){ transform:rotate(180deg); }
+  .shell[data-count="6"] .e-arm:nth-child(5){ transform:rotate(240deg); }
+  .shell[data-count="6"] .e-arm:nth-child(6){ transform:rotate(300deg); }
+  .shell[data-count="7"] .e-arm:nth-child(2){ transform:rotate(51.43deg); }
+  .shell[data-count="7"] .e-arm:nth-child(3){ transform:rotate(102.86deg); }
+  .shell[data-count="7"] .e-arm:nth-child(4){ transform:rotate(154.29deg); }
+  .shell[data-count="7"] .e-arm:nth-child(5){ transform:rotate(205.71deg); }
+  .shell[data-count="7"] .e-arm:nth-child(6){ transform:rotate(257.14deg); }
+  .shell[data-count="7"] .e-arm:nth-child(7){ transform:rotate(308.57deg); }
+  .shell[data-count="8"] .e-arm:nth-child(2){ transform:rotate(45deg); }
+  .shell[data-count="8"] .e-arm:nth-child(3){ transform:rotate(90deg); }
+  .shell[data-count="8"] .e-arm:nth-child(4){ transform:rotate(135deg); }
+  .shell[data-count="8"] .e-arm:nth-child(5){ transform:rotate(180deg); }
+  .shell[data-count="8"] .e-arm:nth-child(6){ transform:rotate(225deg); }
+  .shell[data-count="8"] .e-arm:nth-child(7){ transform:rotate(270deg); }
+  .shell[data-count="8"] .e-arm:nth-child(8){ transform:rotate(315deg); }
   .electron{
     position:absolute;
+    left:50%;
     width:22px; height:22px;
+    margin:-11px 0 0 -11px;
     border-radius:50%;
     border:3px solid var(--ink);
     box-shadow:0 3px 0 var(--shadow);
   }
-  /* each electron is pulled up by half its height so its center sits on the ring line */
-  .spinner-1 .electron{ background:var(--orange); top:21%; left:50%; margin:-10px 0 0 -11px; }
-  .spinner-2 .electron{ background:var(--gold);   top:7%;  left:50%; margin:-10px 0 0 -11px; }
-  .spinner-3 .electron{ background:var(--moss);   top:0;   left:50%; margin:-10px 0 0 -11px; }
-  .spinner-3 .electron--b{ top:auto; bottom:0; margin:0 0 -10px -11px; }
+  .shell-1 .electron{ background:var(--orange); }
+  .shell-2 .electron{ background:var(--gold); }
+  .shell-3 .electron{ background:var(--moss); }
+
+  /* element caption chip — doubles as the reshuffle button */
+  .atom-caption{
+    position:relative;
+    z-index:1;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.8rem; font-weight:600;
+    letter-spacing:.08em;
+    color:var(--ink);
+    background:var(--card);
+    border:2.5px solid var(--ink);
+    border-radius:999px;
+    padding:.55em 1.2em;
+    box-shadow:0 4px 0 var(--shadow);
+    cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .atom-caption:hover{ transform:translateY(2px); box-shadow:0 2px 0 var(--shadow); }
+  .atom-caption:active{ transform:translateY(4px); box-shadow:0 0 0 var(--shadow); }
+  .atom-caption i{ color:var(--grape); margin-left:.2em; }
 
   /* ============ SECTIONS ============ */
   section{ padding:88px 0; }

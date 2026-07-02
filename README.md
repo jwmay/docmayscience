@@ -14,7 +14,7 @@ docmayscience/
 ├── css/
 │   └── styles.css      All site styles — design tokens live in :root at the top
 ├── js/
-│   └── main.js         Parallax scroll effects (respects prefers-reduced-motion)
+│   └── main.js         Parallax scroll + random Bohr-atom hero (respects prefers-reduced-motion)
 ├── assets/
 │   ├── favicon.svg     Browser tab icon (dms monogram)
 │   └── logo/
