@@ -28,13 +28,24 @@
       </svg>
       DocMayScience
     </a>
-    <nav aria-label="Main">
-      <ul>
-        <li><a href="#apps">Apps &amp; Games</a></li>
-        <li><a href="#resources">Teaching Resources</a></li>
-        <li><a href="#about">About</a></li>
-      </ul>
-    </nav>
+    <div class="nav-actions">
+      <nav aria-label="Main">
+        <ul>
+          <li><a href="#apps">Apps &amp; Games</a></li>
+          <li><a href="#resources">Teaching Resources</a></li>
+          <li><a href="#about">About</a></li>
+        </ul>
+      </nav>
+      <!-- fa-slab-duo has no flask/grid glyph, so the trigger icon is a
+           hand-drawn periodic-table silhouette to match the other inline art -->
+      <button class="pt-open" id="pt-open" type="button" aria-haspopup="dialog"
+              aria-label="Open the periodic table" title="Periodic table">
+        <svg viewBox="0 0 24 19" width="22" height="18" fill="none" aria-hidden="true">
+          <path d="M2 2h5v6h10V2h5v12H2Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+          <path d="M6 17.6h5M13 17.6h5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -45,37 +56,44 @@
     <div class="wrap">
       <div>
         <span class="eyebrow">Chemistry · Code · Classroom</span>
-        <h1 class="display">Better living through <em>chemistry</em> &amp; code.</h1>
+        <h1 class="display">Teaching in the <em>overlap</em> of chemistry &amp; code.</h1>
         <p class="lede">I'm a high school chemistry teacher and computational chemistry PhD who builds the apps, games, and resources I always wished my classroom had.</p>
         <div class="hero-ctas">
           <a class="btn btn--grape" href="#apps">See the apps ↓</a>
           <a class="btn btn--ghost" href="#resources">Grab teaching resources</a>
         </div>
-        <div class="creds">
-          <span class="cred"><b>PhD</b> Computational Chemistry</span>
-          <span class="cred"><b>12+ yrs</b> in the high school lab</span>
-          <span class="cred"><b>18+ yrs</b> teaching overall</span>
-        </div>
       </div>
 
-      <div class="atom-stage" aria-hidden="true">
-        <!-- 70s sunburst arcs — drifts slower than the page (parallax) -->
-        <svg class="sunburst" data-parallax="0.18" viewBox="0 0 500 500" width="500" height="500" fill="none">
-          <circle cx="250" cy="250" r="238" stroke="#5b3790" stroke-width="10" opacity=".18"/>
-          <circle cx="250" cy="250" r="216" stroke="#d9672d" stroke-width="10" opacity=".18"/>
-          <circle cx="250" cy="250" r="194" stroke="#e9a63a" stroke-width="10" opacity=".22"/>
-          <circle cx="250" cy="250" r="172" stroke="#7d8c3f" stroke-width="10" opacity=".18"/>
-        </svg>
-        <!-- Bohr atom — drifts at a different rate for depth -->
-        <div class="atom" data-parallax="0.07">
-          <div class="orbit orbit-1"></div>
-          <div class="orbit orbit-2"></div>
-          <div class="orbit orbit-3"></div>
-          <div class="spinner spinner-1"><span class="electron"></span></div>
-          <div class="spinner spinner-2"><span class="electron"></span></div>
-          <div class="spinner spinner-3"><span class="electron"></span><span class="electron electron--b"></span></div>
-          <div class="nucleus">M</div>
+      <div class="atom-stage">
+        <div class="atom-scene" aria-hidden="true">
+          <!-- 70s sunburst arcs — drifts slower than the page (parallax) -->
+          <svg class="sunburst" data-parallax="0.18" viewBox="0 0 500 500" width="500" height="500" fill="none">
+            <circle cx="250" cy="250" r="238" stroke="#5b3790" stroke-width="10" opacity=".18"/>
+            <circle cx="250" cy="250" r="216" stroke="#d9672d" stroke-width="10" opacity=".18"/>
+            <circle cx="250" cy="250" r="194" stroke="#e9a63a" stroke-width="10" opacity=".22"/>
+            <circle cx="250" cy="250" r="172" stroke="#7d8c3f" stroke-width="10" opacity=".18"/>
+          </svg>
+          <!-- Bohr atom — js/main.js redraws it as a random element (H–Ar) on load
+               and on click; this carbon (2·4) markup is the no-JS fallback -->
+          <div class="atom" id="bohr-atom" data-parallax="0.07" data-shells="2">
+            <div class="orbit orbit-1"></div>
+            <div class="orbit orbit-2"></div>
+            <div class="shell shell-1" data-count="2">
+              <div class="e-arm"><span class="electron"></span></div>
+              <div class="e-arm"><span class="electron"></span></div>
+            </div>
+            <div class="shell shell-2" data-count="4">
+              <div class="e-arm"><span class="electron"></span></div>
+              <div class="e-arm"><span class="electron"></span></div>
+              <div class="e-arm"><span class="electron"></span></div>
+              <div class="e-arm"><span class="electron"></span></div>
+            </div>
+            <div class="nucleus">C</div>
+          </div>
         </div>
+        <button class="atom-caption" id="bohr-caption" type="button" aria-label="Bohr model of Carbon, element 6. Draw a new random element.">
+          <span id="bohr-caption-text">№ 6 · Carbon</span> <i class="fa-slab-duo fa-arrows-rotate" aria-hidden="true"></i>
+        </button>
       </div>
     </div>
   </div>
@@ -88,11 +106,12 @@
       <div class="section-head">
         <span class="eyebrow">Coding Creations</span>
         <h2 class="display">Apps &amp; games, straight from the lab.</h2>
-        <p>Every one of these started as a classroom problem. Each card works like an element tile — tap <strong>Launch</strong> to try it.</p>
+        <p>Every one of these started as a classroom problem. Each card works like an element tile — tap <strong>Launch</strong> to try the live ones; the rest are still reacting in the lab.</p>
       </div>
 
       <div class="tiles">
-        <!-- Replace the # in each Launch button with your live URL -->
+        <!-- Live apps get a Launch button (off-domain links open in a new tab);
+             unreleased apps use the .soon badge until they have a URL -->
         <article class="tile">
           <div class="tile-top">
             <div class="tile-symbol sym-grape">Cc</div>
@@ -101,7 +120,7 @@
           <h3>Chem Cash</h3>
           <p>A full classroom economy — student jobs, banking, and rewards that keep my room running all year.</p>
           <div class="tags"><span class="tag">React</span><span class="tag">Convex</span><span class="tag">Clerk</span></div>
-          <a class="btn btn--sm" href="#">Launch →</a>
+          <a class="btn btn--sm" href="https://chem.cash/about" target="_blank" rel="noopener noreferrer">Launch →</a>
         </article>
 
         <article class="tile">
@@ -112,7 +131,7 @@
           <h3>Bond Hook</h3>
           <p>A swing-physics minigame that teaches ionic, covalent, and metallic bonding — one grapple at a time.</p>
           <div class="tags"><span class="tag">Planck.js</span><span class="tag">Physics</span></div>
-          <a class="btn btn--sm" href="#">Launch →</a>
+          <span class="soon">In the lab — coming soon</span>
         </article>
 
         <article class="tile">
@@ -123,7 +142,7 @@
           <h3>Lewis·Lab</h3>
           <p>A mobile-first Lewis structure builder with octet checking, formal charges, and shareable save codes.</p>
           <div class="tags"><span class="tag">HTML/JS</span><span class="tag">Touch-first</span></div>
-          <a class="btn btn--sm" href="#">Launch →</a>
+          <span class="soon">In the lab — coming soon</span>
         </article>
 
         <article class="tile">
@@ -134,7 +153,7 @@
           <h3>Chem Deck</h3>
           <p>A single-file HTML slide engine built for chemistry class — reaction layouts, CER frames, no Google Slides required.</p>
           <div class="tags"><span class="tag">Single-file</span><span class="tag">Slides</span></div>
-          <a class="btn btn--sm" href="#">Launch →</a>
+          <span class="soon">In the lab — coming soon</span>
         </article>
 
         <article class="tile">
@@ -145,7 +164,7 @@
           <h3>Periodic Escape</h3>
           <p>Grapple your way across a scrolling periodic table where every element is both an answer and a hook point.</p>
           <div class="tags"><span class="tag">Physics</span><span class="tag">Review game</span></div>
-          <a class="btn btn--sm" href="#">Launch →</a>
+          <span class="soon">In the lab — coming soon</span>
         </article>
 
         <article class="tile">
@@ -156,7 +175,7 @@
           <h3>Deadline Docket</h3>
           <p>A rules-based deadline calculator for legal calendaring — proof these skills travel outside the science wing.</p>
           <div class="tags"><span class="tag">React</span><span class="tag">Convex</span></div>
-          <a class="btn btn--sm" href="#">Launch →</a>
+          <span class="soon">In the lab — coming soon</span>
         </article>
       </div>
     </div>
@@ -172,30 +191,31 @@
       </div>
 
       <div class="res-grid">
-        <!-- Point each button at your shared Google Drive folder or file -->
+        <!-- When a resource is ready, swap its .soon badge for
+             <a class="btn btn--sm" href="DRIVE_URL" target="_blank" rel="noopener">Open in Drive →</a> -->
         <div class="res-card">
           <span class="badge">Slides</span>
           <h3>Unit Slide Decks</h3>
           <p>Full-year chemistry decks with objectives, demos, and checks for understanding built in.</p>
-          <a class="btn btn--sm" href="#" target="_blank" rel="noopener">Open in Drive →</a>
+          <span class="soon">Drive link coming soon</span>
         </div>
         <div class="res-card">
           <span class="badge">Labs</span>
           <h3>Labs &amp; Activities</h3>
           <p>Hands-on labs and practice activities, formatted and ready to print or post.</p>
-          <a class="btn btn--sm" href="#" target="_blank" rel="noopener">Open in Drive →</a>
+          <span class="soon">Drive link coming soon</span>
         </div>
         <div class="res-card">
           <span class="badge">First Week</span>
           <h3>Icebreakers &amp; Procedures</h3>
           <p>Day-one mixers, seating systems, and the procedures deck that sets up the whole year.</p>
-          <a class="btn btn--sm" href="#" target="_blank" rel="noopener">Open in Drive →</a>
+          <span class="soon">Drive link coming soon</span>
         </div>
         <div class="res-card">
           <span class="badge">Systems</span>
           <h3>Chem Cash Starter Kit</h3>
           <p>Job descriptions, welcome letters, and everything you need to launch a classroom economy.</p>
-          <a class="btn btn--sm" href="#" target="_blank" rel="noopener">Open in Drive →</a>
+          <span class="soon">Drive link coming soon</span>
         </div>
       </div>
     </div>
@@ -262,6 +282,31 @@
   </div>
 </footer>
 
+<!-- ================= PERIODIC TABLE MODAL =================
+     Tiles, legend, and the detail card are rendered by js/main.js
+     from the dataset in js/elements.js -->
+<dialog class="pt-modal" id="pt-modal" aria-labelledby="pt-title">
+  <div class="pt-head">
+    <div>
+      <span class="eyebrow">Quick Reference</span>
+      <h2 class="display" id="pt-title">The Periodic Table</h2>
+    </div>
+    <button class="pt-close" id="pt-close" type="button" aria-label="Close the periodic table">
+      <i class="fa-slab-duo fa-xmark" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="pt-body">
+    <div class="pt-detail" id="pt-detail" aria-live="polite">
+      <p class="pt-hint">Select an element to inspect it.</p>
+    </div>
+    <div class="pt-scroll">
+      <div class="pt-grid" id="pt-grid"></div>
+    </div>
+    <ul class="pt-legend" id="pt-legend"></ul>
+  </div>
+</dialog>
+
+<script src="js/elements.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

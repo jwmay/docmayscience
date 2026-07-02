@@ -14,13 +14,16 @@ docmayscience/
 ├── css/
 │   └── styles.css      All site styles — design tokens live in :root at the top
 ├── js/
-│   └── main.js         Parallax scroll effects (respects prefers-reduced-motion)
+│   ├── main.js         Parallax scroll, random Bohr-atom hero, periodic table modal (respects prefers-reduced-motion)
+│   └── elements.js     Periodic table data, all 118 elements — generated from Bowserinator/Periodic-Table-JSON (CC BY-SA 3.0); regenerate rather than hand-edit
 ├── assets/
 │   ├── favicon.svg     Browser tab icon (dms monogram)
 │   └── logo/
 │       ├── dms-logo.svg          Vector master — scales to any size
 │       ├── dms-logo-512.png      Transparent PNG for watermarks/overlays
 │       └── dms-profile-800.png   Square profile picture for social accounts
+├── scripts/
+│   └── gen-elements.js Regenerates js/elements.js from its upstream dataset (node scripts/gen-elements.js)
 ├── package.json        npm scripts: dev server + lint/link checks
 ├── .htmlvalidate.json  HTML validation config
 ├── .vscode/tasks.json  Auto-starts dev server on folder open
@@ -34,10 +37,16 @@ docmayscience/
 - **Colors**: every brand color is a CSS variable in `:root` at the top of
   `css/styles.css`. Change once, applies everywhere.
 - **Apps & games**: each project is an `<article class="tile">` in the
-  `#apps` section of `index.html`. Copy a tile to add a new one; point the
-  Launch button `href` at the live URL.
-- **Teaching resources**: each `res-card` in `#resources` has an
-  "Open in Drive" button — set its `href` to a shared Google Drive link.
+  `#apps` section of `index.html`. Copy a tile to add a new one. Apps with a
+  live URL get a Launch button (`<a class="btn btn--sm">`); if that URL is
+  off-domain (not docmayscience.com), add `target="_blank"
+  rel="noopener noreferrer"` so it opens in a new tab. Unreleased apps use a
+  `<span class="soon">` badge instead — swap it for a Launch button when the
+  app goes live.
+- **Teaching resources**: each `res-card` in `#resources` shows a
+  `<span class="soon">` badge until its Drive folder is shared — swap the
+  badge for an "Open in Drive" button (`<a class="btn btn--sm"
+  target="_blank" rel="noopener">`) pointing at the shared Google Drive link.
 - **Contact**: swap the placeholder in the footer `mailto:` link.
 - **Icons**: use Font Awesome — see [Icons](#icons) below.
 

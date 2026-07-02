@@ -45,6 +45,11 @@ prefix and nothing else:
   `fa-duo fa-slab` — renders as an **empty square** (Font Awesome's missing-icon
   placeholder), because those styles aren't in the kit. **An empty box in place
   of an icon means the class prefix is wrong**, not that the kit failed to load.
+- **Slab Duo covers only a subset of the icon library.** An icon name the family
+  lacks (e.g. `fa-shuffle`, `fa-dice`, even `fa-atom`) renders as **invisible
+  blank space** — correct width, no glyph, not even the placeholder square.
+  Known-good names in use: `fa-envelope`, `fa-arrows-rotate`. Verify any new
+  icon name in a rendered browser (see below) before shipping it.
 - Decorative icons: add `aria-hidden="true"`. Meaningful icons: give them a
   visible or visually-hidden text label.
 - Browse icon names at fontawesome.com/icons (filter the style to **Slab Duo**).
@@ -58,6 +63,10 @@ The kit renders client-side, so `html-validate` can't confirm an icon shows.
 To actually see it: `npm run dev:quiet`, then load `http://localhost:5500/`
 (that origin is kit-authorized). A headless screenshot works too — render
 against `localhost:5500`, not a `file://` path, or the kit's origin check fails.
+Headless Chrome must also **spoof a normal user-agent** (`--user-agent="Mozilla/5.0
+(Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)
+Chrome/126.0.0.0 Safari/537.36"`) — with the default `HeadlessChrome` UA the kit
+script never runs and every icon is invisible blank space.
 
 **Use `localhost`, not `127.0.0.1`.** They are different origins to the kit, and
 only `localhost:5500` is on the allowlist — loading `http://127.0.0.1:5500/`

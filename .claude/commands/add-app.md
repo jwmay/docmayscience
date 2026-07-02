@@ -14,7 +14,9 @@ description — ask (AskUserQuestion) for anything missing or unclear.
    element order, same button markup.
 3. Write the tile copy in the site's existing voice (playful, retro-70s
    science — read the neighboring tiles first and match their tone and
-   length). Point the Launch button `href` at the live URL.
+   length). Point the Launch button `href` at the live URL. If the URL's
+   domain differs from docmayscience.com, add `target="_blank"
+   rel="noopener noreferrer"` so it opens in a new tab.
 4. Run `npm run check` — it must pass.
 5. Remind the user to eyeball it at http://localhost:5500 (live-reload
    server), and wait for their go-ahead if they want tweaks.

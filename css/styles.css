@@ -10,6 +10,17 @@
     --orange:     #d9672d;
     --moss:       #7d8c3f;
     --shadow:     #2c1e42;
+    /* periodic table category tints — 70s takes on the classic coloring */
+    --cat-alkali:     #e2924e;
+    --cat-alkaline:   #edc46b;
+    --cat-transition: #c2addd;
+    --cat-posttrans:  #9fb9d4;
+    --cat-metalloid:  #84c1ad;
+    --cat-nonmetal:   #aec573;
+    --cat-noble:      #dc9ab8;
+    --cat-lanthanide: #d9b48b;
+    --cat-actinide:   #cf8d80;
+    --cat-unknown:    #cdc6b8;
   }
 
   *{ box-sizing:border-box; margin:0; padding:0; }
@@ -137,6 +148,249 @@
     transform:translateY(-2px);
   }
   @media (max-width:640px){ nav ul{ display:none; } }
+  .nav-actions{ display:flex; align-items:center; gap:14px; }
+
+  /* periodic table trigger — slab-styled icon button */
+  .pt-open{
+    display:grid; place-items:center;
+    width:46px; height:42px;
+    color:var(--ink);
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:12px;
+    box-shadow:0 4px 0 var(--shadow);
+    cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .pt-open:hover{ background:var(--gold); transform:translateY(2px); box-shadow:0 2px 0 var(--shadow); }
+  .pt-open:active{ transform:translateY(4px); box-shadow:0 0 0 var(--shadow); }
+
+  /* ============ PERIODIC TABLE MODAL ============ */
+  .pt-modal{
+    width:min(1080px, calc(100vw - 28px));
+    max-height:calc(100vh - 28px);
+    margin:auto;
+    padding:0;
+    color:var(--ink);
+    background:var(--paper);
+    border:3px solid var(--ink);
+    border-radius:20px;
+    box-shadow:0 10px 0 rgba(44,30,66,.5);
+    display:none;
+    flex-direction:column;
+  }
+  .pt-modal[open]{ display:flex; }
+  .pt-modal::backdrop{ background:rgba(44,30,66,.55); }
+  body:has(.pt-modal[open]){ overflow:hidden; }
+
+  .pt-head{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:18px 24px 16px;
+    background:var(--paper-deep);
+    border-bottom:3px solid var(--ink);
+    border-radius:17px 17px 0 0;
+    flex:none;
+  }
+  .pt-head h2{ font-size:clamp(1.3rem, 3vw, 1.9rem); margin-top:.1em; }
+  .pt-close{
+    display:grid; place-items:center;
+    width:44px; height:42px;
+    font-size:1.05rem;
+    color:var(--ink);
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:12px;
+    box-shadow:0 4px 0 var(--shadow);
+    cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .pt-close:hover{ background:var(--orange); color:var(--paper); transform:translateY(2px); box-shadow:0 2px 0 var(--shadow); }
+
+  .pt-body{ padding:18px 22px 22px; overflow-y:auto; }
+
+  /* --- detail card --- */
+  .pt-detail{
+    display:flex; align-items:center; justify-content:center; gap:24px; flex-wrap:wrap;
+    min-height:186px;
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:16px;
+    box-shadow:0 6px 0 var(--shadow);
+    padding:16px 22px;
+    margin-bottom:20px;
+  }
+  .pt-hint{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.85rem; font-weight:600;
+    letter-spacing:.06em;
+    color:var(--grape);
+  }
+  .pt-bohr{ flex:none; }
+  .pt-bohr svg{ display:block; width:152px; height:152px; }
+  .pt-bohr .pt-shell{
+    transform-origin:80px 80px;
+    transform-box:view-box;
+    animation:spin var(--dur, 12s) linear infinite;
+  }
+  .pt-bohr .nucleus-sym{
+    font-family:'Fraunces', serif;
+    font-weight:900;
+  }
+  .pt-id{ display:flex; align-items:center; gap:18px; flex:none; }
+  /* the selected element, drawn as one of the site's element tiles */
+  .pt-id-tile{
+    position:relative;
+    width:92px; height:92px;
+    border:3px solid var(--ink);
+    border-radius:14px;
+    box-shadow:0 5px 0 var(--shadow);
+    display:grid; place-items:center;
+    flex:none;
+  }
+  .pt-id-tile .sym{
+    font-family:'Fraunces', serif;
+    font-weight:900;
+    font-size:2.1rem;
+    line-height:1;
+  }
+  .pt-id-tile .num, .pt-id-tile .mass{
+    position:absolute; left:0; right:0;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.6rem; font-weight:600;
+    text-align:center;
+  }
+  .pt-id-tile .num{ top:6px; }
+  .pt-id-tile .mass{ bottom:6px; }
+  .pt-id-text h3{
+    font-family:'Fraunces', serif;
+    font-weight:900;
+    font-size:1.55rem;
+    line-height:1.1;
+    margin-bottom:.25em;
+  }
+  .pt-id-text .pt-cat-chip{
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.62rem; font-weight:600;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    border:2px solid var(--ink);
+    border-radius:999px;
+    padding:.3em .8em;
+    margin-bottom:.6em;
+  }
+  .pt-id-text .pt-meta{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.72rem; font-weight:600;
+    color:var(--grape);
+    line-height:1.7;
+  }
+  .pt-data{
+    flex:1 1 300px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(128px, 1fr));
+    gap:12px 18px;
+    align-content:center;
+  }
+  .pt-data > div{ border-left:3px solid var(--gold); padding-left:10px; }
+  .pt-data dt{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.6rem; font-weight:600;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--orange);
+  }
+  .pt-data dd{
+    margin:0;
+    font-weight:700;
+    font-size:.92rem;
+    line-height:1.35;
+  }
+
+  /* --- the table itself --- */
+  /* padding keeps edge tiles' selection outline and hover shadow inside the
+     scroll clip; the negative margin cancels it out visually */
+  .pt-scroll{ overflow-x:auto; padding:6px; margin:-6px -6px 0; }
+  .pt-grid{
+    display:grid;
+    grid-template-columns:repeat(18, minmax(0, 1fr));
+    /* row 8 is a thin spacer between the main table and the La/Ac rows */
+    grid-template-rows:repeat(7, auto) 12px auto auto;
+    gap:4px;
+    min-width:640px;
+  }
+  .pt-el{
+    position:relative;
+    aspect-ratio:6/7;
+    border:2px solid var(--ink);
+    border-radius:6px;
+    padding:0;
+    display:grid; place-items:center;
+    font-family:'Fraunces', serif;
+    font-weight:900;
+    font-size:clamp(.62rem, 1.5vw, .98rem);
+    color:var(--ink);
+    cursor:pointer;
+    transition:transform .1s ease, box-shadow .1s ease, opacity .15s ease;
+  }
+  .pt-el .num{
+    position:absolute; top:2px; left:4px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:clamp(.36rem, .85vw, .5rem);
+    font-weight:600;
+  }
+  .pt-el:hover{ transform:translateY(-2px); box-shadow:0 3px 0 var(--shadow); z-index:1; }
+  .pt-el.is-selected{ outline:3px dashed var(--orange); outline-offset:1px; z-index:1; }
+  /* legend hover dims everything but the hovered category */
+  .pt-grid.hl .pt-el{ opacity:.22; }
+  .pt-grid.hl .pt-el.on{ opacity:1; }
+  .pt-gap{
+    aspect-ratio:6/7;
+    border:2px dashed var(--ink);
+    border-radius:6px;
+    opacity:.45;
+    display:grid; place-items:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:clamp(.34rem, .8vw, .48rem);
+    font-weight:600;
+    text-align:center;
+    line-height:1.3;
+  }
+  .cat-alkali{ background:var(--cat-alkali); }
+  .cat-alkaline{ background:var(--cat-alkaline); }
+  .cat-transition{ background:var(--cat-transition); }
+  .cat-posttrans{ background:var(--cat-posttrans); }
+  .cat-metalloid{ background:var(--cat-metalloid); }
+  .cat-nonmetal{ background:var(--cat-nonmetal); }
+  .cat-noble{ background:var(--cat-noble); }
+  .cat-lanthanide{ background:var(--cat-lanthanide); }
+  .cat-actinide{ background:var(--cat-actinide); }
+  .cat-unknown{ background:var(--cat-unknown); }
+
+  /* --- legend --- */
+  .pt-legend{
+    list-style:none;
+    display:flex; flex-wrap:wrap; gap:8px 16px;
+    margin-top:16px;
+  }
+  .pt-legend li{
+    display:flex; align-items:center; gap:7px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.68rem; font-weight:600;
+    letter-spacing:.04em;
+    cursor:default;
+  }
+  .pt-legend .swatch{
+    width:13px; height:13px;
+    border:2px solid var(--ink);
+    border-radius:4px;
+  }
+
+  @media (max-width:720px){
+    .pt-detail{ gap:14px; padding:14px; }
+    .pt-data{ grid-template-columns:repeat(2, 1fr); }
+    .pt-bohr svg{ width:120px; height:120px; }
+  }
 
   /* ============ HERO ============ */
   .hero{
@@ -180,35 +434,26 @@
   }
   .hero-ctas{ display:flex; flex-wrap:wrap; gap:16px; }
 
-  /* credential chips */
-  .creds{
-    display:flex; flex-wrap:wrap; gap:10px;
-    margin-top:2.2em;
-  }
-  .cred{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:.76rem; font-weight:600;
-    letter-spacing:.04em;
-    background:var(--card);
-    border:2.5px solid var(--ink);
-    border-radius:999px;
-    padding:.5em 1em;
-    box-shadow:0 3px 0 var(--shadow);
-  }
-  .cred b{ color:var(--orange); }
-
-  /* --- the atom --- */
+  /* --- the atom — Bohr model of a random element, drawn by js/main.js --- */
   .atom-stage{
     position:relative;
     display:grid;
     place-items:center;
+    align-content:center;
+    gap:22px;
     min-height:380px;
   }
-  .sunburst{
-    position:absolute;
-    inset:-40px;
+  .atom-scene{
+    position:relative;
     display:grid;
     place-items:center;
+  }
+  .sunburst{
+    /* centered with explicit negative margins — transform belongs to the
+       parallax script, and horizontal margin:auto refuses to go negative */
+    position:absolute;
+    top:50%; left:50%;
+    margin:-250px 0 0 -250px;
     z-index:0;
   }
   .atom{
@@ -216,6 +461,9 @@
     width:min(340px, 80vw);
     aspect-ratio:1;
     z-index:1;
+    cursor:pointer;
+    user-select:none;
+    -webkit-user-select:none;
   }
   .nucleus{
     position:absolute; top:50%; left:50%;
@@ -231,34 +479,101 @@
     font-weight:900;
     font-size:1.7rem;
   }
+  .nucleus--wide{ font-size:1.45rem; letter-spacing:-.02em; }
   .orbit{
     position:absolute; top:50%; left:50%;
+    aspect-ratio:1;
+    transform:translate(-50%,-50%);
     border:3px solid var(--ink);
     border-radius:50%;
   }
-  .orbit-1{ width:58%; aspect-ratio:1; transform:translate(-50%,-50%); }
-  .orbit-2{ width:86%; aspect-ratio:1; transform:translate(-50%,-50%) ; border-style:dashed; }
-  .orbit-3{ width:100%; aspect-ratio:1; transform:translate(-50%,-50%); }
-  .spinner{
+  .orbit-2{ border-style:dashed; }
+  /* a shell spins all of its electrons together; inner shells orbit fastest */
+  .shell{
     position:absolute; inset:0;
     animation:spin linear infinite;
   }
-  .spinner-1{ animation-duration:9s; }
-  .spinner-2{ animation-duration:15s; animation-direction:reverse; }
-  .spinner-3{ animation-duration:22s; }
+  .shell-1{ animation-duration:9s; }
+  .shell-2{ animation-duration:15s; animation-direction:reverse; }
+  .shell-3{ animation-duration:22s; }
   @keyframes spin{ to{ transform:rotate(360deg); } }
+  /* ring diameters and matching electron seats, by how many shells are occupied;
+     electron top = (100% − ring width) / 2 so its center sits on the ring line */
+  .atom[data-shells="1"] .orbit-1{ width:64%; }
+  .atom[data-shells="1"] .shell-1 .electron{ top:18%; }
+  .atom[data-shells="2"] .orbit-1{ width:52%; }
+  .atom[data-shells="2"] .shell-1 .electron{ top:24%; }
+  .atom[data-shells="2"] .orbit-2{ width:86%; }
+  .atom[data-shells="2"] .shell-2 .electron{ top:7%; }
+  .atom[data-shells="3"] .orbit-1{ width:46%; }
+  .atom[data-shells="3"] .shell-1 .electron{ top:27%; }
+  .atom[data-shells="3"] .orbit-2{ width:73%; }
+  .atom[data-shells="3"] .shell-2 .electron{ top:13.5%; }
+  .atom[data-shells="3"] .orbit-3{ width:100%; }
+  .atom[data-shells="3"] .shell-3 .electron{ top:0; }
+  /* each electron rides its own full-size arm; arms fan out to space the
+     shell's electrons evenly — arm n of k sits at (n−1)/k of a turn */
+  .e-arm{ position:absolute; inset:0; }
+  .shell[data-count="2"] .e-arm:nth-child(2){ transform:rotate(180deg); }
+  .shell[data-count="3"] .e-arm:nth-child(2){ transform:rotate(120deg); }
+  .shell[data-count="3"] .e-arm:nth-child(3){ transform:rotate(240deg); }
+  .shell[data-count="4"] .e-arm:nth-child(2){ transform:rotate(90deg); }
+  .shell[data-count="4"] .e-arm:nth-child(3){ transform:rotate(180deg); }
+  .shell[data-count="4"] .e-arm:nth-child(4){ transform:rotate(270deg); }
+  .shell[data-count="5"] .e-arm:nth-child(2){ transform:rotate(72deg); }
+  .shell[data-count="5"] .e-arm:nth-child(3){ transform:rotate(144deg); }
+  .shell[data-count="5"] .e-arm:nth-child(4){ transform:rotate(216deg); }
+  .shell[data-count="5"] .e-arm:nth-child(5){ transform:rotate(288deg); }
+  .shell[data-count="6"] .e-arm:nth-child(2){ transform:rotate(60deg); }
+  .shell[data-count="6"] .e-arm:nth-child(3){ transform:rotate(120deg); }
+  .shell[data-count="6"] .e-arm:nth-child(4){ transform:rotate(180deg); }
+  .shell[data-count="6"] .e-arm:nth-child(5){ transform:rotate(240deg); }
+  .shell[data-count="6"] .e-arm:nth-child(6){ transform:rotate(300deg); }
+  .shell[data-count="7"] .e-arm:nth-child(2){ transform:rotate(51.43deg); }
+  .shell[data-count="7"] .e-arm:nth-child(3){ transform:rotate(102.86deg); }
+  .shell[data-count="7"] .e-arm:nth-child(4){ transform:rotate(154.29deg); }
+  .shell[data-count="7"] .e-arm:nth-child(5){ transform:rotate(205.71deg); }
+  .shell[data-count="7"] .e-arm:nth-child(6){ transform:rotate(257.14deg); }
+  .shell[data-count="7"] .e-arm:nth-child(7){ transform:rotate(308.57deg); }
+  .shell[data-count="8"] .e-arm:nth-child(2){ transform:rotate(45deg); }
+  .shell[data-count="8"] .e-arm:nth-child(3){ transform:rotate(90deg); }
+  .shell[data-count="8"] .e-arm:nth-child(4){ transform:rotate(135deg); }
+  .shell[data-count="8"] .e-arm:nth-child(5){ transform:rotate(180deg); }
+  .shell[data-count="8"] .e-arm:nth-child(6){ transform:rotate(225deg); }
+  .shell[data-count="8"] .e-arm:nth-child(7){ transform:rotate(270deg); }
+  .shell[data-count="8"] .e-arm:nth-child(8){ transform:rotate(315deg); }
   .electron{
     position:absolute;
+    left:50%;
     width:22px; height:22px;
+    margin:-11px 0 0 -11px;
     border-radius:50%;
     border:3px solid var(--ink);
     box-shadow:0 3px 0 var(--shadow);
   }
-  /* each electron is pulled up by half its height so its center sits on the ring line */
-  .spinner-1 .electron{ background:var(--orange); top:21%; left:50%; margin:-10px 0 0 -11px; }
-  .spinner-2 .electron{ background:var(--gold);   top:7%;  left:50%; margin:-10px 0 0 -11px; }
-  .spinner-3 .electron{ background:var(--moss);   top:0;   left:50%; margin:-10px 0 0 -11px; }
-  .spinner-3 .electron--b{ top:auto; bottom:0; margin:0 0 -10px -11px; }
+  .shell-1 .electron{ background:var(--orange); }
+  .shell-2 .electron{ background:var(--gold); }
+  .shell-3 .electron{ background:var(--moss); }
+
+  /* element caption chip — doubles as the reshuffle button */
+  .atom-caption{
+    position:relative;
+    z-index:1;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.8rem; font-weight:600;
+    letter-spacing:.08em;
+    color:var(--ink);
+    background:var(--card);
+    border:2.5px solid var(--ink);
+    border-radius:999px;
+    padding:.55em 1.2em;
+    box-shadow:0 4px 0 var(--shadow);
+    cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .atom-caption:hover{ transform:translateY(2px); box-shadow:0 2px 0 var(--shadow); }
+  .atom-caption:active{ transform:translateY(4px); box-shadow:0 0 0 var(--shadow); }
+  .atom-caption i{ color:var(--grape); margin-left:.2em; }
 
   /* ============ SECTIONS ============ */
   section{ padding:88px 0; }
@@ -343,6 +658,20 @@
     border-radius:7px;
     padding:.25em .6em;
     background:var(--paper);
+  }
+  /* placeholder for unreleased apps — same footprint as .btn--sm so tiles align */
+  .soon{
+    display:inline-flex;
+    align-items:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:.82rem;
+    letter-spacing:.04em;
+    color:var(--grape);
+    background:var(--paper);
+    border:3px dashed var(--grape);
+    border-radius:11px;
+    padding:.6em 1.1em;
   }
 
   /* ============ RESOURCES ============ */
