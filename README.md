@@ -15,12 +15,18 @@ docmayscience/
 │   └── styles.css      All site styles — design tokens live in :root at the top
 ├── js/
 │   └── main.js         Parallax scroll effects (respects prefers-reduced-motion)
-└── assets/
-    ├── favicon.svg     Browser tab icon (dms monogram)
-    └── logo/
-        ├── dms-logo.svg          Vector master — scales to any size
-        ├── dms-logo-512.png      Transparent PNG for watermarks/overlays
-        └── dms-profile-800.png   Square profile picture for social accounts
+├── assets/
+│   ├── favicon.svg     Browser tab icon (dms monogram)
+│   └── logo/
+│       ├── dms-logo.svg          Vector master — scales to any size
+│       ├── dms-logo-512.png      Transparent PNG for watermarks/overlays
+│       └── dms-profile-800.png   Square profile picture for social accounts
+├── package.json        npm scripts: dev server + lint/link checks
+├── .htmlvalidate.json  HTML validation config
+├── .vscode/tasks.json  Auto-starts dev server on folder open
+└── .github/workflows/
+    ├── deploy.yml      Deploys main to GitHub Pages on push
+    └── ci.yml          HTML + link checks on every pull request
 ```
 
 ## Editing the site
@@ -47,24 +53,57 @@ As the portfolio expands, suggested conventions:
 - Keep paths **relative** (no leading `/`) so the site works both at
   `jwmay.github.io/docmayscience/` and at the custom domain root.
 
-## Deploying
+## Development workflow
 
-Hosted on GitHub Pages, deployed from the `main` branch root.
-
-```bash
-git add .
-git commit -m "Describe the change"
-git push
-```
-
-Changes go live at the custom domain about a minute after pushing.
-
-## Local preview
-
-Just open `index.html` in a browser — no build step, no dependencies.
-For a proper local server (better mirrors production paths):
+`main` is production — every push to it deploys to docmayscience.com via
+GitHub Actions (`.github/workflows/deploy.yml`). Day-to-day work happens on
+the `dev` branch:
 
 ```bash
-python3 -m http.server 8000
-# then visit http://localhost:8000
+git checkout dev          # work here, never directly on main
+# ...edit, commit as often as you like...
+git push                  # backs up dev to GitHub (does NOT deploy)
 ```
+
+When a batch of work is ready to go live, open a pull request from `dev`
+into `main`:
+
+```bash
+gh pr create --base main --head dev --title "Describe the release"
+```
+
+CI (`.github/workflows/ci.yml`) validates the HTML and checks internal
+links on every PR. Merge the PR on GitHub and the site deploys
+automatically. After merging, sync your local branches:
+
+```bash
+git checkout main && git pull
+git checkout dev && git merge main
+```
+
+## Local preview (live reload)
+
+One-time setup: `npm install`. Then:
+
+```bash
+npm run dev        # serve at http://localhost:5500, auto-reload on save
+npm run dev:quiet  # same, but don't auto-open a browser tab
+```
+
+Opening the project in VS Code auto-starts the dev server
+(`.vscode/tasks.json`, runs on folder open — VS Code asks once to
+"Allow Automatic Tasks"). It's also the default build task
+(**Cmd+Shift+B**).
+
+## Quality checks
+
+The same checks CI runs on PRs, runnable locally:
+
+```bash
+npm run lint    # html-validate on all root-level pages
+npm run links   # linkinator: catches broken internal links/images
+npm run check   # both
+```
+
+External (`https://…`) links are deliberately skipped so checks never fail
+because someone else's site is down.
