@@ -30,6 +30,26 @@
         "panel": "shared"
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Release: open PR (dev → main)",
+      "type": "shell",
+      "command": "npm run release",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Sync branches (after PR merge)",
+      "type": "shell",
+      "command": "npm run sync",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
     }
   ]
 }

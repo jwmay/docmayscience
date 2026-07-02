@@ -69,17 +69,20 @@ When a batch of work is ready to go live, open a pull request from `dev`
 into `main`:
 
 ```bash
-gh pr create --base main --head dev --title "Describe the release"
+npm run release   # opens the PR (uses commit messages for title/body)
 ```
 
 CI (`.github/workflows/ci.yml`) validates the HTML and checks internal
-links on every PR. Merge the PR on GitHub and the site deploys
-automatically. After merging, sync your local branches:
+links on every PR. Merge the PR on GitHub (use "Create a merge commit",
+and don't delete the dev branch) and the site deploys automatically.
+After merging, sync your local branches:
 
 ```bash
-git checkout main && git pull
-git checkout dev && git merge main
+npm run sync      # main: pull the merge; dev: catch up to main; push
 ```
+
+Both are also VS Code tasks: **Terminal → Run Task → "Release: open PR"**
+or **"Sync branches (after PR merge)"**.
 
 ## Local preview (live reload)
 

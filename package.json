@@ -8,7 +8,9 @@
     "dev:quiet": "live-server --port=5500 --no-browser",
     "lint": "html-validate *.html",
     "links": "linkinator . --recurse --skip \"^https?://(?!localhost)\"",
-    "check": "npm run lint && npm run links"
+    "check": "npm run lint && npm run links",
+    "sync": "git checkout main && git pull && git checkout dev && git merge main && git push",
+    "release": "gh pr create --base main --head dev --fill"
   },
   "devDependencies": {
     "html-validate": "^11.5.5",
