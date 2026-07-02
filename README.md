@@ -84,6 +84,18 @@ npm run sync      # main: pull the merge; dev: catch up to main; push
 Both are also VS Code tasks: **Terminal → Run Task → "Release: open PR"**
 or **"Sync branches (after PR merge)"**.
 
+### Claude Code slash commands
+
+Project commands in `.claude/commands/` (type them in any Claude Code
+session opened in this folder):
+
+| Command | Does |
+|---|---|
+| `/ship [title] [auto]` | The whole release: check → commit → PR → CI → merge (asks first unless `auto`) → sync → verify live |
+| `/wip [message]` | Commit + push a checkpoint to dev — no PR, no deploy |
+| `/sitrep` | Status report: branches, unshipped work, PRs, CI, latest deploy, site up? |
+| `/add-app <name> <url>` | Scaffold a new app tile in `#apps`, matching the existing markup and voice |
+
 ## Local preview (live reload)
 
 One-time setup: `npm install`. Then:
