@@ -185,12 +185,24 @@
   .toolbar .btn.go{flex:1;min-width:0;max-width:340px;height:40px;padding:0 10px;}
   .iconbtn{flex:0 0 auto;width:40px;height:40px;border-radius:11px;border:1.5px solid var(--line);
     background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;
-    padding:0;box-shadow:0 2px 4px var(--shadow);}
+    padding:0;box-shadow:0 2px 4px var(--shadow);position:relative;}
   .iconbtn svg{width:19px;height:19px;}
   .iconbtn:active{transform:translateY(1px);}
   .iconbtn:disabled{opacity:.4;box-shadow:none;}
   .iconbtn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
   .iconbtn.danger{color:var(--dot);}
+  /* copy-button feedback: the button itself flips to a green check and grows a
+     little bubble, since the header status pill is easy to miss */
+  #copyBtn .ic-check{display:none;}
+  #copyBtn.ok{background:#d6ecd9;border-color:var(--good);color:var(--good);}
+  #copyBtn.ok .ic-copy{display:none;}
+  #copyBtn.ok .ic-check{display:block;}
+  .copied-tip{position:absolute;bottom:calc(100% + 8px);left:50%;z-index:60;
+    transform:translateX(-50%) translateY(3px);background:var(--ink);color:#fff;
+    font-size:11px;font-weight:700;padding:4px 9px;border-radius:7px;white-space:nowrap;
+    pointer-events:none;opacity:0;transition:opacity .15s,transform .15s;}
+  #copyBtn.ok .copied-tip{background:var(--good);}
+  #copyBtn.ok .copied-tip,#copyBtn.note .copied-tip{opacity:1;transform:translateX(-50%) translateY(0);}
   .btn{
     flex:1;padding:11px;border-radius:11px;border:1.5px solid var(--line);
     background:#fff;font-weight:700;font-size:13px;color:var(--ink);
@@ -372,7 +384,7 @@
     <button type="button" class="iconbtn danger" id="clearBtn" aria-label="Clear the canvas" title="Clear the canvas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
     <button type="button" class="iconbtn" id="chargeBtn" aria-label="Show formal charges" title="Formal charges"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="5.2"/><path d="M8 5.6v4.8M5.6 8h4.8"/><circle cx="16.5" cy="16.5" r="5.2"/><path d="M14.1 16.5h4.8"/></svg></button>
     <button type="button" class="iconbtn" id="styleBtn" aria-label="Hide circles" title="Hide circles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke-dasharray="3.6 3.6"/></svg></button>
-    <button type="button" class="iconbtn" id="copyBtn" aria-label="Copy as image" title="Copy as image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></button>
+    <button type="button" class="iconbtn" id="copyBtn" aria-label="Copy as image" title="Copy as image"><svg class="ic-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg><svg class="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></button>
     <button type="button" class="iconbtn" id="saveBtn" aria-label="Save or load structures" title="Save / Load"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button>
     <button type="button" class="btn go" id="checkBtn">✓ Check</button>
   </div>
@@ -1680,13 +1692,29 @@ function renderToCanvas(){
   return cv;
 }
 
-document.getElementById("copyBtn").onclick=async()=>{
+/* feedback shown on the copy button itself (the header status is easy to miss) */
+const copyBtn=document.getElementById("copyBtn");
+const copyTip=document.createElement("span");
+copyTip.className="copied-tip";
+copyTip.setAttribute("aria-hidden","true");
+copyBtn.appendChild(copyTip);
+let copyTipTimer=null;
+function copyFeedback(kind,msg){ // "ok" = green check + bubble, "note" = neutral bubble
+  copyBtn.classList.remove("ok","note");
+  void copyBtn.offsetWidth; // restart the transition if the bubble is already up
+  copyTip.textContent=msg;
+  copyBtn.classList.add(kind);
+  clearTimeout(copyTipTimer);
+  copyTipTimer=setTimeout(()=>copyBtn.classList.remove("ok","note"),1600);
+}
+copyBtn.onclick=async()=>{
   const cv=renderToCanvas();
-  if(!cv){setStatus("Nothing to copy",null);return;}
+  if(!cv){copyFeedback("note","Nothing to copy");setStatus("Nothing to copy",null);return;}
   cv.toBlob(async blob=>{
-    if(!blob){setStatus("Copy failed",null);return;}
+    if(!blob){copyFeedback("note","Copy failed");setStatus("Copy failed",null);return;}
     try{
       await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
+      copyFeedback("ok","Copied!");
       setStatus("✓ Copied image to clipboard","good");
     }catch(err){
       // fallback: download the PNG
@@ -1695,6 +1723,7 @@ document.getElementById("copyBtn").onclick=async()=>{
       a.href=url; a.download="lewis-structure.png";
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
+      copyFeedback("note","Saved as PNG");
       setStatus("Clipboard blocked — saved as PNG",null);
     }
   },"image/png");
