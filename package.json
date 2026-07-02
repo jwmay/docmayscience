@@ -4,8 +4,8 @@
   "private": true,
   "description": "Personal site for Dr. Joseph May (@docmayscience) — docmayscience.com",
   "scripts": {
-    "dev": "live-server --port=5500",
-    "dev:quiet": "live-server --port=5500 --no-browser",
+    "dev": "live-server --host=localhost --port=5500",
+    "dev:quiet": "live-server --host=localhost --port=5500 --no-browser",
     "lint": "html-validate *.html",
     "links": "linkinator . --recurse --skip \"^https?://(?!localhost)\"",
     "check": "npm run lint && npm run links",

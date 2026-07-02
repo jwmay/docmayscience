@@ -70,6 +70,11 @@ preview with `npm run dev` to check. Authorized domains are `localhost:5500`
 (dev) and `docmayscience.com` (prod); add `www.docmayscience.com` in the kit
 settings if the `www` host ever serves pages directly.
 
+> **Preview on `localhost`, not `127.0.0.1`.** The kit treats them as different
+> origins and only `localhost` is authorized — on `http://127.0.0.1:5500/` the
+> kit is blocked and every icon silently disappears. `npm run dev` is pinned to
+> `--host=localhost` so it opens the right origin automatically.
+
 ## Growing the site
 
 As the portfolio expands, suggested conventions:

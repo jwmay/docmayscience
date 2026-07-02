@@ -58,3 +58,9 @@ The kit renders client-side, so `html-validate` can't confirm an icon shows.
 To actually see it: `npm run dev:quiet`, then load `http://localhost:5500/`
 (that origin is kit-authorized). A headless screenshot works too — render
 against `localhost:5500`, not a `file://` path, or the kit's origin check fails.
+
+**Use `localhost`, not `127.0.0.1`.** They are different origins to the kit, and
+only `localhost:5500` is on the allowlist — loading `http://127.0.0.1:5500/`
+returns 403 for the kit and **all icons silently vanish** (no box, nothing).
+The `dev`/`dev:quiet` scripts are pinned to `--host=localhost` for this reason;
+if you reach the site via `127.0.0.1`, add it to the kit's authorized domains.
