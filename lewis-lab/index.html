@@ -203,6 +203,19 @@
     pointer-events:none;opacity:0;transition:opacity .15s,transform .15s;}
   #copyBtn.ok .copied-tip{background:var(--good);}
   #copyBtn.ok .copied-tip,#copyBtn.note .copied-tip{opacity:1;transform:translateX(-50%) translateY(0);}
+  /* quick tool menu (press & hold empty canvas) */
+  #quickMenu{position:absolute;z-index:30;}
+  #quickMenu.hidden{display:none;}
+  #quickMenu .qm-dot{position:absolute;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#b3aa95;}
+  .qm-item{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:12px;
+    background:#fff;border:1.5px solid var(--line);box-shadow:0 4px 10px var(--shadow);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;
+    color:var(--ink);padding:0;font-family:inherit;animation:qmpop .14s ease;}
+  .qm-item svg{width:20px;height:20px;display:block;}
+  .qm-item .qm-lp{font-size:24px;line-height:.6;letter-spacing:2px;}
+  .qm-item.cur{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .qm-item.hov{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft),0 4px 10px var(--shadow);}
+  @keyframes qmpop{from{transform:scale(.6);opacity:0;}to{transform:none;opacity:1;}}
   .btn{
     flex:1;padding:11px;border-radius:11px;border:1.5px solid var(--line);
     background:#fff;font-weight:700;font-size:13px;color:var(--ink);
@@ -260,7 +273,7 @@
     .btn:hover{border-color:var(--accent);}
     .btn.go:hover{background:#24605c;}
     .btn.danger:hover{background:#fbeeea;}
-    .chip,.pt-cell,.helpbtn,.fitbtn,.sheet-x,.slot button,.chargectl button,.preset-btn,.iconbtn{cursor:pointer;}
+    .chip,.pt-cell,.helpbtn,.fitbtn,.sheet-x,.slot button,.chargectl button,.preset-btn,.iconbtn,.qm-item{cursor:pointer;}
     .iconbtn{transition:border-color .12s;}
     .iconbtn:hover{border-color:var(--accent);}
     .chip{transition:border-color .12s,box-shadow .12s;}
@@ -313,7 +326,7 @@
     <button type="button" id="chPlus" aria-label="increase charge">+</button>
   </div>
   <button type="button" id="fitBtn" class="fitbtn" aria-label="fit view">⤢ Fit</button>
-  <div class="hint" id="hint">Drag atoms up from the tray, or tap one then tap the canvas.<br>Tap <b>two atoms</b> to bond · tap a <b>bond</b> to change it.<br>Drag the <b>:</b> chip onto an atom for a lone pair · double-tap to clear them.<br><b>Long-press</b> an atom to delete it · drag empty space to pan, pinch to zoom.</div>
+  <div class="hint" id="hint">Drag atoms up from the tray, or tap one then tap the canvas.<br>Tap <b>two atoms</b> to bond · tap a <b>bond</b> to change it.<br>Drag the <b>:</b> chip onto an atom for a lone pair · double-tap to clear them.<br><b>Long-press</b> an atom to delete it · drag empty space to pan, pinch to zoom.<br><b>Press &amp; hold</b> empty space for quick tools.</div>
 </div>
 
 <div id="ptSheet" class="sheet hidden">
@@ -342,6 +355,7 @@
       <div class="help-row"><span class="help-k">Lone pair</span><span>Tap the <b>:</b> chip, then tap an atom (repeat to add more). Double-tap an atom to clear its lone pairs.</span></div>
       <div class="help-row"><span class="help-k">Move / Replace</span><span>Drag an atom to move it. Drop it on another atom — or place a new element on top — to replace.</span></div>
       <div class="help-row"><span class="help-k">Delete</span><span>Tap the <b>eraser</b> chip, then tap atoms or bonds — or long-press an atom to remove it and its bonds.</span></div>
+      <div class="help-row"><span class="help-k">Quick menu</span><span>Press and hold any empty spot on the canvas for a mini palette: your two most recent elements, lone pair, bond mode, and the eraser. Slide onto a tool and release, or tap it; tap anywhere else to dismiss.</span></div>
       <div class="help-row"><span class="help-k">Charge</span><span>Use − / + at the top right to set the ion's overall charge.</span></div>
       <div class="help-row"><span class="help-k">Navigate</span><span>Drag empty space to pan, pinch to zoom, double-tap to zoom in/out. <b>Fit</b> recenters everything.</span></div>
       <div class="help-row"><span class="help-k">Check</span><span>Verifies octets, electron count, and whether formal charges could be lowered.</span></div>
@@ -628,11 +642,13 @@ eraseChip.onclick=()=>{
 };
 trayrow.appendChild(eraseChip);
 
+const elementChips={}; // sym → tray chip, so quick-menu picks can highlight the tray
 ORDER.forEach(sym=>{
   const c=document.createElement("div");
   c.className="chip";
   c.innerHTML=`<div class="sym">${sym}</div><div class="val">${ELEMENTS[sym].ve}e⁻</div>`;
   c.addEventListener("pointerdown",e=>startTrayDrag(e,sym,c,"atom"));
+  elementChips[sym]=c;
   trayrow.appendChild(c);
 });
 
@@ -726,6 +742,7 @@ function startTrayDrag(e,sym,chip,kind){
           // create the real atom right away and drag it live, reusing the proven
           // continuous bump-to-bond path. Place it at the current pointer position.
           pushUndo(); placedUndo=true;
+          noteRecent(sym);
           const w=toWorld(ev.clientX,ev.clientY);
           liveAtom=addAtomRaw(sym, w.x, w.y, 0);
           liveAtom.node.classList.add("dragging");
@@ -1357,7 +1374,9 @@ document.getElementById("undoBtn").onclick=doUndo;
 const ptSheet=document.getElementById("ptSheet");
 const ptGrid=document.getElementById("ptGrid");
 let armedElement=null; // symbol selected (from table or tray), waiting for canvas tap
-let armedKind=null;    // "atom" | "lp"
+let armedKind=null;    // "atom" | "lp" | "erase"
+let recentEls=["O","H"]; // last two elements used — fills the quick menu
+function noteRecent(sym){ recentEls=[sym,...recentEls.filter(s=>s!==sym)].slice(0,2); }
 
 function disarm(){
   armedElement=null; armedKind=null;
@@ -1366,6 +1385,7 @@ function disarm(){
 }
 function armElement(sym,sourceChip){
   disarm();
+  noteRecent(sym);
   armedElement=sym; armedKind="atom";
   hint.style.display="none";
   if(sourceChip)sourceChip.classList.add("armed");
@@ -1482,7 +1502,7 @@ let lastBgTap=0;
 stage.addEventListener("pointerup",e=>{
   if(!isCanvasBackground(e.target))return;
   // ignore lifts that are part of (or just after) a pan/pinch, or while fingers remain
-  if(didPan || gestureActive || activePointers.size>0 || Date.now()<suppressTapUntil){ lastBgTap=0; return; }
+  if(didPan || gestureActive || qmOpen || activePointers.size>0 || Date.now()<suppressTapUntil){ lastBgTap=0; return; }
   const now=Date.now();
   if(now-lastBgTap<300){
     // zoom toward the tapped point
@@ -1521,8 +1541,8 @@ document.getElementById("fitBtn").onclick=fitView;
 stage.addEventListener("pointerup",e=>{
   if(!armedKind)return;
   // ignore if this was part of a pan/pinch or a drag, if other fingers are still
-  // down, or if we're in the brief window right after a gesture ended
-  if(didPan || gestureActive || trayDragging || activePointers.size>0 || Date.now()<suppressTapUntil) return;
+  // down, if the quick menu is up, or just after a gesture ended
+  if(didPan || gestureActive || trayDragging || qmOpen || activePointers.size>0 || Date.now()<suppressTapUntil) return;
   const onAtom=e.target.closest(".atom");
   if(armedKind==="erase"){
     if(onAtom){
@@ -1549,6 +1569,104 @@ stage.addEventListener("pointerup",e=>{
     placeOrReplace(armedElement,e.clientX,e.clientY);
     setStatus(`${armedElement} placed — tap to add another`,null); // stay armed for repeats
   }
+});
+
+/* ---------- quick tool menu (press & hold empty canvas) ---------- */
+const qm=document.createElement("div");
+qm.id="quickMenu"; qm.className="hidden";
+qm.setAttribute("aria-label","Quick tools");
+stage.appendChild(qm);
+let qmOpen=false, qmTimer=null, qmPointer=null;
+const QM_R=64; // ring radius
+const QM_BOND_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+const QM_ERASE_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>';
+function buildQuickMenu(){
+  const items=[
+    {act:"lp",   ang:-90, label:"Lone pair", html:'<span class="qm-lp">:</span>'},
+    {act:"bond", ang:-18, label:"Bond mode", html:QM_BOND_SVG},
+    {act:"erase",ang:54,  label:"Eraser",    html:QM_ERASE_SVG},
+    {act:"el",   ang:126, sym:recentEls[1]||"C"},
+    {act:"el",   ang:198, sym:recentEls[0]||"O"},
+  ];
+  qm.innerHTML='<div class="qm-dot"></div>';
+  items.forEach(it=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="qm-item";
+    b.dataset.act=it.act;
+    if(it.sym){ b.dataset.sym=it.sym; b.textContent=it.sym; }
+    else { b.innerHTML=it.html; b.setAttribute("aria-label",it.label); }
+    const cur=(it.act==="el"&&armedKind==="atom"&&armedElement===it.sym)
+      ||(it.act==="lp"&&armedKind==="lp")
+      ||(it.act==="erase"&&armedKind==="erase")
+      ||(it.act==="bond"&&!armedKind); // nothing armed = default tap-to-bond mode
+    if(cur)b.classList.add("cur");
+    const a=it.ang*Math.PI/180;
+    b.style.left=Math.cos(a)*QM_R+"px";
+    b.style.top=Math.sin(a)*QM_R+"px";
+    qm.appendChild(b);
+  });
+}
+function openQuickMenu(clientX,clientY,pid){
+  buildQuickMenu();
+  const r=stage.getBoundingClientRect();
+  const M=QM_R+30; // keep the whole ring on screen
+  qm.style.left=Math.max(M,Math.min(r.width-M,clientX-r.left))+"px";
+  qm.style.top=Math.max(M,Math.min(r.height-M,clientY-r.top))+"px";
+  qm.classList.remove("hidden");
+  qmOpen=true; qmPointer=pid;
+  panning=false; didPan=false; // the held pointer must not pan the canvas now
+  suppressTapUntil=Date.now()+300;
+  if(navigator.vibrate)try{navigator.vibrate(10);}catch(_){}
+}
+function closeQuickMenu(){
+  qm.classList.add("hidden");
+  qmOpen=false; qmPointer=null;
+  suppressTapUntil=Date.now()+250; // the dismissing tap must not place/erase anything
+}
+function qmActivate(btn){
+  const act=btn.dataset.act;
+  if(act==="el")armElement(btn.dataset.sym,elementChips[btn.dataset.sym]);
+  else if(act==="lp")armLonePair(lpChip);
+  else if(act==="erase")armEraser(eraseChip);
+  else{ disarm(); setStatus("Tap two atoms to bond",null); }
+  closeQuickMenu();
+}
+// long-press detection on empty canvas (atoms have their own long-press = delete)
+stage.addEventListener("pointerdown",e=>{
+  if(qmOpen)return; // dismissal is handled by the window listener below
+  if(activePointers.size!==1){ if(qmTimer){clearTimeout(qmTimer);qmTimer=null;} return; }
+  if(!isCanvasBackground(e.target))return;
+  const sx=e.clientX, sy=e.clientY, pid=e.pointerId;
+  const cancel=()=>{
+    if(qmTimer){clearTimeout(qmTimer);qmTimer=null;}
+    window.removeEventListener("pointermove",mv);
+    window.removeEventListener("pointerup",up);
+    window.removeEventListener("pointercancel",up);
+  };
+  const mv=ev=>{ if(ev.pointerId===pid && Math.hypot(ev.clientX-sx,ev.clientY-sy)>8)cancel(); };
+  const up=ev=>{ if(ev.pointerId===pid)cancel(); };
+  qmTimer=setTimeout(()=>{ qmTimer=null; openQuickMenu(sx,sy,pid); },550);
+  window.addEventListener("pointermove",mv);
+  window.addEventListener("pointerup",up);
+  window.addEventListener("pointercancel",up);
+});
+// slide onto a tool and release (marking-menu style), or tap it once open
+window.addEventListener("pointermove",e=>{
+  if(!qmOpen)return;
+  const el=document.elementFromPoint(e.clientX,e.clientY);
+  const it=el&&el.closest(".qm-item");
+  qm.querySelectorAll(".qm-item").forEach(n=>n.classList.toggle("hov",n===it));
+});
+window.addEventListener("pointerup",e=>{
+  if(!qmOpen)return;
+  const el=document.elementFromPoint(e.clientX,e.clientY);
+  const it=el&&el.closest(".qm-item");
+  if(it)qmActivate(it);
+  else qm.querySelectorAll(".qm-item").forEach(n=>n.classList.remove("hov"));
+});
+// pressing anywhere outside the menu dismisses it
+window.addEventListener("pointerdown",e=>{
+  if(qmOpen && !e.target.closest("#quickMenu"))closeQuickMenu();
 });
 
 /* ---------- style toggle (circles vs bare) ---------- */
