@@ -433,19 +433,6 @@
     align-items:center;
     gap:20px;
   }
-  footer .handle{
-    display:inline-block;
-    margin-top:14px;
-    font-family:'IBM Plex Mono', monospace;
-    font-weight:600;
-    font-size:.85rem;
-    color:var(--ink);
-    background:var(--gold);
-    border:2.5px solid var(--paper);
-    border-radius:999px;
-    padding:.4em 1em;
-    box-shadow:0 4px 0 var(--grape);
-  }
 
   /* ============ RESPONSIVE ============ */
   @media (max-width:860px){
