@@ -66,7 +66,7 @@
   #status.good{background:#d6ecd9;color:var(--good);}
 
   /* canvas */
-  #stage{position:relative;flex:1;overflow:hidden;touch-action:none;background:#ffffff;}
+  #stage{position:relative;flex:1;overflow:hidden;touch-action:none;background:#fbf8f0;}
   #world{position:absolute;left:0;top:0;width:2400px;height:2400px;transform-origin:0 0;
     will-change:transform;}
   #grid{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;}
@@ -75,7 +75,7 @@
     background:rgba(255,255,255,.92);border-radius:999px;padding:5px 11px;font-size:12px;
     font-weight:700;color:#6a6450;box-shadow:0 1px 3px var(--shadow);}
   .fitbtn:active{background:#f0ebe0;}
-  .ecount{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:4;
+  .ecount{position:absolute;bottom:10px;left:10px;z-index:4;
     background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;
     padding:4px 12px;font-size:12px;font-weight:700;color:#6a6450;pointer-events:none;
     box-shadow:0 1px 3px var(--shadow);}
@@ -137,7 +137,7 @@
   .atom.target{box-shadow:0 0 0 5px #ffe3a3,0 3px 8px var(--shadow);border-color:var(--warn);}
   /* bare (textbook) mode: hide circles, keep letters/bonds/dots */
   body.bare .atom{background:transparent;border-color:transparent;box-shadow:none;font-size:30px;}
-  body.bare .atom .lab{background:#fff;border-radius:50%;padding:3px 7px;}
+  body.bare .atom .lab{background:#fbf8f0;border-radius:50%;padding:3px 7px;}
   body.bare .atom.sel{box-shadow:0 0 0 3px var(--accent-soft);}
   body.bare .atom.bad .lab{color:var(--dot);}
   body.bare .atom.target{box-shadow:0 0 0 4px #ffe3a3;}
@@ -172,9 +172,21 @@
   }
   .chip .sym{font-weight:800;font-size:19px;}
   .chip .val{font-size:9px;color:#9a917c;margin-top:1px;}
-  .chip.armed{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 2px var(--accent-soft),0 2px 4px var(--shadow);}
-  .toolbar{display:flex;gap:8px;padding:8px 8px 4px;}
-  .toolbar2{padding-top:0;padding-bottom:6px;}
+  .chip svg{width:20px;height:20px;display:block;}
+  button.chip{font-family:inherit;padding:0;}
+  .chip.armed{border-color:var(--accent);background:var(--accent);box-shadow:0 2px 4px var(--shadow);}
+  .chip.armed .sym{color:#fff;}
+  .chip.armed .val{color:rgba(255,255,255,.75);}
+  .toolbar{display:flex;gap:6px;padding:6px 8px 2px;align-items:stretch;}
+  .toolbar .btn.go{flex:1;min-width:0;height:40px;padding:0 10px;}
+  .iconbtn{flex:0 0 auto;width:40px;height:40px;border-radius:11px;border:1.5px solid var(--line);
+    background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;
+    padding:0;box-shadow:0 2px 4px var(--shadow);}
+  .iconbtn svg{width:19px;height:19px;}
+  .iconbtn:active{transform:translateY(1px);}
+  .iconbtn:disabled{opacity:.4;box-shadow:none;}
+  .iconbtn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+  .iconbtn.danger{color:var(--dot);}
   .btn{
     flex:1;padding:11px;border-radius:11px;border:1.5px solid var(--line);
     background:#fff;font-weight:700;font-size:13px;color:var(--ink);
@@ -232,7 +244,9 @@
     .btn:hover{border-color:var(--accent);}
     .btn.go:hover{background:#24605c;}
     .btn.danger:hover{background:#fbeeea;}
-    .chip,.pt-cell,.helpbtn,.fitbtn,.sheet-x,.slot button,.chargectl button,.preset-btn{cursor:pointer;}
+    .chip,.pt-cell,.helpbtn,.fitbtn,.sheet-x,.slot button,.chargectl button,.preset-btn,.iconbtn{cursor:pointer;}
+    .iconbtn{transition:border-color .12s;}
+    .iconbtn:hover{border-color:var(--accent);}
     .chip{transition:border-color .12s,box-shadow .12s;}
     .chip:hover{border-color:var(--accent);}
     .pt-cell{cursor:pointer;transition:filter .1s;}
@@ -243,7 +257,10 @@
   }
   /* On wider screens keep the control bars in a centered column so they don't stretch */
   @media (min-width:820px){
-    .toolbar,.toolbar2,.trayrow{max-width:760px;margin-left:auto;margin-right:auto;}
+    .toolbar,.trayrow{max-width:760px;margin-left:auto;margin-right:auto;}
+    .toolbar{gap:8px;}
+    .iconbtn{width:44px;height:44px;}
+    .toolbar .btn.go{height:44px;}
     .btn{font-size:14px;padding:12px;}
     .btn.small{font-size:13px;padding:11px;}
     .chip{width:58px;height:62px;}
@@ -256,7 +273,7 @@
     .sheet{align-items:center;} /* center dialogs on desktop instead of bottom-sheet */
   }
   @media (min-width:1200px){
-    .toolbar,.toolbar2,.trayrow{max-width:900px;}
+    .toolbar,.trayrow{max-width:900px;}
   }
 </style>
 </head>
@@ -308,11 +325,11 @@
       <div class="help-row"><span class="help-k">Bond</span><span>Tap one atom, then another. Tap the bond to cycle single → double → triple → none.</span></div>
       <div class="help-row"><span class="help-k">Lone pair</span><span>Tap the <b>:</b> chip, then tap an atom (repeat to add more). Double-tap an atom to clear its lone pairs.</span></div>
       <div class="help-row"><span class="help-k">Move / Replace</span><span>Drag an atom to move it. Drop it on another atom — or place a new element on top — to replace.</span></div>
-      <div class="help-row"><span class="help-k">Delete</span><span>Long-press an atom to remove it and its bonds.</span></div>
+      <div class="help-row"><span class="help-k">Delete</span><span>Tap the <b>eraser</b> chip, then tap atoms or bonds — or long-press an atom to remove it and its bonds.</span></div>
       <div class="help-row"><span class="help-k">Charge</span><span>Use − / + at the top right to set the ion's overall charge.</span></div>
       <div class="help-row"><span class="help-k">Navigate</span><span>Drag empty space to pan, pinch to zoom, double-tap to zoom in/out. <b>Fit</b> recenters everything.</span></div>
       <div class="help-row"><span class="help-k">Check</span><span>Verifies octets, electron count, and whether formal charges could be lowered.</span></div>
-      <div class="help-row"><span class="help-k">More</span><span>Charges shows formal charges · Hide circles for a textbook look · Copy saves a PNG · Save / Load keeps structures or shares a code.</span></div>
+      <div class="help-row"><span class="help-k">Icon bar</span><span>Undo · clear the canvas (trash) · show formal charges (±) · hide circles for a textbook look (dashed circle) · copy a PNG (clipboard) · save structures or share a code (disk).</span></div>
     </div>
   </div>
 </div>
@@ -345,19 +362,16 @@
 </div>
 
 <div id="tray">
-  <div class="toolbar">
-    <button type="button" class="btn" id="ptBtn">Periodic table</button>
-    <button type="button" class="btn" id="undoBtn" disabled>Undo</button>
-    <button type="button" class="btn go" id="checkBtn">Check</button>
-  </div>
-  <div class="toolbar toolbar2">
-    <button type="button" class="btn small" id="styleBtn">Hide circles</button>
-    <button type="button" class="btn small" id="chargeBtn">Charges</button>
-    <button type="button" class="btn small" id="saveBtn">Save / Load</button>
-    <button type="button" class="btn small" id="copyBtn">Copy</button>
-    <button type="button" class="btn small danger" id="clearBtn">Clear</button>
-  </div>
   <div class="trayrow" id="trayrow"></div>
+  <div class="toolbar">
+    <button type="button" class="iconbtn" id="undoBtn" disabled aria-label="Undo" title="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>
+    <button type="button" class="iconbtn danger" id="clearBtn" aria-label="Clear the canvas" title="Clear the canvas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+    <button type="button" class="iconbtn" id="chargeBtn" aria-label="Show formal charges" title="Formal charges"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="5.2"/><path d="M8 5.6v4.8M5.6 8h4.8"/><circle cx="16.5" cy="16.5" r="5.2"/><path d="M14.1 16.5h4.8"/></svg></button>
+    <button type="button" class="iconbtn" id="styleBtn" aria-label="Hide circles" title="Hide circles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke-dasharray="3.6 3.6"/></svg></button>
+    <button type="button" class="iconbtn" id="copyBtn" aria-label="Copy as image" title="Copy as image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></button>
+    <button type="button" class="iconbtn" id="saveBtn" aria-label="Save or load structures" title="Save / Load"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button>
+    <button type="button" class="btn go" id="checkBtn">✓ Check</button>
+  </div>
 </div>
 
 <script>
@@ -586,6 +600,18 @@ lpChip.innerHTML=`<div class="sym">:</div><div class="val">lone pair</div>`;
 lpChip.addEventListener("pointerdown",e=>startTrayDrag(e,"LP",lpChip,"lp"));
 trayrow.appendChild(lpChip);
 
+// eraser chip — arm it, then tap atoms or bonds to delete them
+const eraseChip=document.createElement("button");
+eraseChip.type="button";
+eraseChip.className="chip";
+eraseChip.setAttribute("aria-label","Eraser");
+eraseChip.innerHTML=`<div class="sym"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg></div><div class="val">eraser</div>`;
+eraseChip.onclick=()=>{
+  if(eraseChip.classList.contains("armed")){disarm();setStatus("Deselected",null);}
+  else armEraser(eraseChip);
+};
+trayrow.appendChild(eraseChip);
+
 ORDER.forEach(sym=>{
   const c=document.createElement("div");
   c.className="chip";
@@ -593,6 +619,15 @@ ORDER.forEach(sym=>{
   c.addEventListener("pointerdown",e=>startTrayDrag(e,sym,c,"atom"));
   trayrow.appendChild(c);
 });
+
+// periodic table opener lives at the end of the tray
+const ptChip=document.createElement("button");
+ptChip.type="button";
+ptChip.id="ptBtn";
+ptChip.className="chip";
+ptChip.setAttribute("aria-label","Periodic table");
+ptChip.innerHTML=`<div class="sym"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div><div class="val">table</div>`;
+trayrow.appendChild(ptChip);
 
 /* ---------- tray drag to create ---------- */
 function atomAt(clientX,clientY){
@@ -796,12 +831,12 @@ function drawGrid(){
   for(let x=GRID;x<W;x+=GRID){
     const l=document.createElementNS(NS,"line");
     l.setAttribute("x1",x);l.setAttribute("y1",0);l.setAttribute("x2",x);l.setAttribute("y2",H);
-    l.setAttribute("stroke","#e8eaed");l.setAttribute("stroke-width","1");grid.appendChild(l);
+    l.setAttribute("stroke","#eae0cb");l.setAttribute("stroke-width","1");grid.appendChild(l);
   }
   for(let y=GRID;y<H;y+=GRID){
     const l=document.createElementNS(NS,"line");
     l.setAttribute("x1",0);l.setAttribute("y1",y);l.setAttribute("x2",W);l.setAttribute("y2",y);
-    l.setAttribute("stroke","#e8eaed");l.setAttribute("stroke-width","1");grid.appendChild(l);
+    l.setAttribute("stroke","#eae0cb");l.setAttribute("stroke-width","1");grid.appendChild(l);
   }
 }
 window.addEventListener("resize",()=>{}); // grid is fixed-size now
@@ -936,7 +971,11 @@ function makeBond(a,b){
   const bd={a,b,order:1,group:g};
   bonds.push(bd);
   g.style.cursor="pointer";
-  g.addEventListener("pointerdown",e=>{e.stopPropagation();cycleBond(bd);});
+  g.addEventListener("pointerdown",e=>{
+    e.stopPropagation();
+    if(armedKind==="erase"){pushUndo();removeBond(bd);render();setStatus("Bond erased",null);return;}
+    cycleBond(bd);
+  });
   drawBond(bd);
   return bd;
 }
@@ -1319,6 +1358,13 @@ function armLonePair(sourceChip){
   if(sourceChip)sourceChip.classList.add("armed");
   setStatus("Lone pair — tap an atom",null);
 }
+function armEraser(sourceChip){
+  disarm();
+  armedKind="erase";
+  hint.style.display="none";
+  if(sourceChip)sourceChip.classList.add("armed");
+  setStatus("Eraser — tap an atom or bond",null);
+}
 
 PT.forEach(([sym,z,name,group,period,cat])=>{
   const cell=document.createElement("div");
@@ -1458,6 +1504,14 @@ stage.addEventListener("pointerup",e=>{
   // or if we're in the brief window right after a gesture ended
   if(didPan || gestureActive || activePointers.size>0 || Date.now()<suppressTapUntil) return;
   const onAtom=e.target.closest(".atom");
+  if(armedKind==="erase"){
+    if(onAtom){
+      const target=atomAt(e.clientX,e.clientY);
+      if(target){pushUndo();removeAtom(target);render();setStatus(`Deleted ${target.el}`,null);}
+    }
+    // stay armed so several things can be erased in a row
+    return;
+  }
   if(armedKind==="lp"){
     if(onAtom){
       const target=atomAt(e.clientX,e.clientY);
@@ -1479,10 +1533,13 @@ stage.addEventListener("pointerup",e=>{
 
 /* ---------- style toggle (circles vs bare) ---------- */
 let bareMode=false;
-document.getElementById("styleBtn").onclick=()=>{
+const styleBtn=document.getElementById("styleBtn");
+styleBtn.onclick=()=>{
   bareMode=!bareMode;
   document.body.classList.toggle("bare",bareMode);
-  document.getElementById("styleBtn").textContent=bareMode?"Show circles":"Hide circles";
+  styleBtn.classList.toggle("on",bareMode);
+  styleBtn.title=bareMode?"Show circles":"Hide circles";
+  styleBtn.setAttribute("aria-label",styleBtn.title);
   bonds.forEach(drawBond); // re-trim bond lengths for the new mode
   positionLonePairs();
 };
