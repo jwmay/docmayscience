@@ -37,12 +37,16 @@ docmayscience/
 - **Colors**: every brand color is a CSS variable in `:root` at the top of
   `css/styles.css`. Change once, applies everywhere.
 - **Apps & games**: each project is an `<article class="tile">` in the
-  `#apps` section of `index.html`. Copy a tile to add a new one; point the
-  Launch button `href` at the live URL. If that URL is off-domain (not
-  docmayscience.com), add `target="_blank" rel="noopener noreferrer"` so it
-  opens in a new tab.
-- **Teaching resources**: each `res-card` in `#resources` has an
-  "Open in Drive" button — set its `href` to a shared Google Drive link.
+  `#apps` section of `index.html`. Copy a tile to add a new one. Apps with a
+  live URL get a Launch button (`<a class="btn btn--sm">`); if that URL is
+  off-domain (not docmayscience.com), add `target="_blank"
+  rel="noopener noreferrer"` so it opens in a new tab. Unreleased apps use a
+  `<span class="soon">` badge instead — swap it for a Launch button when the
+  app goes live.
+- **Teaching resources**: each `res-card` in `#resources` shows a
+  `<span class="soon">` badge until its Drive folder is shared — swap the
+  badge for an "Open in Drive" button (`<a class="btn btn--sm"
+  target="_blank" rel="noopener">`) pointing at the shared Google Drive link.
 - **Contact**: swap the placeholder in the footer `mailto:` link.
 - **Icons**: use Font Awesome — see [Icons](#icons) below.
 

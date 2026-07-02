@@ -659,6 +659,20 @@
     padding:.25em .6em;
     background:var(--paper);
   }
+  /* placeholder for unreleased apps — same footprint as .btn--sm so tiles align */
+  .soon{
+    display:inline-flex;
+    align-items:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:.82rem;
+    letter-spacing:.04em;
+    color:var(--grape);
+    background:var(--paper);
+    border:3px dashed var(--grape);
+    border-radius:11px;
+    padding:.6em 1.1em;
+  }
 
   /* ============ RESOURCES ============ */
   .resources-band{
