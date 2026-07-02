@@ -39,6 +39,36 @@ docmayscience/
 - **Teaching resources**: each `res-card` in `#resources` has an
   "Open in Drive" button — set its `href` to a shared Google Drive link.
 - **Contact**: swap the placeholder in the footer `mailto:` link.
+- **Icons**: use Font Awesome — see [Icons](#icons) below.
+
+## Icons
+
+Icons come from a Font Awesome **Kit**, loaded once in the `<head>` of each page:
+
+```html
+<script src="https://kit.fontawesome.com/2128c059e7.js" crossorigin="anonymous"></script>
+```
+
+The kit serves a single family — **Slab Duo** — so every icon uses the
+`fa-slab-duo` prefix and nothing else:
+
+```html
+<i class="fa-slab-duo fa-envelope" aria-hidden="true"></i>
+```
+
+- Use `fa-slab-duo` on its own; a weight class (`fa-solid`, `fa-regular`) is
+  redundant here.
+- Any other prefix renders as an **empty square** — Font Awesome's placeholder
+  for an icon that isn't in the kit. A box where an icon should be means the
+  prefix is wrong, not that the kit failed to load.
+- Mark decorative icons `aria-hidden="true"`; give meaningful ones a text label.
+- Browse names at [fontawesome.com/icons](https://fontawesome.com/icons) with the
+  style filtered to **Slab Duo**.
+
+The kit renders client-side, so `npm run lint` can't confirm an icon displays —
+preview with `npm run dev` to check. Authorized domains are `localhost:5500`
+(dev) and `docmayscience.com` (prod); add `www.docmayscience.com` in the kit
+settings if the `www` host ever serves pages directly.
 
 ## Growing the site
 
