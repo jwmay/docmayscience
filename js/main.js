@@ -11,6 +11,7 @@
 
   function update(){
     var vh = window.innerHeight;
+    var sy = window.scrollY;
     els.forEach(function(el){
       var r = el.getBoundingClientRect();
       // Untransformed center = measured center minus what we already applied
@@ -18,7 +19,13 @@
       var offset = center - vh / 2;
       // Only bother while the element is anywhere near the viewport
       if (offset > vh * 1.5 || offset < -vh * 1.5) return;
-      var ty = -offset * parseFloat(el.dataset.parallax);
+      // Above-the-fold layers (the hero's sunburst + atom) anchor to their
+      // load position — zero shift at the top of the page, so stacked art
+      // stays concentric at any window size. Deeper elements anchor to the
+      // viewport center, aligning as you scroll them into view. Same drift
+      // speed either way; only the resting point differs.
+      var docTop = center - r.height / 2 + sy;
+      var ty = (docTop < vh ? sy : -offset) * parseFloat(el.dataset.parallax);
       el._ty = ty;
       el.style.transform = 'translate3d(0,' + ty.toFixed(1) + 'px,0)';
     });

@@ -434,23 +434,6 @@
   }
   .hero-ctas{ display:flex; flex-wrap:wrap; gap:16px; }
 
-  /* credential chips */
-  .creds{
-    display:flex; flex-wrap:wrap; gap:10px;
-    margin-top:2.2em;
-  }
-  .cred{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:.76rem; font-weight:600;
-    letter-spacing:.04em;
-    background:var(--card);
-    border:2.5px solid var(--ink);
-    border-radius:999px;
-    padding:.5em 1em;
-    box-shadow:0 3px 0 var(--shadow);
-  }
-  .cred b{ color:var(--orange); }
-
   /* --- the atom — Bohr model of a random element, drawn by js/main.js --- */
   .atom-stage{
     position:relative;
