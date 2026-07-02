@@ -326,7 +326,7 @@
     <button type="button" id="chPlus" aria-label="increase charge">+</button>
   </div>
   <button type="button" id="fitBtn" class="fitbtn" aria-label="fit view">⤢ Fit</button>
-  <div class="hint" id="hint">Drag atoms up from the tray, or tap one then tap the canvas.<br>Tap <b>two atoms</b> to bond · tap a <b>bond</b> to change it.<br>Drag the <b>:</b> chip onto an atom for a lone pair · double-tap to clear them.<br><b>Long-press</b> an atom to delete it · drag empty space to pan, pinch to zoom.<br><b>Press &amp; hold</b> empty space for quick tools.</div>
+  <div class="hint" id="hint">Drag atoms up from the tray, or tap one then tap the canvas.<br>Tap <b>two atoms</b> to bond · tap a <b>bond</b> to change it.<br>Drag the <b>:</b> chip onto an atom for a lone pair · repeat taps cycle to 4, then clear.<br><b>Long-press</b> an atom to delete it · drag empty space to pan, pinch to zoom.<br><b>Press &amp; hold</b> empty space for quick tools.</div>
 </div>
 
 <div id="ptSheet" class="sheet hidden">
@@ -351,8 +351,8 @@
     <div class="help-body">
       <div class="help-row"><span class="help-k">Add an atom</span><span>Tap an element in the bottom bar, then tap the canvas — or drag it up. It stays selected so you can place several.</span></div>
       <div class="help-row"><span class="help-k">Periodic table</span><span>Tap it for any element, then tap the canvas to place.</span></div>
-      <div class="help-row"><span class="help-k">Bond</span><span>Tap one atom, then another. Tap the bond to cycle single → double → triple → none.</span></div>
-      <div class="help-row"><span class="help-k">Lone pair</span><span>Tap the <b>:</b> chip, then tap an atom (repeat to add more). Double-tap an atom to clear its lone pairs.</span></div>
+      <div class="help-row"><span class="help-k">Bond</span><span>Tap one atom, then another. Tap the bond to cycle single → double → triple → none. The <b>link</b> chip returns to this default mode from any tool.</span></div>
+      <div class="help-row"><span class="help-k">Lone pair</span><span>Tap the <b>:</b> chip, then tap an atom — each tap cycles 1 → 2 → 3 → 4 → none, like tapping a bond. Double-tap an atom to clear them all at once.</span></div>
       <div class="help-row"><span class="help-k">Move / Replace</span><span>Drag an atom to move it. Drop it on another atom — or place a new element on top — to replace.</span></div>
       <div class="help-row"><span class="help-k">Delete</span><span>Tap the <b>eraser</b> chip, then tap atoms or bonds — or long-press an atom to remove it and its bonds.</span></div>
       <div class="help-row"><span class="help-k">Quick menu</span><span>Press and hold any empty spot on the canvas for a mini palette: your two most recent elements, lone pair, bond mode, and the eraser. Slide onto a tool and release, or tap it; tap anywhere else to dismiss.</span></div>
@@ -623,7 +623,16 @@ function doUndo(){
 /* ---------- tray ---------- */
 const trayrow=document.getElementById("trayrow");
 
-// lone-pair chip first
+// bond-mode chip first — the default "no tool" mode where tapping two atoms bonds them
+const bondChip=document.createElement("button");
+bondChip.type="button";
+bondChip.className="chip armed"; // nothing is armed on load, so bond mode starts current
+bondChip.setAttribute("aria-label","Bond mode");
+bondChip.innerHTML=`<div class="sym"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div><div class="val">bond</div>`;
+bondChip.onclick=()=>{ disarm(); setStatus("Tap two atoms to bond",null); };
+trayrow.appendChild(bondChip);
+
+// lone-pair chip
 const lpChip=document.createElement("div");
 lpChip.className="chip lpchip";
 lpChip.innerHTML=`<div class="sym">:</div><div class="val">lone pair</div>`;
@@ -791,7 +800,7 @@ function startTrayDrag(e,sym,chip,kind){
     if(armed){
       if(kind==="lp"){
         const t=atomAt(ev.clientX,ev.clientY);
-        if(t){pushUndo();t.lp=Math.min(4,(t.lp||0)+1);render();}
+        if(t)cycleLonePairs(t);
       }else if(liveAtom && atoms.includes(liveAtom)){
         liveAtom.node.classList.remove("dragging");
         // Use the live atom's OWN world position for all decisions (reliable across devices),
@@ -1078,6 +1087,12 @@ function bondAngles(a){
     if(other)angs.push(Math.atan2(other.y-a.y,other.x-a.x));
   });
   return angs;
+}
+function cycleLonePairs(t){
+  pushUndo();
+  t.lp=((t.lp||0)+1)%5; // 1 → 2 → 3 → 4 → none, like tapping a bond
+  render();
+  setStatus(t.lp===0?`Lone pairs cleared on ${t.el}`:`${t.lp} lone pair${t.lp>1?"s":""} on ${t.el}`,null);
 }
 function positionLonePairs(){
   atoms.forEach(a=>{
@@ -1382,9 +1397,11 @@ function disarm(){
   armedElement=null; armedKind=null;
   ptGrid.querySelectorAll(".pt-cell").forEach(c=>c.classList.remove("sel"));
   document.querySelectorAll(".chip.armed").forEach(c=>c.classList.remove("armed"));
+  bondChip.classList.add("armed"); // no tool armed = default bond mode
 }
 function armElement(sym,sourceChip){
   disarm();
+  bondChip.classList.remove("armed");
   noteRecent(sym);
   armedElement=sym; armedKind="atom";
   hint.style.display="none";
@@ -1393,6 +1410,7 @@ function armElement(sym,sourceChip){
 }
 function armLonePair(sourceChip){
   disarm();
+  bondChip.classList.remove("armed");
   armedKind="lp";
   hint.style.display="none";
   if(sourceChip)sourceChip.classList.add("armed");
@@ -1400,6 +1418,7 @@ function armLonePair(sourceChip){
 }
 function armEraser(sourceChip){
   disarm();
+  bondChip.classList.remove("armed");
   armedKind="erase";
   hint.style.display="none";
   if(sourceChip)sourceChip.classList.add("armed");
@@ -1555,7 +1574,7 @@ stage.addEventListener("pointerup",e=>{
   if(armedKind==="lp"){
     if(onAtom){
       const target=atomAt(e.clientX,e.clientY);
-      if(target){pushUndo();target.lp=Math.min(4,(target.lp||0)+1);render();}
+      if(target)cycleLonePairs(target);
     }
     // tapping empty space with LP armed does nothing; stay armed for another atom
     return;
