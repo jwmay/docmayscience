@@ -38,7 +38,9 @@ docmayscience/
   `css/styles.css`. Change once, applies everywhere.
 - **Apps & games**: each project is an `<article class="tile">` in the
   `#apps` section of `index.html`. Copy a tile to add a new one; point the
-  Launch button `href` at the live URL.
+  Launch button `href` at the live URL. If that URL is off-domain (not
+  docmayscience.com), add `target="_blank" rel="noopener noreferrer"` so it
+  opens in a new tab.
 - **Teaching resources**: each `res-card` in `#resources` has an
   "Open in Drive" button — set its `href` to a shared Google Drive link.
 - **Contact**: swap the placeholder in the footer `mailto:` link.
