@@ -28,13 +28,24 @@
       </svg>
       DocMayScience
     </a>
-    <nav aria-label="Main">
-      <ul>
-        <li><a href="#apps">Apps &amp; Games</a></li>
-        <li><a href="#resources">Teaching Resources</a></li>
-        <li><a href="#about">About</a></li>
-      </ul>
-    </nav>
+    <div class="nav-actions">
+      <nav aria-label="Main">
+        <ul>
+          <li><a href="#apps">Apps &amp; Games</a></li>
+          <li><a href="#resources">Teaching Resources</a></li>
+          <li><a href="#about">About</a></li>
+        </ul>
+      </nav>
+      <!-- fa-slab-duo has no flask/grid glyph, so the trigger icon is a
+           hand-drawn periodic-table silhouette to match the other inline art -->
+      <button class="pt-open" id="pt-open" type="button" aria-haspopup="dialog"
+              aria-label="Open the periodic table" title="Periodic table">
+        <svg viewBox="0 0 24 19" width="22" height="18" fill="none" aria-hidden="true">
+          <path d="M2 2h5v6h10V2h5v12H2Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+          <path d="M6 17.6h5M13 17.6h5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -274,6 +285,31 @@
   </div>
 </footer>
 
+<!-- ================= PERIODIC TABLE MODAL =================
+     Tiles, legend, and the detail card are rendered by js/main.js
+     from the dataset in js/elements.js -->
+<dialog class="pt-modal" id="pt-modal" aria-labelledby="pt-title">
+  <div class="pt-head">
+    <div>
+      <span class="eyebrow">Quick Reference</span>
+      <h2 class="display" id="pt-title">The Periodic Table</h2>
+    </div>
+    <button class="pt-close" id="pt-close" type="button" aria-label="Close the periodic table">
+      <i class="fa-slab-duo fa-xmark" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="pt-body">
+    <div class="pt-detail" id="pt-detail" aria-live="polite">
+      <p class="pt-hint">Select an element to inspect it.</p>
+    </div>
+    <div class="pt-scroll">
+      <div class="pt-grid" id="pt-grid"></div>
+    </div>
+    <ul class="pt-legend" id="pt-legend"></ul>
+  </div>
+</dialog>
+
+<script src="js/elements.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

@@ -14,13 +14,16 @@ docmayscience/
 ├── css/
 │   └── styles.css      All site styles — design tokens live in :root at the top
 ├── js/
-│   └── main.js         Parallax scroll + random Bohr-atom hero (respects prefers-reduced-motion)
+│   ├── main.js         Parallax scroll, random Bohr-atom hero, periodic table modal (respects prefers-reduced-motion)
+│   └── elements.js     Periodic table data, all 118 elements — generated from Bowserinator/Periodic-Table-JSON (CC BY-SA 3.0); regenerate rather than hand-edit
 ├── assets/
 │   ├── favicon.svg     Browser tab icon (dms monogram)
 │   └── logo/
 │       ├── dms-logo.svg          Vector master — scales to any size
 │       ├── dms-logo-512.png      Transparent PNG for watermarks/overlays
 │       └── dms-profile-800.png   Square profile picture for social accounts
+├── scripts/
+│   └── gen-elements.js Regenerates js/elements.js from its upstream dataset (node scripts/gen-elements.js)
 ├── package.json        npm scripts: dev server + lint/link checks
 ├── .htmlvalidate.json  HTML validation config
 ├── .vscode/tasks.json  Auto-starts dev server on folder open
