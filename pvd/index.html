@@ -32,6 +32,9 @@
     --p-large:#63b5df;
   }
   *{box-sizing:border-box;}
+  /* rapid taps on controls (e.g. the ± steppers) must not trigger iOS double-tap zoom;
+     manipulation still allows page-scroll swipes and pinch-zoom */
+  button{touch-action:manipulation;}
   html{-webkit-text-size-adjust:100%;}
   body{
     margin:0;

@@ -36,6 +36,9 @@
   }
   /* re-enable selection and normal touch where it's actually useful (text fields, scrollers) */
   input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;touch-action:auto;}
+  /* iOS ignores the body's touch-action:none for taps that land on a button, so double-tap
+     zoom still fires on rapid ± stepper taps unless it's set on the buttons themselves */
+  button{touch-action:manipulation;}
   header{
     padding:10px 14px;
     display:flex;align-items:center;gap:10px;
