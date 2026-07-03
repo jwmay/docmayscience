@@ -160,6 +160,8 @@
     border-color:var(--ink);box-shadow:0 5px 0 var(--ink);
   }
   .btn--ghost:active{box-shadow:0 0 0 var(--ink);}
+  .btn--done{background:var(--moss);border-color:#586326;box-shadow:0 5px 0 #586326;color:#fff;}
+  .btn--done:active{box-shadow:0 0 0 #586326;}
 
   /* ---------- display options ---------- */
   .options{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;}
@@ -173,14 +175,19 @@
     -webkit-user-select:none;user-select:none;
   }
   .toggle::before{
-    content:"";width:14px;height:14px;border-radius:4px;
+    content:"";
+    display:inline-flex;align-items:center;justify-content:center;
+    width:16px;height:16px;border-radius:4px;
     border:2px solid currentColor;opacity:.5;
+    font-size:12px;font-weight:900;line-height:1;
   }
   .toggle[aria-pressed="true"]{
     background:var(--grape);color:var(--paper);
     border-color:var(--grape-deep);box-shadow:0 3px 0 var(--grape-deep);
   }
-  .toggle[aria-pressed="true"]::before{background:var(--paper);border-color:var(--paper);opacity:1;}
+  .toggle[aria-pressed="true"]::before{
+    content:"✓";background:var(--paper);border-color:var(--paper);color:var(--grape);opacity:1;
+  }
   .toggle:active{transform:translateY(3px);box-shadow:0 0 0 var(--line);}
   .toggle[aria-pressed="true"]:active{box-shadow:0 0 0 var(--grape-deep);}
 
@@ -197,18 +204,6 @@
   }
   .seg:first-child{border-left:none;}
   .seg[aria-pressed="true"]{background:var(--grape);color:var(--paper);}
-
-  /* ---------- toast ---------- */
-  .toast{
-    position:fixed;left:50%;bottom:calc(1rem + env(safe-area-inset-bottom));
-    transform:translate(-50%,140%);
-    background:var(--moss);color:#fff;
-    font-family:'IBM Plex Mono',monospace;font-size:.88rem;font-weight:600;
-    padding:.7rem 1.1rem;border-radius:12px;box-shadow:0 6px 0 rgba(44,30,66,.25);
-    opacity:0;pointer-events:none;z-index:30;
-    transition:transform .25s,opacity .25s;
-  }
-  .toast.show{transform:translate(-50%,0);opacity:1;}
 
   /* ---------- help ---------- */
   .help{
@@ -312,8 +307,6 @@
     </div>
   </div>
 </main>
-
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <div class="help hidden" id="help">
   <div class="help-card">
@@ -627,23 +620,29 @@
   }
 
   // ----- actions -----
-  var toastEl = document.getElementById('toast');
-  var toastT = null;
-  function toast(msg){
-    toastEl.textContent = msg;
-    toastEl.classList.add('show');
-    if (toastT) clearTimeout(toastT);
-    toastT = setTimeout(function(){ toastEl.classList.remove('show'); }, 1800);
+  var copyBtn = document.getElementById('copyBtn');
+  var COPY_LABEL = copyBtn.textContent;
+  var copyT = null;
+  // the Copy button reports its own status (green flash for success)
+  function flashCopy(msg, ok){
+    copyBtn.textContent = msg;
+    if (ok === false) copyBtn.classList.remove('btn--done');
+    else copyBtn.classList.add('btn--done');
+    if (copyT) clearTimeout(copyT);
+    copyT = setTimeout(function(){
+      copyBtn.textContent = COPY_LABEL;
+      copyBtn.classList.remove('btn--done');
+    }, 1800);
   }
 
-  document.getElementById('copyBtn').addEventListener('click', function(){
+  copyBtn.addEventListener('click', function(){
     hoverIndex = -1;
     render();
     canvas.toBlob(function(blob){
-      if (!blob){ toast('Copy failed'); return; }
+      if (!blob){ flashCopy('Copy failed', false); return; }
       if (navigator.clipboard && window.ClipboardItem){
         navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
-          .then(function(){ toast('Copied to clipboard!'); })
+          .then(function(){ flashCopy('Copied to clipboard!'); })
           .catch(function(){ download(blob); });
       } else {
         download(blob);
@@ -656,7 +655,7 @@
     a.href = url; a.download = 'bohr-model.png';
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
-    toast('Clipboard blocked — saved as PNG');
+    flashCopy('Saved as PNG');
   }
 
   document.getElementById('resetBtn').addEventListener('click', function(){
