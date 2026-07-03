@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light only">
-<meta name="description" content="Lewis·Lab — a touch-first Lewis structure builder with octet checking, formal charges, and shareable save codes. From Doc May Science.">
-<title>Lewis·Lab · Doc May Science</title>
+<meta name="description" content="Lewis:Lab — a touch-first Lewis structure builder with octet checking, formal charges, and shareable save codes. From Doc May Science.">
+<title>Lewis:Lab · Doc May Science</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <style>
   :root{
@@ -47,7 +47,8 @@
     font-size:18px;margin:0;letter-spacing:.5px;
     font-weight:800;white-space:nowrap;flex:0 0 auto;
   }
-  header h1 a{color:inherit;text-decoration:none;}
+  header .logo{flex:0 0 auto;display:flex;align-items:center;}
+  header .logo img{height:28px;width:auto;display:block;}
   header h1 .e{color:var(--accent);}
   header .sub{font-size:11px;color:#8a8270;letter-spacing:.3px;
     white-space:nowrap;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;}
@@ -310,7 +311,8 @@
 </head>
 <body>
 <header>
-  <h1><a href="../" title="docmayscience.com">Lewis<span class="e">·</span>Lab</a></h1>
+  <a class="logo" href="../" title="docmayscience.com" aria-label="Back to docmayscience.com"><img src="../assets/logo/dms-logo.svg" alt=""></a>
+  <h1>Lewis<span class="e">:</span>Lab</h1>
   <span class="sub">drag · bond · dot</span>
   <button type="button" id="helpBtn" class="helpbtn" aria-label="how to use">?</button>
   <span id="status">Drag an atom in</span>

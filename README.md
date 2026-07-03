@@ -12,7 +12,7 @@ slab buttons, and a Bohr-atom hero.
 docmayscience/
 ├── index.html          Homepage (hero, apps, resources, about)
 ├── lewis-lab/
-│   └── index.html      Lewis·Lab — touch-first Lewis structure builder; fully self-contained app, served at /lewis-lab/
+│   └── index.html      Lewis:Lab — touch-first Lewis structure builder; fully self-contained app, served at /lewis-lab/
 ├── css/
 │   └── styles.css      All site styles — design tokens live in :root at the top
 ├── js/
