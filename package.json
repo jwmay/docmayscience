@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "live-server --host=localhost --port=5500",
     "dev:quiet": "live-server --host=localhost --port=5500 --no-browser",
-    "lint": "html-validate *.html",
+    "lint": "html-validate *.html */index.html",
     "links": "linkinator . --recurse --skip \"^https?://(?!localhost)\"",
     "check": "npm run lint && npm run links",
     "sync": "git checkout main && git pull && git checkout dev && git merge main && git push",
