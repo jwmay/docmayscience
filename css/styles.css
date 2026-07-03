@@ -168,7 +168,14 @@
   /* ============ PERIODIC TABLE MODAL ============ */
   .pt-modal{
     width:min(1080px, calc(100vw - 28px));
+    /* dvh (dynamic viewport height) tracks the actually-visible area between the
+       browser's toolbars; plain vh resolves to the *large* viewport on iOS
+       Safari, so the modal rendered taller than the screen and clipped its top
+       and bottom under the address bar / toolbar. The env() line further insets
+       for the notch/home indicator when the toolbars are hidden. */
     max-height:calc(100vh - 28px);
+    max-height:calc(100dvh - 28px);
+    max-height:calc(100dvh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     margin:auto;
     padding:0;
     color:var(--ink);
@@ -328,15 +335,15 @@
     display:grid; place-items:center;
     font-family:'Fraunces', serif;
     font-weight:900;
-    font-size:clamp(.62rem, 1.5vw, .98rem);
+    font-size:clamp(.62rem, 1.5vw, 1.3rem);
     color:var(--ink);
     cursor:pointer;
     transition:transform .1s ease, box-shadow .1s ease, opacity .15s ease;
   }
   .pt-el .num{
-    position:absolute; top:2px; left:4px;
+    position:absolute; top:2px; left:50%; transform:translateX(-50%);
     font-family:'IBM Plex Mono', monospace;
-    font-size:clamp(.36rem, .85vw, .5rem);
+    font-size:clamp(.36rem, .85vw, .7rem);
     font-weight:600;
   }
   .pt-el:hover{ transform:translateY(-2px); box-shadow:0 3px 0 var(--shadow); z-index:1; }
