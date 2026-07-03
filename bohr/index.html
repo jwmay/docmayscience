@@ -91,6 +91,17 @@
     max-width:100%;
   }
   canvas#model.grabbing{cursor:grabbing;}
+  canvas#model.bg-white{background:#fff;}
+  canvas#model.bg-clear{
+    background-color:#f4ecda;
+    background-image:
+      linear-gradient(45deg,#e6dcc3 25%,transparent 25%),
+      linear-gradient(-45deg,#e6dcc3 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#e6dcc3 75%),
+      linear-gradient(-45deg,transparent 75%,#e6dcc3 75%);
+    background-size:22px 22px;
+    background-position:0 0,0 11px,11px -11px,-11px 0;
+  }
   .hint{
     margin:0;text-align:center;
     font-family:'IBM Plex Mono',monospace;font-size:.76rem;line-height:1.4;
@@ -150,6 +161,43 @@
   }
   .btn--ghost:active{box-shadow:0 0 0 var(--ink);}
 
+  /* ---------- display options ---------- */
+  .options{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;}
+  .toggle{
+    display:inline-flex;align-items:center;gap:.4rem;
+    font-family:'Archivo',sans-serif;font-weight:700;font-size:.85rem;
+    padding:.5rem .8rem;border-radius:11px;cursor:pointer;
+    border:2px solid var(--line);background:var(--card);color:var(--ink);
+    box-shadow:0 3px 0 var(--line);
+    transition:transform .1s,box-shadow .1s;
+    -webkit-user-select:none;user-select:none;
+  }
+  .toggle::before{
+    content:"";width:14px;height:14px;border-radius:4px;
+    border:2px solid currentColor;opacity:.5;
+  }
+  .toggle[aria-pressed="true"]{
+    background:var(--grape);color:var(--paper);
+    border-color:var(--grape-deep);box-shadow:0 3px 0 var(--grape-deep);
+  }
+  .toggle[aria-pressed="true"]::before{background:var(--paper);border-color:var(--paper);opacity:1;}
+  .toggle:active{transform:translateY(3px);box-shadow:0 0 0 var(--line);}
+  .toggle[aria-pressed="true"]:active{box-shadow:0 0 0 var(--grape-deep);}
+
+  .segmented{display:inline-flex;align-items:center;gap:.45rem;margin-left:auto;}
+  .seg-label{
+    font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.05em;
+  }
+  .seg-group{display:inline-flex;border:2px solid var(--line);border-radius:11px;overflow:hidden;}
+  .seg{
+    font-family:'Archivo',sans-serif;font-weight:700;font-size:.82rem;
+    padding:.45rem .7rem;cursor:pointer;border:none;border-left:2px solid var(--line);
+    background:var(--card);color:var(--ink);
+  }
+  .seg:first-child{border-left:none;}
+  .seg[aria-pressed="true"]{background:var(--grape);color:var(--paper);}
+
   /* ---------- toast ---------- */
   .toast{
     position:fixed;left:50%;bottom:calc(1rem + env(safe-area-inset-bottom));
@@ -188,6 +236,11 @@
     border:2px solid var(--ink);background:var(--paper);
     font-size:1rem;line-height:1;cursor:pointer;
   }
+  .help-tip{
+    margin:1rem 0 0;padding-top:.85rem;border-top:2px solid var(--line);
+    font-family:'IBM Plex Mono',monospace;font-size:.76rem;line-height:1.5;color:var(--muted);
+  }
+  .help-tip b{color:var(--grape);}
 </style>
 </head>
 <body>
@@ -240,6 +293,19 @@
       </div>
     </div>
 
+    <div class="options">
+      <button type="button" class="toggle" id="labelToggle" aria-pressed="false">e⁻ labels</button>
+      <button type="button" class="toggle" id="snapToggle" aria-pressed="false">Snap to shells</button>
+      <div class="segmented">
+        <span class="seg-label">Background</span>
+        <div class="seg-group" role="group" aria-label="Background">
+          <button type="button" class="seg" data-bg="cream" aria-pressed="true">Cream</button>
+          <button type="button" class="seg" data-bg="white" aria-pressed="false">White</button>
+          <button type="button" class="seg" data-bg="clear" aria-pressed="false">Clear</button>
+        </div>
+      </div>
+    </div>
+
     <div class="actions">
       <button type="button" id="copyBtn" class="btn">Copy image</button>
       <button type="button" id="resetBtn" class="btn btn--ghost">Reset</button>
@@ -259,6 +325,7 @@
       <li><b>Drop electrons.</b> Bump the electron count, then drag each red electron onto a shell — 2 in the first, then 8, then 8…</li>
       <li><b>Copy it.</b> Hit <b>Copy image</b> and paste your atom straight into a doc, slide, or quiz.</li>
     </ol>
+    <p class="help-tip">Neat freak? Flip on <b>Snap to shells</b> to click electrons into tidy positions, toggle <b>e⁻ labels</b> to name them, and set <b>Background → Clear</b> to copy a see-through model. Snapping tidies placement — it never decides how many go on each shell.</p>
   </div>
 </div>
 
@@ -270,14 +337,22 @@
   var VIRT = 400, CENTER = 200;
   var NR = 46;                       // nucleus radius
   var SHELL_R = [78, 111, 145, 178]; // shell radii, innermost → outermost
-  var ER = 11, HIT_PAD = 9;          // electron radius + extra touch padding
+  var ER = 12, HIT_PAD = 9;          // electron radius + extra touch padding
   var MAXE = 30;
+  var SLOTS = 8;                     // even angular positions per shell (for snapping)
+  var BAND = 26;                     // how close to a ring an electron must be to snap
   var CANVAS_FONT = "'Fraunces', Georgia, serif";
+  var LABEL_FONT = "'Archivo', system-ui, sans-serif";
 
   var COL = {
-    paper:'#f4ecda', line:'#c9bfa8', ink:'#2c1e42',
-    nucleus:'#ece0c6', electron:'#d64b3a', electronDeep:'#a5311f'
+    paper:'#f4ecda', white:'#ffffff', line:'#c9bfa8', ink:'#2c1e42',
+    nucleus:'#ece0c6', electron:'#d64b3a', electronDeep:'#a5311f',
+    guide:'rgba(91,55,144,.30)', guideOn:'rgba(91,55,144,.85)'
   };
+
+  // display options
+  var labelsOn = false, snapOn = false, bgMode = 'cream';
+  var guide = null; // {ring, tx, ty} shown while snap-dragging over a shell
 
   var cfg = {
     protons:  {min:0, max:30,   val:0},
@@ -300,13 +375,23 @@
   var scale = 1;
   var dragIndex = -1, hoverIndex = -1, dragOff = {x:0, y:0};
 
+  // even angular slot position on a shell (slot 0 = top, clockwise)
+  function slotPos(k, s){
+    var a = (-90 + s * 45) * Math.PI / 180;
+    return { x: CENTER + SHELL_R[k] * Math.cos(a), y: CENTER + SHELL_R[k] * Math.sin(a) };
+  }
+
   // ----- rendering -----
   function render(){
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
 
-    // paper background (also the exported image background)
-    ctx.fillStyle = COL.paper;
-    ctx.fillRect(0, 0, VIRT, VIRT);
+    // background (also the exported image background; 'clear' stays transparent)
+    if (bgMode === 'clear'){
+      ctx.clearRect(0, 0, VIRT, VIRT);
+    } else {
+      ctx.fillStyle = (bgMode === 'white') ? COL.white : COL.paper;
+      ctx.fillRect(0, 0, VIRT, VIRT);
+    }
 
     // shells
     ctx.lineWidth = 1.6;
@@ -314,6 +399,23 @@
     for (var k = 0; k < cfg.shells.val; k++){
       ctx.beginPath();
       ctx.arc(CENTER, CENTER, SHELL_R[k], 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // alignment guide — only while snap-dragging over a ring, so it never lands in an export
+    if (snapOn && dragIndex >= 0 && guide){
+      for (var g = 0; g < SLOTS; g++){
+        var gp = slotPos(guide.ring, g);
+        ctx.beginPath();
+        ctx.arc(gp.x, gp.y, ER, 0, Math.PI * 2);
+        ctx.lineWidth = 1.6;
+        ctx.strokeStyle = COL.guide;
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.arc(guide.tx, guide.ty, ER + 3, 0, Math.PI * 2);
+      ctx.lineWidth = 2.4;
+      ctx.strokeStyle = COL.guideOn;
       ctx.stroke();
     }
 
@@ -344,6 +446,11 @@
       ctx.lineWidth = 2;
       ctx.strokeStyle = active ? COL.electronDeep : 'rgba(44,30,66,.20)';
       ctx.stroke();
+      if (labelsOn){
+        ctx.fillStyle = '#fff';
+        ctx.font = '700 12px ' + LABEL_FONT;
+        ctx.fillText('e⁻', el.x, el.y + 0.5);
+      }
     }
   }
 
@@ -376,6 +483,42 @@
   }
   function clampV(v){ return Math.max(ER, Math.min(VIRT - ER, v)); }
 
+  // ----- snapping (tidies placement; never chooses count or shell) -----
+  function angDiff(a, b){
+    var d = (a - b) % 360;
+    if (d > 180) d -= 360;
+    if (d < -180) d += 360;
+    return d;
+  }
+  function slotFree(pos, self){
+    for (var e = 0; e < cfg.electrons.val; e++){
+      if (e === self) continue;
+      if (Math.hypot(electrons[e].x - pos.x, electrons[e].y - pos.y) < 2 * ER) return false;
+    }
+    return true;
+  }
+  // nearest free slot on the nearest active ring, or null when out of range (free drag)
+  function snapTarget(px, py, self){
+    var dx = px - CENTER, dy = py - CENTER;
+    var d = Math.hypot(dx, dy);
+    var best = -1, bestGap = Infinity;
+    for (var k = 0; k < cfg.shells.val; k++){
+      var gap = Math.abs(d - SHELL_R[k]);
+      if (gap < bestGap){ bestGap = gap; best = k; }
+    }
+    if (best < 0 || bestGap > BAND) return null;
+    var ang = Math.atan2(dy, dx) * 180 / Math.PI;
+    var order = [];
+    for (var s = 0; s < SLOTS; s++){ order.push({ s: s, diff: Math.abs(angDiff(ang, -90 + s * 45)) }); }
+    order.sort(function(a, b){ return a.diff - b.diff; });
+    for (var oi = 0; oi < order.length; oi++){
+      var p = slotPos(best, order[oi].s);
+      if (slotFree(p, self)) return { x: p.x, y: p.y, ring: best };
+    }
+    var p0 = slotPos(best, order[0].s);
+    return { x: p0.x, y: p0.y, ring: best };
+  }
+
   canvas.addEventListener('pointerdown', function(evt){
     var pt = toVirt(evt);
     var e = pick(pt);
@@ -391,8 +534,16 @@
   canvas.addEventListener('pointermove', function(evt){
     var pt = toVirt(evt);
     if (dragIndex >= 0){
-      electrons[dragIndex].x = clampV(pt.x + dragOff.x);
-      electrons[dragIndex].y = clampV(pt.y + dragOff.y);
+      var t = snapOn ? snapTarget(pt.x, pt.y, dragIndex) : null;
+      if (t){
+        electrons[dragIndex].x = t.x;
+        electrons[dragIndex].y = t.y;
+        guide = { ring: t.ring, tx: t.x, ty: t.y };
+      } else {
+        electrons[dragIndex].x = clampV(pt.x + dragOff.x);
+        electrons[dragIndex].y = clampV(pt.y + dragOff.y);
+        guide = null;
+      }
       evt.preventDefault();
       render();
     } else {
@@ -407,6 +558,7 @@
   function endDrag(evt){
     if (dragIndex < 0) return;
     dragIndex = -1;
+    guide = null;
     canvas.classList.remove('grabbing');
     try { canvas.releasePointerCapture(evt.pointerId); } catch (_e){}
     render();
@@ -431,6 +583,44 @@
     steps[s].addEventListener('click', function(){
       var key = this.getAttribute('data-target');
       setVal(key, cfg[key].val + Number(this.getAttribute('data-dir')));
+    });
+  }
+
+  // ----- display options -----
+  var labelToggle = document.getElementById('labelToggle');
+  var snapToggle = document.getElementById('snapToggle');
+
+  labelToggle.addEventListener('click', function(){
+    labelsOn = !labelsOn;
+    labelToggle.setAttribute('aria-pressed', labelsOn ? 'true' : 'false');
+    render();
+  });
+
+  snapToggle.addEventListener('click', function(){
+    snapOn = !snapOn;
+    snapToggle.setAttribute('aria-pressed', snapOn ? 'true' : 'false');
+    if (snapOn) snapAll(); // tidy anything already on a shell (leaves counts/shells untouched)
+    render();
+  });
+
+  function snapAll(){
+    for (var e = 0; e < cfg.electrons.val; e++){
+      var t = snapTarget(electrons[e].x, electrons[e].y, e);
+      if (t){ electrons[e].x = t.x; electrons[e].y = t.y; }
+    }
+  }
+
+  var segBtns = document.querySelectorAll('.seg');
+  for (var sb = 0; sb < segBtns.length; sb++){
+    segBtns[sb].addEventListener('click', function(){
+      bgMode = this.getAttribute('data-bg');
+      for (var j = 0; j < segBtns.length; j++){
+        segBtns[j].setAttribute('aria-pressed', segBtns[j] === this ? 'true' : 'false');
+      }
+      canvas.classList.remove('bg-white', 'bg-clear');
+      if (bgMode === 'white') canvas.classList.add('bg-white');
+      else if (bgMode === 'clear') canvas.classList.add('bg-clear');
+      render();
     });
   }
 
