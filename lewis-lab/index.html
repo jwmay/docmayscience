@@ -137,7 +137,9 @@
   .atom.target{box-shadow:0 0 0 5px #ffe3a3,0 3px 8px var(--shadow);border-color:var(--warn);}
   /* bare (textbook) mode: hide circles, keep letters/bonds/dots */
   body.bare .atom{background:transparent;border-color:transparent;box-shadow:none;font-size:30px;}
-  body.bare .atom .lab{background:#fbf8f0;border-radius:50%;padding:3px 7px;}
+  /* translateY corrects the font's ascent/descent asymmetry so the glyph sits at
+     the atom's true center and the lone pairs clear it evenly on all sides */
+  body.bare .atom .lab{background:#fbf8f0;border-radius:50%;padding:3px 7px;transform:translateY(.08em);}
   body.bare .atom.sel{box-shadow:0 0 0 3px var(--accent-soft);}
   body.bare .atom.bad .lab{color:var(--dot);}
   body.bare .atom.target{box-shadow:0 0 0 4px #ffe3a3;}
@@ -1100,7 +1102,7 @@ function positionLonePairs(){
     const pairs=Math.min(4,a.lp||0);
     if(pairs===0)return;
     const occupied=bondAngles(a).slice(); // angles to avoid (grows as we place pairs)
-    const R=bareMode?20:37;
+    const R=bareMode?17:37; // bare: hug the letter, matching the PNG export
     for(let i=0;i<pairs;i++){
       // search candidate angles, pick the one maximizing distance to nearest occupied direction
       let bestAng=-Math.PI/2, bestScore=-1;
@@ -1785,7 +1787,7 @@ function renderToCanvas(){
     const pairs=Math.min(4,a.lp||0);
     if(pairs>0){
       const occupied=bondAngles(a).slice();
-      const R=bareMode?20:37;
+      const R=bareMode?17:37;
       for(let i=0;i<pairs;i++){
         let ang;
         if(occupied.length===0){ ang=[-90,90,0,180][i]*Math.PI/180; }
