@@ -1102,7 +1102,7 @@ function positionLonePairs(){
     const pairs=Math.min(4,a.lp||0);
     if(pairs===0)return;
     const occupied=bondAngles(a).slice(); // angles to avoid (grows as we place pairs)
-    const R=bareMode?17:37; // bare: hug the letter, matching the PNG export
+    const R=bareMode?20:37;
     for(let i=0;i<pairs;i++){
       // search candidate angles, pick the one maximizing distance to nearest occupied direction
       let bestAng=-Math.PI/2, bestScore=-1;
@@ -1787,7 +1787,7 @@ function renderToCanvas(){
     const pairs=Math.min(4,a.lp||0);
     if(pairs>0){
       const occupied=bondAngles(a).slice();
-      const R=bareMode?17:37;
+      const R=bareMode?20:37;
       for(let i=0;i<pairs;i++){
         let ang;
         if(occupied.length===0){ ang=[-90,90,0,180][i]*Math.PI/180; }
