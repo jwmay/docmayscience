@@ -733,6 +733,7 @@ function placeOrReplace(sym,clientX,clientY){
   return atoms[atoms.length-1];
 }
 let trayDragging=false; // a tray chip is being dragged onto the canvas
+let lpDeleteGuard=false; // a long-press just deleted an atom — its release must not place/erase
 function startTrayDrag(e,sym,chip,kind){
   const startX=e.clientX, startY=e.clientY, pid=e.pointerId;
   let armed=false, ghost=null;
@@ -925,6 +926,10 @@ function attachAtomHandlers(a){
     let lpTimer=setTimeout(()=>{
       if(moved||consumed)return;
       consumed=true;
+      // Deleting detaches this atom's node mid-gesture, which releases pointer
+      // capture; the eventual pointerup then lands on the now-empty canvas. Flag
+      // it so the armed-tap handler doesn't read that release as "place here".
+      lpDeleteGuard=true;
       pushUndo();
       removeAtom(a);
       render();
@@ -1467,6 +1472,7 @@ function isCanvasBackground(target){
   return !target.closest(".atom") && target.tagName!=="line" && !target.closest("button");
 }
 stage.addEventListener("pointerdown",e=>{
+  lpDeleteGuard=false; // start of a fresh gesture — clear any stale delete guard
   activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(activePointers.size===2){
     // begin pinch
@@ -1565,7 +1571,7 @@ stage.addEventListener("pointerup",e=>{
   if(!armedKind)return;
   // ignore if this was part of a pan/pinch or a drag, if other fingers are still
   // down, if the quick menu is up, or just after a gesture ended
-  if(didPan || gestureActive || trayDragging || qmOpen || activePointers.size>0 || Date.now()<suppressTapUntil) return;
+  if(didPan || gestureActive || trayDragging || qmOpen || lpDeleteGuard || activePointers.size>0 || Date.now()<suppressTapUntil) return;
   const onAtom=e.target.closest(".atom");
   if(armedKind==="erase"){
     if(onAtom){
