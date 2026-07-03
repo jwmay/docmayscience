@@ -339,7 +339,7 @@
   var SHELL_R = [78, 111, 145, 178]; // shell radii, innermost → outermost
   var ER = 12, HIT_PAD = 9;          // electron radius + extra touch padding
   var MAXE = 30;
-  var SLOTS = 8;                     // even angular positions per shell (for snapping)
+  var SLOTS_PER = [8, 8, 18, 18];    // even angular slots per shell — K/L keep 8; M/N hold up to 18 (Zn)
   var BAND = 26;                     // how close to a ring an electron must be to snap
   var CANVAS_FONT = "'Fraunces', Georgia, serif";
   var LABEL_FONT = "'Archivo', system-ui, sans-serif";
@@ -375,9 +375,11 @@
   var scale = 1;
   var dragIndex = -1, hoverIndex = -1, dragOff = {x:0, y:0};
 
-  // even angular slot position on a shell (slot 0 = top, clockwise)
+  // even angular slots per shell (slot 0 = top, clockwise)
+  function slotCount(k){ return SLOTS_PER[k] || 8; }
+  function slotAngleDeg(k, s){ return -90 + s * (360 / slotCount(k)); }
   function slotPos(k, s){
-    var a = (-90 + s * 45) * Math.PI / 180;
+    var a = slotAngleDeg(k, s) * Math.PI / 180;
     return { x: CENTER + SHELL_R[k] * Math.cos(a), y: CENTER + SHELL_R[k] * Math.sin(a) };
   }
 
@@ -404,7 +406,7 @@
 
     // alignment guide — only while snap-dragging over a ring, so it never lands in an export
     if (snapOn && dragIndex >= 0 && guide){
-      for (var g = 0; g < SLOTS; g++){
+      for (var g = 0; g < slotCount(guide.ring); g++){
         var gp = slotPos(guide.ring, g);
         ctx.beginPath();
         ctx.arc(gp.x, gp.y, ER, 0, Math.PI * 2);
@@ -509,7 +511,7 @@
     if (best < 0 || bestGap > BAND) return null;
     var ang = Math.atan2(dy, dx) * 180 / Math.PI;
     var order = [];
-    for (var s = 0; s < SLOTS; s++){ order.push({ s: s, diff: Math.abs(angDiff(ang, -90 + s * 45)) }); }
+    for (var s = 0; s < slotCount(best); s++){ order.push({ s: s, diff: Math.abs(angDiff(ang, slotAngleDeg(best, s))) }); }
     order.sort(function(a, b){ return a.diff - b.diff; });
     for (var oi = 0; oi < order.length; oi++){
       var p = slotPos(best, order[oi].s);
