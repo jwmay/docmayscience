@@ -146,8 +146,7 @@
   body.bare .atom.target{box-shadow:0 0 0 4px #ffe3a3;}
   .atom .lab{display:inline-block;line-height:1;}
   .chip.lpchip .sym{font-size:24px;line-height:.6;letter-spacing:2px;}
-  .chip.lpchip{background:#fbf5e8;border-color:#e7d4a8;}
-  .lp-ghost{font-size:26px;letter-spacing:2px;background:#fbf5e8;border-color:#e7d4a8;}
+  .lp-ghost{font-size:26px;letter-spacing:2px;}
   .atom .lp{
     position:absolute;width:7px;height:7px;border-radius:50%;background:var(--ink);
   }
@@ -1111,41 +1110,47 @@ function cycleLonePairs(t){
   render();
   setStatus(t.lp===0?`Lone pairs cleared on ${t.el}`:`${t.lp} lone pair${t.lp>1?"s":""} on ${t.el}`,null);
 }
+// smallest angle (0..π) between two directions, robust to any input sign
+function angDist(a,b){ let d=Math.abs(a-b)%(2*Math.PI); return d>Math.PI?2*Math.PI-d:d; }
+// Angles (radians) at which to draw an atom's lone pairs. The pairs are spaced
+// evenly around the atom — so they sit as far from EACH OTHER as possible — and
+// the whole group is rotated as a rigid unit to the offset that keeps every pair
+// as far as possible from the bonds. (Formaldehyde's =O, one double bond pointing
+// down, ends up with its two pairs on the left and right: opposite each other and
+// each 90° clear of the bond, instead of the old cramped top-and-left.)
+function lonePairAngles(a){
+  const pairs=Math.min(4,a.lp||0);
+  if(pairs===0)return [];
+  const bondsA=bondAngles(a);
+  if(bondsA.length===0){
+    // isolated atom / ion: no bonds to dodge — use a tidy fixed order
+    return [-90,90,0,180].slice(0,pairs).map(d=>d*Math.PI/180);
+  }
+  const step=2*Math.PI/pairs;
+  let bestBase=0, bestScore=-Infinity;
+  // the pattern repeats every `step`, so scanning one period finds the best rotation
+  for(let deg=0; deg<360/pairs; deg+=1){
+    const base=deg*Math.PI/180;
+    let worst=Math.PI, cardinal=-1;
+    for(let k=0;k<pairs;k++){
+      const ang=base+k*step;
+      bondsA.forEach(b=>{ const d=angDist(ang,b); if(d<worst)worst=d; });
+      cardinal=Math.max(cardinal, Math.cos(4*ang)); // tiny nudge toward N/E/S/W to break ties
+    }
+    const score=worst + cardinal*1e-3;
+    if(score>bestScore){ bestScore=score; bestBase=base; }
+  }
+  const out=[];
+  for(let k=0;k<pairs;k++)out.push(bestBase+k*step);
+  return out;
+}
 function positionLonePairs(){
   atoms.forEach(a=>{
     a.node.querySelectorAll(".lp").forEach(n=>n.remove());
-    const pairs=Math.min(4,a.lp||0);
-    if(pairs===0)return;
-    const occupied=bondAngles(a).slice(); // angles to avoid (grows as we place pairs)
+    const angs=lonePairAngles(a);
+    if(angs.length===0)return;
     const R=bareMode?20:37;
-    for(let i=0;i<pairs;i++){
-      // search candidate angles, pick the one maximizing distance to nearest occupied direction
-      let bestAng=-Math.PI/2, bestScore=-1;
-      for(let deg=0;deg<360;deg+=6){
-        const ang=deg*Math.PI/180;
-        let nearest=Math.PI;
-        occupied.forEach(o=>{
-          let d=Math.abs(((ang-o+Math.PI)%(2*Math.PI))-Math.PI); // angular distance
-          if(d<nearest)nearest=d;
-        });
-        // prefer the canonical top/right/bottom/left when nothing is occupied, via tiny tie-break
-        const tie=0.001*Math.cos(2*ang);
-        if(occupied.length===0){
-          // no bonds: fall back to fixed top,bottom,right,left order
-          break;
-        }
-        if(nearest>bestScore+1e-6 || (Math.abs(nearest-bestScore)<1e-6 && tie>0)){
-          bestScore=nearest;bestAng=ang;
-        }
-      }
-      let ang;
-      if(occupied.length===0){
-        const fixed=[-90,90,0,180];
-        ang=fixed[i]*Math.PI/180;
-      }else{
-        ang=bestAng;
-      }
-      occupied.push(ang); // subsequent pairs also avoid this one
+    angs.forEach(ang=>{
       const cx=26+Math.cos(ang)*R, cy=26+Math.sin(ang)*R;
       const tx=Math.cos(ang+Math.PI/2),ty=Math.sin(ang+Math.PI/2);
       const sp=bareMode?4:5; // within-pair dot spacing
@@ -1156,7 +1161,7 @@ function positionLonePairs(){
         d.style.top=(cy+ty*off-3.5)+"px";
         a.node.appendChild(d);
       });
-    }
+    });
   });
 }
 
@@ -1799,25 +1804,11 @@ function renderToCanvas(){
     ctx.font=(bareMode?"800 30px":"800 20px")+" ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif";
     ctx.textAlign="center"; ctx.textBaseline="middle";
     ctx.fillText(a.el,X(a.x),Y(a.y)+1);
-    // lone pairs, using same angle logic as the live view
-    const pairs=Math.min(4,a.lp||0);
-    if(pairs>0){
-      const occupied=bondAngles(a).slice();
+    // lone pairs, using the same shared angle logic as the live view
+    const angs=lonePairAngles(a);
+    if(angs.length){
       const R=bareMode?20:37;
-      for(let i=0;i<pairs;i++){
-        let ang;
-        if(occupied.length===0){ ang=[-90,90,0,180][i]*Math.PI/180; }
-        else{
-          let bestAng=-Math.PI/2,bestScore=-1;
-          for(let deg=0;deg<360;deg+=6){
-            const t=deg*Math.PI/180; let near=Math.PI;
-            occupied.forEach(o=>{let d=Math.abs(((t-o+Math.PI)%(2*Math.PI))-Math.PI);if(d<near)near=d;});
-            const tie=0.001*Math.cos(2*t);
-            if(near>bestScore+1e-6||(Math.abs(near-bestScore)<1e-6&&tie>0)){bestScore=near;bestAng=t;}
-          }
-          ang=bestAng;
-        }
-        occupied.push(ang);
+      angs.forEach(ang=>{
         const cx=a.x+Math.cos(ang)*R, cy=a.y+Math.sin(ang)*R;
         const tx=Math.cos(ang+Math.PI/2),ty=Math.sin(ang+Math.PI/2);
         ctx.fillStyle="#16202a";
@@ -1827,7 +1818,7 @@ function renderToCanvas(){
           ctx.arc(X(cx+tx*off),Y(cy+ty*off),3.5,0,Math.PI*2);
           ctx.fill();
         });
-      }
+      });
     }
     // formal charge badge
     if(showCharges){
