@@ -328,7 +328,7 @@
     display:grid; place-items:center;
     font-family:'Fraunces', serif;
     font-weight:900;
-    font-size:clamp(.62rem, 1.5vw, .98rem);
+    font-size:clamp(.62rem, 1.5vw, 1.3rem);
     color:var(--ink);
     cursor:pointer;
     transition:transform .1s ease, box-shadow .1s ease, opacity .15s ease;
@@ -336,7 +336,7 @@
   .pt-el .num{
     position:absolute; top:2px; left:50%; transform:translateX(-50%);
     font-family:'IBM Plex Mono', monospace;
-    font-size:clamp(.36rem, .85vw, .5rem);
+    font-size:clamp(.36rem, .85vw, .7rem);
     font-weight:600;
   }
   .pt-el:hover{ transform:translateY(-2px); box-shadow:0 3px 0 var(--shadow); z-index:1; }
