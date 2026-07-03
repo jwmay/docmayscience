@@ -168,7 +168,14 @@
   /* ============ PERIODIC TABLE MODAL ============ */
   .pt-modal{
     width:min(1080px, calc(100vw - 28px));
+    /* dvh (dynamic viewport height) tracks the actually-visible area between the
+       browser's toolbars; plain vh resolves to the *large* viewport on iOS
+       Safari, so the modal rendered taller than the screen and clipped its top
+       and bottom under the address bar / toolbar. The env() line further insets
+       for the notch/home indicator when the toolbars are hidden. */
     max-height:calc(100vh - 28px);
+    max-height:calc(100dvh - 28px);
+    max-height:calc(100dvh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     margin:auto;
     padding:0;
     color:var(--ink);
