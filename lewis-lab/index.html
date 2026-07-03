@@ -36,6 +36,9 @@
   }
   /* re-enable selection and normal touch where it's actually useful (text fields, scrollers) */
   input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;touch-action:auto;}
+  /* iOS ignores the body's touch-action:none for taps that land on a button, so double-tap
+     zoom still fires on rapid ± stepper taps unless it's set on the buttons themselves */
+  button{touch-action:manipulation;}
   header{
     padding:10px 14px;
     display:flex;align-items:center;gap:10px;
@@ -176,6 +179,10 @@
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     box-shadow:0 2px 4px var(--shadow);user-select:none;touch-action:pan-x;
   }
+  /* draggable chips (elements + lone pair) own their gesture: touch-action:none stops iOS
+     from claiming a diagonal drag-out for tray-scroll and firing pointercancel mid-drag.
+     Their horizontal scroll is handled in JS instead (see startTrayDrag). */
+  .chip.draggable{touch-action:none;}
   .chip .sym{font-weight:800;font-size:19px;}
   .chip .val{font-size:9px;color:#9a917c;margin-top:1px;}
   .chip svg{width:20px;height:20px;display:block;}
@@ -637,7 +644,7 @@ trayrow.appendChild(bondChip);
 
 // lone-pair chip
 const lpChip=document.createElement("div");
-lpChip.className="chip lpchip";
+lpChip.className="chip lpchip draggable";
 lpChip.innerHTML=`<div class="sym">:</div><div class="val">lone pair</div>`;
 lpChip.addEventListener("pointerdown",e=>startTrayDrag(e,"LP",lpChip,"lp"));
 trayrow.appendChild(lpChip);
@@ -657,7 +664,7 @@ trayrow.appendChild(eraseChip);
 const elementChips={}; // sym → tray chip, so quick-menu picks can highlight the tray
 ORDER.forEach(sym=>{
   const c=document.createElement("div");
-  c.className="chip";
+  c.className="chip draggable";
   c.innerHTML=`<div class="sym">${sym}</div><div class="val">${ELEMENTS[sym].ve}e⁻</div>`;
   c.addEventListener("pointerdown",e=>startTrayDrag(e,sym,c,"atom"));
   elementChips[sym]=c;
@@ -738,11 +745,14 @@ function startTrayDrag(e,sym,chip,kind){
   let armed=false, ghost=null;
   let liveAtom=null;        // for element drags: the real atom we create on arm and drag live
   let placedUndo=false;     // whether we've pushed the undo snapshot for this placement
+  let scrolling=false;      // horizontal intent → we scroll the tray ourselves
+  let lastX=startX;         // running x for the scroll delta
+  try{ chip.setPointerCapture(pid); }catch(_){}
 
   const move=ev=>{
     if(ev.pointerId!==pid)return;
     const dx=ev.clientX-startX, dy=ev.clientY-startY;
-    if(!armed){
+    if(!armed && !scrolling){
       if(dy<-8 && Math.abs(dy)>Math.abs(dx)){
         armed=true;
         trayDragging=true; // the release of this drag must not count as an armed tap
@@ -761,9 +771,18 @@ function startTrayDrag(e,sym,chip,kind){
           liveAtom.node.classList.add("dragging");
           render();
         }
-      }else if(Math.abs(dx)>10){
-        teardown();return; // horizontal swipe → let tray scroll
+      }else if(Math.abs(dx)>8 && Math.abs(dx)>=Math.abs(dy)){
+        // horizontal swipe → scroll the tray ourselves. The chip is touch-action:none, so
+        // iOS never claims this mid-drag and fires pointercancel (which used to drop a
+        // half-dragged atom by the toolbar).
+        scrolling=true; lastX=ev.clientX;
       }
+    }
+    if(scrolling){
+      trayrow.scrollLeft-=(ev.clientX-lastX);
+      lastX=ev.clientX;
+      ev.preventDefault();
+      return;
     }
     if(armed){
       ev.preventDefault();
@@ -800,6 +819,7 @@ function startTrayDrag(e,sym,chip,kind){
   };
   const up=ev=>{
     if(!armed && ev.pointerId!==pid) return;
+    if(scrolling){ teardown(); return; }
     const moved=Math.hypot(ev.clientX-startX,ev.clientY-startY)>8;
     if(armed){
       if(kind==="lp"){
@@ -852,17 +872,32 @@ function startTrayDrag(e,sym,chip,kind){
     }
     teardown();
   };
+  // A genuine pointercancel (system gesture, palm, incoming call…) must NOT commit a
+  // placement — undo the live atom so nothing lands in a spot the user didn't choose.
+  const cancel=ev=>{
+    if(ev.pointerId!==pid) return;
+    if(armed && kind!=="lp" && liveAtom && atoms.includes(liveAtom)){
+      removeAtom(liveAtom);
+      if(placedUndo){
+        undoStack.pop();
+        if(undoStack.length===0){ const ub=document.getElementById("undoBtn"); if(ub)ub.disabled=true; }
+      }
+      positionLonePairs(); render();
+    }
+    teardown();
+  };
   function teardown(){
     trayDragging=false;
+    try{ chip.releasePointerCapture(pid); }catch(_){}
     window.removeEventListener("pointermove",move);
     window.removeEventListener("pointerup",up);
-    window.removeEventListener("pointercancel",up);
+    window.removeEventListener("pointercancel",cancel);
     atoms.forEach(a=>a.node.classList.remove("target"));
     if(ghost){ghost.remove();ghost=null;}
   }
   window.addEventListener("pointermove",move,{passive:false});
   window.addEventListener("pointerup",up);
-  window.addEventListener("pointercancel",up);
+  window.addEventListener("pointercancel",cancel);
 }
 
 
