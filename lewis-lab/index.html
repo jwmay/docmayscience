@@ -889,7 +889,15 @@ function drawGrid(){
     l.setAttribute("stroke","#eae0cb");l.setAttribute("stroke-width","1");grid.appendChild(l);
   }
 }
-window.addEventListener("resize",()=>{}); // grid is fixed-size now
+// Re-clamp pan/zoom whenever the visible stage area changes size — e.g. iPad/iOS
+// Safari collapsing or restoring its address bar, rotating the device, or a
+// software keyboard opening. Without this the pan offset is only ever computed
+// for the stage size at the time of the last drag/pinch/fit, so the content can
+// end up sitting off-center (or partly under the browser chrome) once the
+// viewport resizes out from under it. clampPan() is cheap and idempotent, so
+// it's safe to call on every resize tick.
+window.addEventListener("resize",()=>applyView());
+if(window.visualViewport)window.visualViewport.addEventListener("resize",()=>applyView());
 
 /* ---------- atoms ---------- */
 function addAtomRaw(sym,x,y,lp){
