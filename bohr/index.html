@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<meta name="theme-color" content="#f4ecda">
+<meta name="description" content="Bohr:Lab — a touch-first Bohr model builder. Set the nucleus, add shells, drag electrons into place, and copy your atom straight to the clipboard. From Doc May Science.">
+<title>Bohr:Lab · Doc May Science</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600..900&family=Archivo:wght@400;500;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:light only;
+    --paper:#f4ecda;
+    --paper-deep:#ecdfc3;
+    --card:#faf3e3;
+    --ink:#2c1e42;
+    --muted:#7c718f;
+    --grape:#5b3790;
+    --grape-deep:#3d2566;
+    --gold:#e9a63a;
+    --orange:#d9672d;
+    --moss:#7d8c3f;
+    --line:#d8cfbc;
+    --electron:#d64b3a;
+    --electron-deep:#a5311f;
+    --nucleus:#ece0c6;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    min-height:100dvh;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Archivo',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    display:flex;flex-direction:column;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;top:0;z-index:10;
+    display:flex;align-items:center;gap:.7rem;
+    padding:.55rem .9rem;
+    padding-top:calc(.55rem + env(safe-area-inset-top));
+    background:var(--card);
+    border-bottom:2px solid var(--line);
+  }
+  header .logo{display:inline-flex;flex:none;}
+  header .logo img{height:34px;width:auto;display:block;}
+  header h1{
+    margin:0;flex:none;
+    font-family:'Fraunces',Georgia,serif;font-weight:800;
+    font-size:1.5rem;letter-spacing:-.01em;line-height:1;
+  }
+  header h1 .e{color:var(--grape);}
+  header .sub{
+    font-family:'IBM Plex Mono',monospace;font-size:.72rem;
+    color:var(--muted);letter-spacing:.02em;
+    white-space:nowrap;
+  }
+  .helpbtn{
+    margin-left:auto;flex:none;
+    width:40px;height:40px;border-radius:11px;
+    border:2px solid var(--grape-deep);background:var(--card);
+    color:var(--grape);font-family:'Fraunces',serif;font-weight:800;font-size:1.25rem;
+    line-height:1;cursor:pointer;
+    box-shadow:0 3px 0 var(--grape-deep);
+    transition:transform .1s,box-shadow .1s;
+  }
+  .helpbtn:active{transform:translateY(3px);box-shadow:0 0 0 var(--grape-deep);}
+  @media (max-width:520px){ header .sub{display:none;} }
+
+  /* ---------- layout ---------- */
+  main{
+    width:100%;max-width:620px;margin:0 auto;flex:1;
+    padding:1rem .9rem 2.6rem;
+    display:flex;flex-direction:column;gap:.9rem;
+  }
+  .stage{display:flex;justify-content:center;}
+  canvas#model{
+    display:block;
+    background:var(--paper);
+    border:2px solid var(--line);border-radius:18px;
+    box-shadow:0 6px 0 var(--line);
+    touch-action:none;cursor:default;
+    max-width:100%;
+  }
+  canvas#model.grabbing{cursor:grabbing;}
+  .hint{
+    margin:0;text-align:center;
+    font-family:'IBM Plex Mono',monospace;font-size:.76rem;line-height:1.4;
+    color:var(--muted);
+  }
+  .hint b{color:var(--grape);}
+
+  /* ---------- controls ---------- */
+  .panel{display:flex;flex-direction:column;gap:.9rem;}
+  .steppers{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;}
+  @media (max-width:560px){ .steppers{grid-template-columns:1fr;} }
+  .stepper{
+    display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+    background:var(--card);border:2px solid var(--line);border-radius:14px;
+    padding:.45rem .5rem .45rem .75rem;
+  }
+  .stepper-label{
+    display:flex;align-items:baseline;gap:.35rem;
+    font-weight:700;font-size:.95rem;
+  }
+  .stepper-label em{
+    font-style:normal;font-family:'IBM Plex Mono',monospace;
+    font-size:.78rem;color:var(--muted);
+  }
+  .stepper-ctl{display:flex;align-items:center;gap:.35rem;}
+  .step-val{
+    min-width:2.1ch;text-align:center;
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:1.1rem;
+  }
+  .step{
+    width:42px;height:42px;flex:none;
+    border-radius:11px;border:2px solid var(--grape-deep);
+    background:var(--grape);color:var(--paper);
+    font-size:1.4rem;font-weight:700;line-height:1;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    box-shadow:0 3px 0 var(--grape-deep);
+    transition:transform .1s,box-shadow .1s;
+    -webkit-user-select:none;user-select:none;
+  }
+  .step:active{transform:translateY(3px);box-shadow:0 0 0 var(--grape-deep);}
+  .step:disabled{opacity:.35;cursor:default;transform:none;box-shadow:0 3px 0 var(--grape-deep);}
+
+  .actions{display:flex;gap:.7rem;flex-wrap:wrap;}
+  .btn{
+    flex:1 1 auto;
+    font-family:'Archivo',sans-serif;font-weight:800;font-size:1rem;
+    padding:.8rem 1rem;border-radius:13px;
+    border:2px solid var(--grape-deep);background:var(--grape);color:var(--paper);
+    cursor:pointer;box-shadow:0 5px 0 var(--grape-deep);
+    transition:transform .1s,box-shadow .1s;
+  }
+  .btn:active{transform:translateY(5px);box-shadow:0 0 0 var(--grape-deep);}
+  .btn--ghost{
+    flex:0 1 auto;
+    background:var(--card);color:var(--ink);
+    border-color:var(--ink);box-shadow:0 5px 0 var(--ink);
+  }
+  .btn--ghost:active{box-shadow:0 0 0 var(--ink);}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:calc(1rem + env(safe-area-inset-bottom));
+    transform:translate(-50%,140%);
+    background:var(--moss);color:#fff;
+    font-family:'IBM Plex Mono',monospace;font-size:.88rem;font-weight:600;
+    padding:.7rem 1.1rem;border-radius:12px;box-shadow:0 6px 0 rgba(44,30,66,.25);
+    opacity:0;pointer-events:none;z-index:30;
+    transition:transform .25s,opacity .25s;
+  }
+  .toast.show{transform:translate(-50%,0);opacity:1;}
+
+  /* ---------- help ---------- */
+  .help{
+    position:fixed;inset:0;z-index:40;
+    display:flex;align-items:center;justify-content:center;padding:1.2rem;
+    background:rgba(44,30,66,.55);
+  }
+  .help.hidden{display:none;}
+  .help-card{
+    position:relative;width:100%;max-width:420px;max-height:85dvh;overflow:auto;
+    background:var(--card);border:2px solid var(--ink);border-radius:18px;
+    box-shadow:0 8px 0 var(--ink);padding:1.4rem 1.5rem;
+  }
+  .help-card h2{
+    margin:.1rem 0 .8rem;font-family:'Fraunces',serif;font-size:1.35rem;
+  }
+  .help-card ol{
+    margin:0;padding-left:1.2rem;
+    display:flex;flex-direction:column;gap:.6rem;line-height:1.45;
+  }
+  .help-card b{color:var(--grape);}
+  .help-x{
+    position:absolute;top:.7rem;right:.7rem;
+    width:34px;height:34px;border-radius:9px;
+    border:2px solid var(--ink);background:var(--paper);
+    font-size:1rem;line-height:1;cursor:pointer;
+  }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="../" title="docmayscience.com" aria-label="Back to docmayscience.com"><img src="../assets/logo/dms-logo.svg" alt=""></a>
+  <h1>Bohr<span class="e">:</span>Lab</h1>
+  <span class="sub">nucleus · shells · electrons</span>
+  <button type="button" id="helpBtn" class="helpbtn" aria-label="How to use">?</button>
+</header>
+
+<main>
+  <div class="stage">
+    <canvas id="model" role="img" aria-label="Bohr model canvas — drag electrons onto the shells"></canvas>
+  </div>
+  <p class="hint">Set the nucleus, add shells, then drag the red electrons onto them. Tap <b>?</b> for help.</p>
+
+  <div class="panel">
+    <div class="steppers">
+      <div class="stepper">
+        <span class="stepper-label">Protons <em>p⁺</em></span>
+        <div class="stepper-ctl">
+          <button type="button" class="step step--minus" data-target="protons" data-dir="-1" aria-label="One fewer proton">−</button>
+          <span class="step-val" id="val-protons">0</span>
+          <button type="button" class="step step--plus" data-target="protons" data-dir="1" aria-label="One more proton">+</button>
+        </div>
+      </div>
+      <div class="stepper">
+        <span class="stepper-label">Neutrons <em>n⁰</em></span>
+        <div class="stepper-ctl">
+          <button type="button" class="step step--minus" data-target="neutrons" data-dir="-1" aria-label="One fewer neutron">−</button>
+          <span class="step-val" id="val-neutrons">0</span>
+          <button type="button" class="step step--plus" data-target="neutrons" data-dir="1" aria-label="One more neutron">+</button>
+        </div>
+      </div>
+      <div class="stepper">
+        <span class="stepper-label">Shells <em>rings</em></span>
+        <div class="stepper-ctl">
+          <button type="button" class="step step--minus" data-target="shells" data-dir="-1" aria-label="One fewer shell">−</button>
+          <span class="step-val" id="val-shells">0</span>
+          <button type="button" class="step step--plus" data-target="shells" data-dir="1" aria-label="One more shell">+</button>
+        </div>
+      </div>
+      <div class="stepper">
+        <span class="stepper-label">Electrons <em>e⁻</em></span>
+        <div class="stepper-ctl">
+          <button type="button" class="step step--minus" data-target="electrons" data-dir="-1" aria-label="One fewer electron">−</button>
+          <span class="step-val" id="val-electrons">0</span>
+          <button type="button" class="step step--plus" data-target="electrons" data-dir="1" aria-label="One more electron">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" id="copyBtn" class="btn">Copy image</button>
+      <button type="button" id="resetBtn" class="btn btn--ghost">Reset</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="help hidden" id="help">
+  <div class="help-card">
+    <button type="button" class="help-x" id="helpClose" aria-label="Close">✕</button>
+    <h2>Build-a-Bohr, in four moves</h2>
+    <ol>
+      <li><b>Load the nucleus.</b> Dial in protons (p⁺) and neutrons (n⁰) with the steppers.</li>
+      <li><b>Add shells.</b> Give your atom up to four electron shells.</li>
+      <li><b>Drop electrons.</b> Bump the electron count, then drag each red electron onto a shell — 2 in the first, then 8, then 8…</li>
+      <li><b>Copy it.</b> Hit <b>Copy image</b> and paste your atom straight into a doc, slide, or quiz.</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ----- fixed 400×400 virtual coordinate space (scaled to the canvas) -----
+  var VIRT = 400, CENTER = 200;
+  var NR = 46;                       // nucleus radius
+  var SHELL_R = [78, 111, 145, 178]; // shell radii, innermost → outermost
+  var ER = 11, HIT_PAD = 9;          // electron radius + extra touch padding
+  var MAXE = 30;
+  var CANVAS_FONT = "'Fraunces', Georgia, serif";
+
+  var COL = {
+    paper:'#f4ecda', line:'#c9bfa8', ink:'#2c1e42',
+    nucleus:'#ece0c6', electron:'#d64b3a', electronDeep:'#a5311f'
+  };
+
+  var cfg = {
+    protons:  {min:0, max:30,   val:0},
+    neutrons: {min:0, max:30,   val:0},
+    shells:   {min:0, max:4,    val:0},
+    electrons:{min:0, max:MAXE, val:0}
+  };
+
+  // electrons persist their positions; the count just gates how many show
+  function homePos(i){
+    var col = i < 15 ? 0 : 1;
+    var row = i % 15;
+    return { x: col === 0 ? 16 : 384, y: 30 + row * 25 };
+  }
+  var electrons = [];
+  for (var i = 0; i < MAXE; i++){ var h = homePos(i); electrons.push({x:h.x, y:h.y}); }
+
+  var canvas = document.getElementById('model');
+  var ctx = canvas.getContext('2d');
+  var scale = 1;
+  var dragIndex = -1, hoverIndex = -1, dragOff = {x:0, y:0};
+
+  // ----- rendering -----
+  function render(){
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+
+    // paper background (also the exported image background)
+    ctx.fillStyle = COL.paper;
+    ctx.fillRect(0, 0, VIRT, VIRT);
+
+    // shells
+    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = COL.line;
+    for (var k = 0; k < cfg.shells.val; k++){
+      ctx.beginPath();
+      ctx.arc(CENTER, CENTER, SHELL_R[k], 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // nucleus
+    ctx.beginPath();
+    ctx.arc(CENTER, CENTER, NR, 0, Math.PI * 2);
+    ctx.fillStyle = COL.nucleus;
+    ctx.fill();
+    ctx.strokeStyle = COL.line;
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+
+    ctx.fillStyle = COL.ink;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'italic 600 19px ' + CANVAS_FONT;
+    ctx.fillText(cfg.protons.val + ' p⁺', CENTER, CENTER - 11);
+    ctx.fillText(cfg.neutrons.val + ' n⁰', CENTER, CENTER + 12);
+
+    // electrons
+    for (var e = 0; e < cfg.electrons.val; e++){
+      var el = electrons[e];
+      var active = (e === dragIndex) || (e === hoverIndex);
+      ctx.beginPath();
+      ctx.arc(el.x, el.y, ER, 0, Math.PI * 2);
+      ctx.fillStyle = (e === dragIndex) ? COL.electronDeep : COL.electron;
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = active ? COL.electronDeep : 'rgba(44,30,66,.20)';
+      ctx.stroke();
+    }
+  }
+
+  function layout(){
+    var stage = canvas.parentElement;
+    var size = Math.max(260, Math.min(stage.clientWidth, 560));
+    var dpr = window.devicePixelRatio || 1;
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+    canvas.width = Math.round(size * dpr);
+    canvas.height = Math.round(size * dpr);
+    scale = (size * dpr) / VIRT;
+    render();
+  }
+
+  // ----- pointer / drag -----
+  function toVirt(evt){
+    var r = canvas.getBoundingClientRect();
+    return {
+      x: (evt.clientX - r.left) / r.width * VIRT,
+      y: (evt.clientY - r.top) / r.height * VIRT
+    };
+  }
+  function pick(pt){
+    for (var e = cfg.electrons.val - 1; e >= 0; e--){ // topmost first
+      var el = electrons[e];
+      if (Math.hypot(el.x - pt.x, el.y - pt.y) <= ER + HIT_PAD) return e;
+    }
+    return -1;
+  }
+  function clampV(v){ return Math.max(ER, Math.min(VIRT - ER, v)); }
+
+  canvas.addEventListener('pointerdown', function(evt){
+    var pt = toVirt(evt);
+    var e = pick(pt);
+    if (e < 0) return;
+    dragIndex = e;
+    dragOff.x = electrons[e].x - pt.x;
+    dragOff.y = electrons[e].y - pt.y;
+    canvas.classList.add('grabbing');
+    try { canvas.setPointerCapture(evt.pointerId); } catch (_e){}
+    evt.preventDefault();
+    render();
+  });
+  canvas.addEventListener('pointermove', function(evt){
+    var pt = toVirt(evt);
+    if (dragIndex >= 0){
+      electrons[dragIndex].x = clampV(pt.x + dragOff.x);
+      electrons[dragIndex].y = clampV(pt.y + dragOff.y);
+      evt.preventDefault();
+      render();
+    } else {
+      var h = pick(pt);
+      if (h !== hoverIndex){
+        hoverIndex = h;
+        canvas.style.cursor = h >= 0 ? 'grab' : 'default';
+        render();
+      }
+    }
+  });
+  function endDrag(evt){
+    if (dragIndex < 0) return;
+    dragIndex = -1;
+    canvas.classList.remove('grabbing');
+    try { canvas.releasePointerCapture(evt.pointerId); } catch (_e){}
+    render();
+  }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+  canvas.addEventListener('pointerleave', function(){
+    if (dragIndex < 0 && hoverIndex !== -1){ hoverIndex = -1; canvas.style.cursor = 'default'; render(); }
+  });
+
+  // ----- steppers -----
+  function setVal(key, v){
+    var c = cfg[key];
+    c.val = Math.max(c.min, Math.min(c.max, v));
+    document.getElementById('val-' + key).textContent = c.val;
+    document.querySelector('.step--minus[data-target="' + key + '"]').disabled = c.val <= c.min;
+    document.querySelector('.step--plus[data-target="' + key + '"]').disabled = c.val >= c.max;
+    render();
+  }
+  var steps = document.querySelectorAll('.step');
+  for (var s = 0; s < steps.length; s++){
+    steps[s].addEventListener('click', function(){
+      var key = this.getAttribute('data-target');
+      setVal(key, cfg[key].val + Number(this.getAttribute('data-dir')));
+    });
+  }
+
+  // ----- actions -----
+  var toastEl = document.getElementById('toast');
+  var toastT = null;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    if (toastT) clearTimeout(toastT);
+    toastT = setTimeout(function(){ toastEl.classList.remove('show'); }, 1800);
+  }
+
+  document.getElementById('copyBtn').addEventListener('click', function(){
+    hoverIndex = -1;
+    render();
+    canvas.toBlob(function(blob){
+      if (!blob){ toast('Copy failed'); return; }
+      if (navigator.clipboard && window.ClipboardItem){
+        navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
+          .then(function(){ toast('Copied to clipboard!'); })
+          .catch(function(){ download(blob); });
+      } else {
+        download(blob);
+      }
+    }, 'image/png');
+  });
+  function download(blob){
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'bohr-model.png';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    toast('Clipboard blocked — saved as PNG');
+  }
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    for (var e = 0; e < MAXE; e++){ var h = homePos(e); electrons[e].x = h.x; electrons[e].y = h.y; }
+    setVal('protons', 0); setVal('neutrons', 0); setVal('shells', 0); setVal('electrons', 0);
+  });
+
+  // ----- help -----
+  var help = document.getElementById('help');
+  document.getElementById('helpBtn').addEventListener('click', function(){ help.classList.remove('hidden'); });
+  document.getElementById('helpClose').addEventListener('click', function(){ help.classList.add('hidden'); });
+  help.addEventListener('click', function(evt){ if (evt.target === help) help.classList.add('hidden'); });
+  document.addEventListener('keydown', function(evt){ if (evt.key === 'Escape') help.classList.add('hidden'); });
+
+  // ----- boot -----
+  ['protons','neutrons','shells','electrons'].forEach(function(k){ setVal(k, 0); });
+  window.addEventListener('resize', layout);
+  layout();
+  if (document.fonts && document.fonts.ready){ document.fonts.ready.then(render); }
+})();
+</script>
+</body>
+</html>
