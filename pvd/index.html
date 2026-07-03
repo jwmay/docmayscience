@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<meta name="theme-color" content="#f4ecda">
+<meta name="description" content="PVD:Lab — a touch-first particle view diagram builder. Size your particles, label their charges, arrange them into lattices, add a sea of electrons, and copy the diagram straight to the clipboard. From Doc May Science.">
+<title>PVD:Lab · Doc May Science</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600..900&family=Archivo:wght@400;500;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:light only;
+    --paper:#f4ecda;
+    --paper-deep:#ecdfc3;
+    --card:#faf3e3;
+    --ink:#2c1e42;
+    --muted:#7c718f;
+    --accent:#556d2c;        /* moss/olive — PVD:Lab's own accent (Lewis=teal, Bohr=grape) */
+    --accent-deep:#374a18;
+    --gold:#e9a63a;
+    --orange:#d9672d;
+    --line:#d8cfbc;
+    --done:#4fa03a;          /* brighter grass green — the Copy "done" flash, distinct from olive */
+    --done-deep:#34701f;
+    /* particle colors — large stays the original blue */
+    --p-small:#d9672d;
+    --p-medium:#c65a9c;
+    --p-large:#63b5df;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    min-height:100dvh;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Archivo',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    display:flex;flex-direction:column;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;top:0;z-index:10;
+    display:flex;align-items:center;gap:.7rem;
+    padding:.55rem .9rem;
+    padding-top:calc(.55rem + env(safe-area-inset-top));
+    background:var(--card);
+    border-bottom:2px solid var(--line);
+  }
+  header .logo{display:inline-flex;flex:none;}
+  header .logo img{height:34px;width:auto;display:block;}
+  header h1{
+    margin:0;flex:none;
+    font-family:'Fraunces',Georgia,serif;font-weight:800;
+    font-size:1.5rem;letter-spacing:-.01em;line-height:1;
+  }
+  header h1 .e{color:var(--accent);}
+  header .sub{
+    font-family:'IBM Plex Mono',monospace;font-size:.72rem;
+    color:var(--muted);letter-spacing:.02em;
+    white-space:nowrap;
+  }
+  .helpbtn{
+    margin-left:auto;flex:none;
+    width:40px;height:40px;border-radius:11px;
+    border:2px solid var(--accent-deep);background:var(--card);
+    color:var(--accent);font-family:'Fraunces',serif;font-weight:800;font-size:1.25rem;
+    line-height:1;cursor:pointer;
+    box-shadow:0 3px 0 var(--accent-deep);
+    transition:transform .1s,box-shadow .1s;
+  }
+  .helpbtn:active{transform:translateY(3px);box-shadow:0 0 0 var(--accent-deep);}
+  @media (max-width:540px){ header .sub{display:none;} }
+
+  /* ---------- layout ---------- */
+  main{
+    width:100%;max-width:640px;margin:0 auto;flex:1;
+    padding:1rem .9rem 2.6rem;
+    display:flex;flex-direction:column;gap:.9rem;
+  }
+  .stage{display:flex;justify-content:center;}
+  canvas#pvd{
+    display:block;
+    background:var(--paper);
+    border:2px solid var(--line);border-radius:18px;
+    box-shadow:0 6px 0 var(--line);
+    touch-action:none;cursor:default;
+    max-width:100%;
+  }
+  canvas#pvd.grabbing{cursor:grabbing;}
+  canvas#pvd.bg-white{background:#fff;}
+  canvas#pvd.bg-clear{
+    background-color:#f4ecda;
+    background-image:
+      linear-gradient(45deg,#e6dcc3 25%,transparent 25%),
+      linear-gradient(-45deg,#e6dcc3 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#e6dcc3 75%),
+      linear-gradient(-45deg,transparent 75%,#e6dcc3 75%);
+    background-size:22px 22px;
+    background-position:0 0,0 11px,11px -11px,-11px 0;
+  }
+  .hint{
+    margin:0;text-align:center;
+    font-family:'IBM Plex Mono',monospace;font-size:.76rem;line-height:1.4;
+    color:var(--muted);
+  }
+  .hint b{color:var(--accent);}
+
+  /* ---------- controls ---------- */
+  .panel{display:flex;flex-direction:column;gap:.9rem;}
+
+  /* per-size cards: swatch + name, label input, count stepper */
+  .sizes{display:flex;flex-direction:column;gap:.55rem;}
+  .size-card{
+    display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.5rem .55rem;
+    background:var(--card);border:2px solid var(--line);border-radius:14px;
+    padding:.5rem .6rem;
+  }
+  .size-tag{
+    display:inline-flex;align-items:center;gap:.5rem;
+    font-weight:700;font-size:.95rem;
+  }
+  .swatch{border-radius:50%;border:2px solid rgba(44,30,66,.22);flex:none;}
+  .swatch--small{width:14px;height:14px;background:var(--p-small);}
+  .swatch--medium{width:19px;height:19px;background:var(--p-medium);}
+  .swatch--large{width:24px;height:24px;background:var(--p-large);}
+  .label-input{
+    min-width:6rem;width:100%;
+    font-family:'Archivo',sans-serif;font-weight:600;font-size:1rem;
+    padding:.5rem .65rem;border-radius:10px;
+    border:2px solid var(--line);background:var(--paper);color:var(--ink);
+  }
+  .label-input::placeholder{color:var(--muted);font-weight:500;}
+  .label-input:focus{
+    outline:none;border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(85,109,44,.25);
+  }
+  @media (max-width:440px){
+    .size-card{grid-template-columns:1fr auto;}
+    .size-tag{grid-column:1;grid-row:1;}
+    .stepper-ctl{grid-column:2;grid-row:1;}
+    .label-input{grid-column:1 / -1;grid-row:2;}
+  }
+
+  .stepper-ctl{display:flex;align-items:center;gap:.35rem;}
+  .step-val{
+    min-width:2.1ch;text-align:center;
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:1.1rem;
+  }
+  .step{
+    width:42px;height:42px;flex:none;
+    border-radius:11px;border:2px solid var(--accent-deep);
+    background:var(--accent);color:var(--paper);
+    font-size:1.4rem;font-weight:700;line-height:1;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    box-shadow:0 3px 0 var(--accent-deep);
+    transition:transform .1s,box-shadow .1s;
+    -webkit-user-select:none;user-select:none;
+  }
+  .step:active{transform:translateY(3px);box-shadow:0 0 0 var(--accent-deep);}
+  .step:disabled{opacity:.35;cursor:default;transform:none;box-shadow:0 3px 0 var(--accent-deep);}
+
+  /* charge helper pad — inserts superscripts into the focused label */
+  .chargepad{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;}
+  .chargepad-label{
+    font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.05em;
+  }
+  .chip{
+    min-width:40px;height:40px;padding:0 .5rem;
+    border-radius:11px;border:2px solid var(--accent-deep);
+    background:var(--accent);color:var(--paper);
+    font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1.15rem;line-height:1;
+    cursor:pointer;box-shadow:0 3px 0 var(--accent-deep);
+    transition:transform .1s,box-shadow .1s;
+    -webkit-user-select:none;user-select:none;
+  }
+  .chip:active{transform:translateY(3px);box-shadow:0 0 0 var(--accent-deep);}
+  .chip--del{background:var(--card);color:var(--ink);border-color:var(--ink);box-shadow:0 3px 0 var(--ink);font-size:1rem;}
+  .chip--del:active{box-shadow:0 0 0 var(--ink);}
+
+  /* display options */
+  .options{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;}
+  .toggle{
+    display:inline-flex;align-items:center;gap:.4rem;
+    font-family:'Archivo',sans-serif;font-weight:700;font-size:.85rem;
+    padding:.5rem .8rem;border-radius:11px;cursor:pointer;
+    border:2px solid var(--line);background:var(--card);color:var(--ink);
+    box-shadow:0 3px 0 var(--line);
+    transition:transform .1s,box-shadow .1s;
+    -webkit-user-select:none;user-select:none;
+  }
+  .toggle::before{
+    content:"";
+    display:inline-flex;align-items:center;justify-content:center;
+    width:16px;height:16px;border-radius:4px;
+    border:2px solid currentColor;opacity:.5;
+    font-size:12px;font-weight:900;line-height:1;
+  }
+  .toggle[aria-pressed="true"]{
+    background:var(--accent);color:var(--paper);
+    border-color:var(--accent-deep);box-shadow:0 3px 0 var(--accent-deep);
+  }
+  .toggle[aria-pressed="true"]::before{
+    content:"✓";background:var(--paper);border-color:var(--paper);color:var(--accent);opacity:1;
+  }
+  .toggle:active{transform:translateY(3px);box-shadow:0 0 0 var(--line);}
+  .toggle[aria-pressed="true"]:active{box-shadow:0 0 0 var(--accent-deep);}
+
+  .segmented{display:inline-flex;align-items:center;gap:.45rem;margin-left:auto;}
+  .seg-label{
+    font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.05em;
+  }
+  .seg-group{display:inline-flex;border:2px solid var(--line);border-radius:11px;overflow:hidden;}
+  .seg{
+    font-family:'Archivo',sans-serif;font-weight:700;font-size:.82rem;
+    padding:.45rem .7rem;cursor:pointer;border:none;border-left:2px solid var(--line);
+    background:var(--card);color:var(--ink);
+  }
+  .seg:first-child{border-left:none;}
+  .seg[aria-pressed="true"]{background:var(--accent);color:var(--paper);}
+
+  /* sea-of-electrons sub-control (revealed by the toggle) */
+  .soe-ctl{
+    display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+    background:var(--card);border:2px dashed var(--accent);border-radius:14px;
+    padding:.45rem .5rem .45rem .8rem;
+  }
+  .soe-ctl.hidden{display:none;}
+  .soe-ctl .soe-label{display:flex;align-items:baseline;gap:.35rem;font-weight:700;font-size:.95rem;}
+  .soe-ctl .soe-label em{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--muted);}
+
+  /* actions */
+  .actions{display:flex;gap:.7rem;flex-wrap:wrap;}
+  .btn{
+    flex:1 1 auto;
+    font-family:'Archivo',sans-serif;font-weight:800;font-size:1rem;
+    padding:.8rem 1rem;border-radius:13px;
+    border:2px solid var(--accent-deep);background:var(--accent);color:var(--paper);
+    cursor:pointer;box-shadow:0 5px 0 var(--accent-deep);
+    transition:transform .1s,box-shadow .1s;
+  }
+  .btn:active{transform:translateY(5px);box-shadow:0 0 0 var(--accent-deep);}
+  .btn--ghost{
+    flex:0 1 auto;
+    background:var(--card);color:var(--ink);
+    border-color:var(--ink);box-shadow:0 5px 0 var(--ink);
+  }
+  .btn--ghost:active{box-shadow:0 0 0 var(--ink);}
+  .btn--done{background:var(--done);border-color:var(--done-deep);box-shadow:0 5px 0 var(--done-deep);color:#fff;}
+  .btn--done:active{box-shadow:0 0 0 var(--done-deep);}
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+
+  /* ---------- help ---------- */
+  .help{
+    position:fixed;inset:0;z-index:40;
+    display:flex;align-items:center;justify-content:center;padding:1.2rem;
+    background:rgba(44,30,66,.55);
+  }
+  .help.hidden{display:none;}
+  .help-card{
+    position:relative;width:100%;max-width:440px;max-height:85dvh;overflow:auto;
+    background:var(--card);border:2px solid var(--ink);border-radius:18px;
+    box-shadow:0 8px 0 var(--ink);padding:1.4rem 1.5rem;
+  }
+  .help-card h2{
+    margin:.1rem 0 .8rem;font-family:'Fraunces',serif;font-size:1.35rem;
+  }
+  .help-card ol{
+    margin:0;padding-left:1.2rem;
+    display:flex;flex-direction:column;gap:.6rem;line-height:1.45;
+  }
+  .help-card b{color:var(--accent);}
+  .help-x{
+    position:absolute;top:.7rem;right:.7rem;
+    width:34px;height:34px;border-radius:9px;
+    border:2px solid var(--ink);background:var(--paper);
+    font-size:1rem;line-height:1;cursor:pointer;
+  }
+  .help-tip{
+    margin:1rem 0 0;padding-top:.85rem;border-top:2px solid var(--line);
+    font-family:'IBM Plex Mono',monospace;font-size:.76rem;line-height:1.5;color:var(--muted);
+  }
+  .help-tip b{color:var(--accent);}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="../" title="docmayscience.com" aria-label="Back to docmayscience.com"><img src="../assets/logo/dms-logo.svg" alt=""></a>
+  <h1>PVD<span class="e">:</span>Lab</h1>
+  <span class="sub">particles · charges · lattices</span>
+  <button type="button" id="helpBtn" class="helpbtn" aria-label="How to use">?</button>
+</header>
+
+<main>
+  <div class="stage">
+    <canvas id="pvd" role="img" aria-label="Particle view diagram canvas — drag the particles into place"></canvas>
+  </div>
+  <p class="hint">Label each size first (charges like <b>Na⁺</b>), then drag the particles into place. Tap <b>?</b> for help.</p>
+
+  <div class="panel">
+    <div class="sizes">
+      <div class="size-card">
+        <span class="size-tag"><span class="swatch swatch--small" aria-hidden="true"></span>Small</span>
+        <input type="text" class="label-input" id="label-small" data-size="small" maxlength="6" placeholder="label — e.g. Na⁺" aria-label="Label shown on the small particles" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div class="stepper-ctl">
+          <button type="button" class="step step--minus" data-target="small" data-dir="-1" aria-label="One fewer small particle">−</button>
+          <span class="step-val" id="val-small">0</span>
+          <button type="button" class="step step--plus" data-target="small" data-dir="1" aria-label="One more small particle">+</button>
+        </div>
+      </div>
+      <div class="size-card">
+        <span class="size-tag"><span class="swatch swatch--medium" aria-hidden="true"></span>Medium</span>
+        <input type="text" class="label-input" id="label-medium" data-size="medium" maxlength="6" placeholder="label — e.g. O²⁻" aria-label="Label shown on the medium particles" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div class="stepper-ctl">
+          <button type="button" class="step step--minus" data-target="medium" data-dir="-1" aria-label="One fewer medium particle">−</button>
+          <span class="step-val" id="val-medium">0</span>
+          <button type="button" class="step step--plus" data-target="medium" data-dir="1" aria-label="One more medium particle">+</button>
+        </div>
+      </div>
+      <div class="size-card">
+        <span class="size-tag"><span class="swatch swatch--large" aria-hidden="true"></span>Large</span>
+        <input type="text" class="label-input" id="label-large" data-size="large" maxlength="6" placeholder="label — e.g. Cl⁻" aria-label="Label shown on the large particles" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div class="stepper-ctl">
+          <button type="button" class="step step--minus" data-target="large" data-dir="-1" aria-label="One fewer large particle">−</button>
+          <span class="step-val" id="val-large">0</span>
+          <button type="button" class="step step--plus" data-target="large" data-dir="1" aria-label="One more large particle">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chargepad" role="group" aria-label="Insert a charge into the label you last tapped">
+      <span class="chargepad-label">Charge</span>
+      <button type="button" class="chip" data-ins="⁺" aria-label="Insert superscript plus">⁺</button>
+      <button type="button" class="chip" data-ins="⁻" aria-label="Insert superscript minus">⁻</button>
+      <button type="button" class="chip" data-ins="²" aria-label="Insert superscript two">²</button>
+      <button type="button" class="chip" data-ins="³" aria-label="Insert superscript three">³</button>
+      <button type="button" class="chip chip--del" data-act="del" aria-label="Delete last character of the label">⌫</button>
+    </div>
+
+    <div class="options">
+      <button type="button" class="toggle" id="soeToggle" aria-pressed="false">Sea of e⁻</button>
+      <button type="button" class="toggle" id="snapToggle" aria-pressed="false">Snap to grid</button>
+      <div class="segmented">
+        <span class="seg-label">Background</span>
+        <div class="seg-group" role="group" aria-label="Background">
+          <button type="button" class="seg" data-bg="cream" aria-pressed="true">Cream</button>
+          <button type="button" class="seg" data-bg="white" aria-pressed="false">White</button>
+          <button type="button" class="seg" data-bg="clear" aria-pressed="false">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="soe-ctl hidden" id="soeCtl">
+      <span class="soe-label">Electrons in the sea <em>delocalized e⁻</em></span>
+      <div class="stepper-ctl">
+        <button type="button" class="step step--minus" data-target="soe" data-dir="-1" aria-label="One fewer electron in the sea">−</button>
+        <span class="step-val" id="val-soe">0</span>
+        <button type="button" class="step step--plus" data-target="soe" data-dir="1" aria-label="One more electron in the sea">+</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" id="copyBtn" class="btn">Copy image</button>
+      <button type="button" id="resetBtn" class="btn btn--ghost">Reset</button>
+    </div>
+  </div>
+</main>
+
+<p class="sr-only" id="srStatus" role="status" aria-live="polite"></p>
+
+<div class="help hidden" id="help">
+  <div class="help-card">
+    <button type="button" class="help-x" id="helpClose" aria-label="Close">✕</button>
+    <h2>Build a particle diagram, in four moves</h2>
+    <ol>
+      <li><b>Name each size.</b> Type a label for the small, medium, and large particles — element symbols or charges like <b>Na⁺</b> and <b>Cl⁻</b>. Use the <b>⁺ ⁻ ² ³</b> keys for superscript charges.</li>
+      <li><b>Set the counts.</b> Bump each size up with the <b>+</b> steppers, then drag the particles into the arrangement you want.</li>
+      <li><b>Go metallic.</b> Flip on <b>Sea of e⁻</b> to shade the field and scatter delocalized electrons — the picture of metallic bonding.</li>
+      <li><b>Copy it.</b> Hit <b>Copy image</b> and paste your diagram straight into a doc, slide, or quiz.</li>
+    </ol>
+    <p class="help-tip">Neat freak? Flip on <b>Snap to grid</b> to click particles into a tidy lattice — perfect for ionic crystals and close-packed metals. Set <b>Background → Clear</b> to copy a see-through diagram. Snapping only tidies placement; it never decides how many particles you use.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ----- fixed 560×440 virtual coordinate space (scaled to the canvas) -----
+  var VIRT_W = 560, VIRT_H = 440;
+  var HIT_PAD = 8;
+  var PI2 = Math.PI * 2;
+  var CANVAS_FONT = "'Fraunces', Georgia, serif";
+  var LABEL_FONT  = "'Archivo', system-ui, sans-serif";
+
+  // three particle sizes — each with radius, max count, color states, home row
+  var SIZES = {
+    small:  {r:14, color:'#d9672d', drag:'#b34e1c', over:'#e58a4f', base:12, row:{y:32,  gap:34}},
+    medium: {r:23, color:'#c65a9c', drag:'#a83f80', over:'#d67fb8', base:17, row:{y:78,  gap:52}},
+    large:  {r:30, color:'#63b5df', drag:'#3f97c8', over:'#8ecbe8', base:21, row:{y:132, gap:64}}
+  };
+  var ORDER_FRONT = ['small','medium','large']; // topmost first (hit-testing)
+  var ORDER_BACK  = ['large','medium','small']; // back to front (drawing)
+
+  var COL = {
+    paper:'#f4ecda', white:'#ffffff', line:'#c9bfa8',
+    guide:'rgba(85,109,44,.28)', guideOn:'rgba(85,109,44,.85)',
+    soeShade:'rgba(120,130,120,.14)',
+    seaFill:'rgba(44,30,66,.05)', seaLine:'rgba(60,78,96,.42)', seaMark:'rgba(60,78,96,.72)',
+    soeText:'rgba(60,78,96,.85)'
+  };
+
+  var cfg = {
+    small: {min:0, max:16, val:0},
+    medium:{min:0, max:10, val:0},
+    large: {min:0, max:8,  val:0},
+    soe:   {min:0, max:30, val:0}
+  };
+  var labels = {small:'', medium:'', large:''};
+
+  // display options
+  var soeOn = false, snapOn = false, bgMode = 'cream';
+  var guide = null; // {x,y} shown while snap-dragging
+
+  // ----- particles persist their positions; the count just gates how many show -----
+  function homePos(size, i){
+    var S = SIZES[size], n = cfg[size].max, span = (n - 1) * S.row.gap;
+    var start = (VIRT_W - span) / 2;
+    return {x: start + i * S.row.gap, y: S.row.y};
+  }
+  var particles = {small:[], medium:[], large:[]};
+  ORDER_FRONT.forEach(function(size){
+    for (var i = 0; i < cfg[size].max; i++){ particles[size].push(homePos(size, i)); }
+  });
+
+  // ----- snap grid (a square lattice sized to the large particle) -----
+  var PITCH = 64, GMARGIN = 36;
+  var GCOLS = Math.floor((VIRT_W - 2 * GMARGIN) / PITCH) + 1;
+  var GROWS = Math.floor((VIRT_H - 2 * GMARGIN) / PITCH) + 1;
+  var GOX = (VIRT_W - (GCOLS - 1) * PITCH) / 2;
+  var GOY = (VIRT_H - (GROWS - 1) * PITCH) / 2;
+
+  // ----- sea-of-electrons scatter: fixed jittered grid so marks stay put -----
+  var scatter = [];
+  (function(){
+    var seed = 20240703;
+    function rnd(){ seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    var cols = 6, rows = 5, mx = 44;
+    var cw = (VIRT_W - 2 * mx) / cols, ch = (VIRT_H - 2 * mx) / rows;
+    for (var r = 0; r < rows; r++){
+      for (var c = 0; c < cols; c++){
+        scatter.push({
+          x: mx + cw * (c + 0.5) + (rnd() - 0.5) * cw * 0.55,
+          y: mx + ch * (r + 0.5) + (rnd() - 0.5) * ch * 0.55
+        });
+      }
+    }
+  })();
+
+  var canvas = document.getElementById('pvd');
+  var ctx = canvas.getContext('2d');
+  var scale = 1;
+  var drag = null;   // {size,i,offx,offy}
+  var hover = null;  // {size,i}
+
+  // ----- rendering -----
+  function fitFont(text, maxW, base){
+    var fs = base;
+    ctx.font = '700 ' + fs + 'px ' + LABEL_FONT;
+    while (fs > 8 && ctx.measureText(text).width > maxW){ fs -= 1; ctx.font = '700 ' + fs + 'px ' + LABEL_FONT; }
+    return fs;
+  }
+
+  function drawLabel(text, x, y, r, base){
+    var fs = fitFont(text, 2 * r - 8, base);
+    ctx.font = '700 ' + fs + 'px ' + LABEL_FONT;
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = Math.max(2, fs / 5);
+    ctx.strokeStyle = 'rgba(30,20,44,.55)';
+    ctx.strokeText(text, x, y + 0.5);
+    ctx.fillStyle = '#fff';
+    ctx.fillText(text, x, y + 0.5);
+  }
+
+  function render(){
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+
+    // background (also the exported image background; 'clear' stays transparent)
+    if (bgMode === 'clear'){
+      ctx.clearRect(0, 0, VIRT_W, VIRT_H);
+    } else {
+      ctx.fillStyle = (bgMode === 'white') ? COL.white : COL.paper;
+      ctx.fillRect(0, 0, VIRT_W, VIRT_H);
+    }
+
+    // sea-of-electrons: translucent metallic shade + scattered delocalized electrons
+    if (soeOn){
+      if (bgMode !== 'clear'){
+        ctx.fillStyle = COL.soeShade;
+        ctx.fillRect(0, 0, VIRT_W, VIRT_H);
+      }
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineWidth = 1.6;
+      for (var s = 0; s < cfg.soe.val; s++){
+        var m = scatter[s];
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, 7, 0, PI2);
+        ctx.fillStyle = COL.seaFill;
+        ctx.fill();
+        ctx.strokeStyle = COL.seaLine;
+        ctx.stroke();
+        ctx.fillStyle = COL.seaMark;
+        ctx.font = '700 12px ' + LABEL_FONT;
+        ctx.fillText('−', m.x, m.y);
+      }
+    }
+
+    // snap grid guide — only while snap-dragging, so it never lands in an export
+    if (snapOn && drag){
+      ctx.fillStyle = COL.guide;
+      for (var gi = 0; gi < GCOLS; gi++){
+        for (var gj = 0; gj < GROWS; gj++){
+          ctx.beginPath();
+          ctx.arc(GOX + gi * PITCH, GOY + gj * PITCH, 2.4, 0, PI2);
+          ctx.fill();
+        }
+      }
+      if (guide){
+        ctx.beginPath();
+        ctx.arc(guide.x, guide.y, SIZES[drag.size].r + 3, 0, PI2);
+        ctx.lineWidth = 2.4;
+        ctx.strokeStyle = COL.guideOn;
+        ctx.stroke();
+      }
+    }
+
+    // particles — draw back-to-front so smaller ones stay grabbable on top
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (var o = 0; o < ORDER_BACK.length; o++){
+      var size = ORDER_BACK[o], S = SIZES[size], arr = particles[size], v = cfg[size].val, lab = labels[size];
+      for (var i = 0; i < v; i++){
+        var p = arr[i];
+        var isDrag = (drag && drag.size === size && drag.i === i);
+        var isHover = (hover && hover.size === size && hover.i === i);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, S.r, 0, PI2);
+        ctx.fillStyle = isDrag ? S.drag : (isHover ? S.over : S.color);
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = (isDrag || isHover) ? S.drag : 'rgba(44,30,66,.22)';
+        ctx.stroke();
+        if (lab) drawLabel(lab, p.x, p.y, S.r, S.base);
+      }
+    }
+
+    // sea-of-electrons readout
+    if (soeOn){
+      ctx.fillStyle = COL.soeText;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'alphabetic';
+      ctx.font = 'italic 700 34px ' + CANVAS_FONT;
+      ctx.fillText(cfg.soe.val + ' e⁻', VIRT_W - 16, VIRT_H - 14);
+    }
+  }
+
+  function layout(){
+    var stage = canvas.parentElement;
+    var w = Math.max(280, Math.min(stage.clientWidth, 600));
+    var h = Math.round(w * VIRT_H / VIRT_W);
+    var dpr = window.devicePixelRatio || 1;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    scale = (w * dpr) / VIRT_W; // uniform (aspect preserved)
+    render();
+  }
+
+  // ----- pointer / drag -----
+  function toVirt(evt){
+    var rect = canvas.getBoundingClientRect();
+    return {
+      x: (evt.clientX - rect.left) / rect.width * VIRT_W,
+      y: (evt.clientY - rect.top) / rect.height * VIRT_H
+    };
+  }
+  function pick(pt){
+    for (var o = 0; o < ORDER_FRONT.length; o++){
+      var size = ORDER_FRONT[o], v = cfg[size].val, reach = SIZES[size].r + HIT_PAD, arr = particles[size];
+      for (var i = v - 1; i >= 0; i--){
+        if (Math.hypot(arr[i].x - pt.x, arr[i].y - pt.y) <= reach) return {size:size, i:i};
+      }
+    }
+    return null;
+  }
+  function clampX(v, r){ return Math.max(r, Math.min(VIRT_W - r, v)); }
+  function clampY(v, r){ return Math.max(r, Math.min(VIRT_H - r, v)); }
+
+  // ----- snapping (tidies placement; never chooses count or arrangement) -----
+  function nodeFree(x, y, selfSize, selfI){
+    for (var o = 0; o < ORDER_FRONT.length; o++){
+      var size = ORDER_FRONT[o], v = cfg[size].val, arr = particles[size];
+      for (var i = 0; i < v; i++){
+        if (size === selfSize && i === selfI) continue;
+        if (Math.hypot(arr[i].x - x, arr[i].y - y) < PITCH * 0.55) return false;
+      }
+    }
+    return true;
+  }
+  // nearest free grid node to (px,py), or null if the whole lattice is taken
+  function snapTarget(px, py, selfSize, selfI){
+    var best = null, bestD = Infinity;
+    for (var gi = 0; gi < GCOLS; gi++){
+      for (var gj = 0; gj < GROWS; gj++){
+        var x = GOX + gi * PITCH, y = GOY + gj * PITCH;
+        if (!nodeFree(x, y, selfSize, selfI)) continue;
+        var d = Math.hypot(x - px, y - py);
+        if (d < bestD){ bestD = d; best = {x:x, y:y}; }
+      }
+    }
+    return best;
+  }
+  function snapAll(){
+    for (var o = 0; o < ORDER_BACK.length; o++){ // large first — they claim room, small fill in
+      var size = ORDER_BACK[o], v = cfg[size].val, arr = particles[size];
+      for (var i = 0; i < v; i++){
+        var t = snapTarget(arr[i].x, arr[i].y, size, i);
+        if (t){ arr[i].x = t.x; arr[i].y = t.y; }
+      }
+    }
+  }
+
+  canvas.addEventListener('pointerdown', function(evt){
+    var pt = toVirt(evt);
+    var hit = pick(pt);
+    if (!hit) return;
+    var p = particles[hit.size][hit.i];
+    drag = {size:hit.size, i:hit.i, offx:p.x - pt.x, offy:p.y - pt.y};
+    canvas.classList.add('grabbing');
+    try { canvas.setPointerCapture(evt.pointerId); } catch (_e){}
+    evt.preventDefault();
+    render();
+  });
+  canvas.addEventListener('pointermove', function(evt){
+    var pt = toVirt(evt);
+    if (drag){
+      var p = particles[drag.size][drag.i], r = SIZES[drag.size].r;
+      var t = snapOn ? snapTarget(pt.x, pt.y, drag.size, drag.i) : null;
+      if (t){
+        p.x = t.x; p.y = t.y;
+        guide = {x:t.x, y:t.y};
+      } else {
+        p.x = clampX(pt.x + drag.offx, r);
+        p.y = clampY(pt.y + drag.offy, r);
+        guide = null;
+      }
+      evt.preventDefault();
+      render();
+    } else {
+      var h = pick(pt);
+      var same = (h && hover && h.size === hover.size && h.i === hover.i) || (!h && !hover);
+      if (!same){
+        hover = h;
+        canvas.style.cursor = h ? 'grab' : 'default';
+        render();
+      }
+    }
+  });
+  function endDrag(evt){
+    if (!drag) return;
+    drag = null;
+    guide = null;
+    canvas.classList.remove('grabbing');
+    try { canvas.releasePointerCapture(evt.pointerId); } catch (_e){}
+    render();
+  }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+  canvas.addEventListener('pointerleave', function(){
+    if (!drag && hover){ hover = null; canvas.style.cursor = 'default'; render(); }
+  });
+
+  // ----- steppers -----
+  function setVal(key, v){
+    var c = cfg[key];
+    c.val = Math.max(c.min, Math.min(c.max, v));
+    document.getElementById('val-' + key).textContent = c.val;
+    document.querySelector('.step--minus[data-target="' + key + '"]').disabled = c.val <= c.min;
+    document.querySelector('.step--plus[data-target="' + key + '"]').disabled = c.val >= c.max;
+    render();
+  }
+  var steps = document.querySelectorAll('.step');
+  for (var si = 0; si < steps.length; si++){
+    steps[si].addEventListener('click', function(){
+      var key = this.getAttribute('data-target');
+      setVal(key, cfg[key].val + Number(this.getAttribute('data-dir')));
+    });
+  }
+
+  // ----- labels + charge helper -----
+  var labelInputs = Array.prototype.slice.call(document.querySelectorAll('.label-input'));
+  var MAXLABEL = 6;
+  var lastLabel = null, caretStart = 0, caretEnd = 0;
+  function remember(inp){ lastLabel = inp; caretStart = inp.selectionStart; caretEnd = inp.selectionEnd; }
+  labelInputs.forEach(function(inp){
+    inp.addEventListener('focus', function(){ remember(inp); });
+    inp.addEventListener('click', function(){ remember(inp); });
+    inp.addEventListener('keyup', function(){ remember(inp); });
+    inp.addEventListener('input', function(){ labels[inp.getAttribute('data-size')] = inp.value; remember(inp); render(); });
+  });
+
+  var chips = document.querySelectorAll('.chip');
+  for (var ci = 0; ci < chips.length; ci++){
+    // preventDefault on mousedown keeps the label focused on desktop so the caret is preserved
+    chips[ci].addEventListener('mousedown', function(evt){ evt.preventDefault(); });
+    chips[ci].addEventListener('click', function(){
+      var inp = lastLabel || labelInputs[0];
+      var val = inp.value, s = caretStart, e = caretEnd;
+      if (this.getAttribute('data-act') === 'del'){
+        if (s === e && s > 0){ val = val.slice(0, s - 1) + val.slice(e); s = e = s - 1; }
+        else { val = val.slice(0, s) + val.slice(e); s = e = s; }
+      } else {
+        var ins = this.getAttribute('data-ins');
+        if (val.length - (e - s) + ins.length > MAXLABEL) return;
+        val = val.slice(0, s) + ins + val.slice(e); s = e = s + ins.length;
+      }
+      inp.value = val;
+      labels[inp.getAttribute('data-size')] = val;
+      caretStart = s; caretEnd = e;
+      try { inp.focus(); inp.setSelectionRange(s, e); } catch (_e){}
+      render();
+    });
+  }
+
+  // ----- display options -----
+  var soeToggle = document.getElementById('soeToggle');
+  var snapToggle = document.getElementById('snapToggle');
+  var soeCtl = document.getElementById('soeCtl');
+
+  soeToggle.addEventListener('click', function(){
+    soeOn = !soeOn;
+    soeToggle.setAttribute('aria-pressed', soeOn ? 'true' : 'false');
+    soeCtl.classList.toggle('hidden', !soeOn);
+    render();
+  });
+
+  snapToggle.addEventListener('click', function(){
+    snapOn = !snapOn;
+    snapToggle.setAttribute('aria-pressed', snapOn ? 'true' : 'false');
+    if (snapOn) snapAll(); // tidy whatever is already placed (leaves counts untouched)
+    render();
+  });
+
+  var segBtns = document.querySelectorAll('.seg');
+  for (var sb = 0; sb < segBtns.length; sb++){
+    segBtns[sb].addEventListener('click', function(){
+      bgMode = this.getAttribute('data-bg');
+      for (var j = 0; j < segBtns.length; j++){
+        segBtns[j].setAttribute('aria-pressed', segBtns[j] === this ? 'true' : 'false');
+      }
+      canvas.classList.remove('bg-white', 'bg-clear');
+      if (bgMode === 'white') canvas.classList.add('bg-white');
+      else if (bgMode === 'clear') canvas.classList.add('bg-clear');
+      render();
+    });
+  }
+
+  // ----- actions -----
+  var copyBtn = document.getElementById('copyBtn');
+  var srStatus = document.getElementById('srStatus');
+  var COPY_LABEL = copyBtn.textContent;
+  var copyT = null;
+  // the Copy button reports its own status (green flash); a visually-hidden
+  // live region mirrors it so screen readers announce the result
+  function flashCopy(msg, ok){
+    copyBtn.textContent = msg;
+    srStatus.textContent = msg;
+    if (ok === false) copyBtn.classList.remove('btn--done');
+    else copyBtn.classList.add('btn--done');
+    if (copyT) clearTimeout(copyT);
+    copyT = setTimeout(function(){
+      copyBtn.textContent = COPY_LABEL;
+      copyBtn.classList.remove('btn--done');
+      srStatus.textContent = ''; // clear so a repeat copy re-announces
+    }, 1800);
+  }
+
+  copyBtn.addEventListener('click', function(){
+    hover = null;
+    render();
+    canvas.toBlob(function(blob){
+      if (!blob){ flashCopy('Copy failed', false); return; }
+      if (navigator.clipboard && window.ClipboardItem){
+        navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
+          .then(function(){ flashCopy('Copied to clipboard!'); })
+          .catch(function(){ download(blob); });
+      } else {
+        download(blob);
+      }
+    }, 'image/png');
+  });
+  function download(blob){
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'particle-diagram.png';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    flashCopy('Saved as PNG');
+  }
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    ORDER_FRONT.forEach(function(size){
+      for (var i = 0; i < cfg[size].max; i++){ var h = homePos(size, i); particles[size][i].x = h.x; particles[size][i].y = h.y; }
+      labels[size] = '';
+      document.getElementById('label-' + size).value = '';
+    });
+    setVal('small', 0); setVal('medium', 0); setVal('large', 0); setVal('soe', 0);
+  });
+
+  // ----- help -----
+  var help = document.getElementById('help');
+  document.getElementById('helpBtn').addEventListener('click', function(){ help.classList.remove('hidden'); });
+  document.getElementById('helpClose').addEventListener('click', function(){ help.classList.add('hidden'); });
+  help.addEventListener('click', function(evt){ if (evt.target === help) help.classList.add('hidden'); });
+  document.addEventListener('keydown', function(evt){ if (evt.key === 'Escape') help.classList.add('hidden'); });
+
+  // ----- boot -----
+  ['small','medium','large','soe'].forEach(function(k){ setVal(k, 0); });
+  window.addEventListener('resize', layout);
+  layout();
+  if (document.fonts && document.fonts.ready){ document.fonts.ready.then(render); }
+})();
+</script>
+</body>
+</html>
