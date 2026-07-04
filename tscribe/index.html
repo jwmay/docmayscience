@@ -193,6 +193,25 @@
   }
   .note b{color:var(--accent);}
 
+  /* ---------- editions / downloads ---------- */
+  .editions{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1rem; margin:0 0 .3rem; }
+  .edition{
+    position:relative; display:flex; flex-direction:column; gap:.5rem;
+    background:var(--card); border:2px solid var(--line); border-radius:16px;
+    padding:1.2rem 1.3rem; box-shadow:0 4px 0 var(--line);
+  }
+  .edition--pick{ border-color:var(--accent); box-shadow:0 4px 0 var(--accent-deep); }
+  .edition-badge{
+    align-self:flex-start;
+    font-family:'IBM Plex Mono',monospace; font-size:.66rem; font-weight:600;
+    text-transform:uppercase; letter-spacing:.08em;
+    background:var(--accent); color:var(--paper); padding:.2rem .5rem; border-radius:7px;
+  }
+  .edition h3{ font-family:'Fraunces',serif; font-weight:700; font-size:1.3rem; margin:0; }
+  .edition-meta{ font-family:'IBM Plex Mono',monospace; font-size:.76rem; color:var(--muted); margin:0; }
+  .edition p{ margin:0; font-size:.96rem; }
+  .edition .btn{ margin-top:auto; align-self:flex-start; }
+
   /* ---------- footer ---------- */
   footer{
     background:var(--card);border-top:2px solid var(--line);
@@ -218,15 +237,15 @@
   <!-- ===== HERO ===== -->
   <section class="hero">
     <div class="wrap">
-      <p class="eyebrow">Mac app · macOS 14+</p>
+      <p class="eyebrow">Mac app · Apple Silicon · macOS 14+</p>
       <h2 class="display">Transcribe audio &amp; video — entirely on your Mac.</h2>
       <p class="lede">tscribe turns lectures, student feedback, and interviews into accurate, word-timed transcripts. Everything runs on-device with whisper.cpp and Metal — nothing is ever uploaded.</p>
       <div class="cta-row">
-        <button type="button" class="btn btn--soon" disabled>Download for macOS — coming soon</button>
+        <a class="btn" href="https://github.com/jwmay/tscribe/releases/latest/download/Tscribe.dmg">Download for macOS →</a>
         <a class="btn btn--ghost" href="https://github.com/jwmay/tscribe" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a>
       </div>
-      <p class="fineprint">Final packaging in progress — check back shortly.<br>
-      Version 1.0.0 · Free &amp; open source · macOS 14 Sonoma or later · Apple silicon recommended.</p>
+      <p class="fineprint">Version 1.1.0 · Free &amp; open source · Apple Silicon Mac (M1 or later) · macOS 14 Sonoma or later.<br>
+      ~5&nbsp;MB download — it fetches its speech model once on first launch, then runs entirely offline.</p>
     </div>
   </section>
 
@@ -304,25 +323,52 @@
       <p class="eyebrow">Before you install</p>
       <h2>What you'll need.</h2>
       <dl class="spec">
+        <div><dt>Mac</dt><dd>Apple Silicon (M1 or later) — Intel Macs aren't supported</dd></div>
         <div><dt>macOS</dt><dd>14 (Sonoma) or later</dd></div>
-        <div><dt>Chip</dt><dd>Apple silicon recommended — uses the Metal GPU</dd></div>
-        <div><dt>Disk</dt><dd>a few GB free for the large-v3 model</dd></div>
-        <div><dt>Version</dt><dd><span class="mono">1.0.0</span> · released July 2026</dd></div>
+        <div><dt>Memory</dt><dd>8 GB RAM (16 GB recommended for long recordings)</dd></div>
+        <div><dt>Disk</dt><dd>~6 GB free for the first-launch model download (settles to ~3 GB)</dd></div>
+        <div><dt>Internet</dt><dd>Once, at first launch, to fetch the model — never for transcription</dd></div>
+        <div><dt>Version</dt><dd><span class="mono">1.1.0</span> · released July 2026</dd></div>
         <div><dt>License</dt><dd>Free &amp; open source</dd></div>
       </dl>
     </div>
   </section>
 
-  <!-- ===== INSTALL ===== -->
+  <!-- ===== DOWNLOADS / EDITIONS ===== -->
   <section class="band">
+    <div class="wrap">
+      <p class="eyebrow">Two editions, one app</p>
+      <h2>Pick your download.</h2>
+      <p class="intro">Same complete app either way — the only difference is whether the speech model downloads once or ships inside.</p>
+      <div class="editions">
+        <div class="edition edition--pick">
+          <span class="edition-badge">Recommended</span>
+          <h3>Standard</h3>
+          <p class="edition-meta">Tscribe.dmg · ~5&nbsp;MB · from GitHub</p>
+          <p>Downloads its ~2.9&nbsp;GB speech model once on first launch, then runs 100% offline. Best for most people.</p>
+          <a class="btn" href="https://github.com/jwmay/tscribe/releases/latest/download/Tscribe.dmg">Download Standard →</a>
+        </div>
+        <div class="edition">
+          <h3>Complete</h3>
+          <p class="edition-meta">Tscribe-Complete.dmg · ~2.7&nbsp;GB · from Google Drive</p>
+          <p>The speech model is already bundled inside — works offline from the very first open, with no first-launch download. Good for locked-down or offline Macs.</p>
+          <a class="btn btn--ghost" href="https://drive.google.com/file/d/1WjPKeVWv5JxtloXHM_c6YMeupLiy_VxX/view?usp=sharing" target="_blank" rel="noopener noreferrer">Download Complete ↗</a>
+        </div>
+      </div>
+      <p class="note"><b>Either way, your recordings and transcripts never leave your Mac.</b> The Standard download only fetches the app's own speech model (from Hugging Face) — your audio and transcripts are never uploaded.</p>
+    </div>
+  </section>
+
+  <!-- ===== INSTALL ===== -->
+  <section>
     <div class="wrap">
       <p class="eyebrow">Getting started</p>
       <h2>Install in about a minute.</h2>
       <ol class="steps">
-        <li><b>Download tscribe</b> and open the downloaded file.</li>
-        <li><b>Drag tscribe to your Applications folder.</b></li>
+        <li><b>Open the downloaded .dmg</b> and drag tscribe to your Applications folder.</li>
         <li><b>First launch — Control-click, don't double-click.</b> Because tscribe is open source and not notarized by Apple, a normal double-click shows <em>"tscribe cannot be opened because it is from an unidentified developer."</em> Instead, <kbd>Control</kbd>-click (or right-click) tscribe in Applications, choose <b>Open</b>, then click <b>Open</b> in the dialog. You only do this once.</li>
         <li><b>Still blocked? Open it anyway.</b> Go to <b>System Settings → Privacy &amp; Security</b>, scroll to Security, and click <b>Open Anyway</b> next to the tscribe message — then confirm with Touch&nbsp;ID or your password.</li>
+        <li><b>Let it finish setting up.</b> The first time you open the Standard edition, tscribe downloads its speech model (~2.9&nbsp;GB) once — keep your Mac online for that first run. Every transcription after that is fully offline. <em>(The Complete edition skips this — the model is already inside.)</em></li>
       </ol>
       <p class="note"><b>Why the warning?</b> tscribe isn't code-signed with a paid Apple Developer certificate, so macOS Gatekeeper asks before the first launch. The full source is on GitHub — you can read exactly what it does before you run it.</p>
     </div>
@@ -335,7 +381,7 @@
     <a href="../">← Back to docmayscience.com</a>
     <a href="https://github.com/jwmay/tscribe" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a>
     <a href="mailto:jwmay87@gmail.com">Say hello →</a>
-    <span class="ver">v1.0.0</span>
+    <span class="ver">v1.1.0</span>
   </nav>
 </footer>
 </body>
