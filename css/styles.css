@@ -9,6 +9,7 @@
     --gold:       #e9a63a;
     --orange:     #d9672d;
     --moss:       #7d8c3f;
+    --steel:      #37618c;
     --shadow:     #2c1e42;
     /* periodic table category tints — 70s takes on the classic coloring */
     --cat-alkali:     #e2924e;
@@ -642,6 +643,7 @@
   .sym-orange{ background:var(--orange); }
   .sym-gold  { background:var(--gold); color:var(--ink); }
   .sym-moss  { background:var(--moss); }
+  .sym-steel { background:var(--steel); }
   .tile-index{
     font-family:'IBM Plex Mono', monospace;
     font-weight:600;

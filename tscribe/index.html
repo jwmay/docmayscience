@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<meta name="theme-color" content="#f4ecda">
+<meta name="description" content="tscribe — a native macOS app that transcribes audio & video entirely on your Mac, with word-level timestamps. On-device with whisper.cpp and Metal; nothing is ever uploaded. From Doc May Science.">
+<title>tscribe · on-device transcription for macOS · Doc May Science</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600..900&family=Archivo:wght@400;500;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:light only;
+    --paper:#f4ecda;
+    --paper-deep:#ecdfc3;
+    --card:#faf3e3;
+    --ink:#2c1e42;
+    --muted:#7c718f;
+    --line:#d8cfbc;
+    --grape:#5b3790;
+    --gold:#e9a63a;
+    --orange:#d9672d;
+    --moss:#7d8c3f;
+    --accent:#37618c;        /* steel blue — tscribe's own accent (text / ink / transcription) */
+    --accent-deep:#243f5c;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;}
+  button{touch-action:manipulation;}
+  body{
+    margin:0;
+    min-height:100dvh;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Archivo',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    line-height:1.55;
+    display:flex;flex-direction:column;
+    -webkit-tap-highlight-color:transparent;
+  }
+  a{color:var(--accent);}
+  a:focus-visible,button:focus-visible{outline:3px dashed var(--orange);outline-offset:3px;}
+  ::selection{background:var(--gold);color:var(--ink);}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;top:0;z-index:10;
+    display:flex;align-items:center;gap:.7rem;
+    padding:.55rem .9rem;
+    padding-top:calc(.55rem + env(safe-area-inset-top));
+    background:var(--card);
+    border-bottom:2px solid var(--line);
+  }
+  header .logo{display:inline-flex;flex:none;}
+  header .logo img{height:34px;width:auto;display:block;}
+  header h1{
+    margin:0;flex:none;
+    font-family:'IBM Plex Mono',monospace;font-weight:600;
+    font-size:1.4rem;letter-spacing:-.01em;line-height:1;
+  }
+  header h1 .t{color:var(--accent);}
+  header .sub{
+    font-family:'IBM Plex Mono',monospace;font-size:.72rem;
+    color:var(--muted);letter-spacing:.02em;white-space:nowrap;
+  }
+  header .gh{
+    margin-left:auto;flex:none;
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:.8rem;
+    text-decoration:none;color:var(--accent);
+    padding:.4rem .6rem;border-radius:9px;border:2px solid var(--line);
+  }
+  header .gh:hover{border-color:var(--accent);}
+  @media (max-width:520px){ header .sub{display:none;} }
+
+  /* ---------- layout ---------- */
+  main{flex:1;width:100%;}
+  .wrap{width:100%;max-width:880px;margin:0 auto;padding:0 1.1rem;}
+  section{padding:2.8rem 0;}
+  section.band{background:var(--paper-deep);border-top:2px solid var(--line);border-bottom:2px solid var(--line);}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;font-size:.74rem;font-weight:600;
+    text-transform:uppercase;letter-spacing:.12em;color:var(--accent);
+    margin:0 0 .55rem;
+  }
+  h2.display{
+    font-family:'Fraunces',Georgia,serif;font-weight:800;
+    font-size:clamp(1.6rem,4.4vw,2.5rem);line-height:1.05;letter-spacing:-.015em;
+    margin:0 0 .7rem;
+  }
+  section h2:not(.display){
+    font-family:'Fraunces',Georgia,serif;font-weight:800;
+    font-size:clamp(1.35rem,3.2vw,1.9rem);line-height:1.1;letter-spacing:-.01em;
+    margin:0 0 1.3rem;
+  }
+  .lede{font-size:1.12rem;max-width:60ch;margin:0 0 1.3rem;}
+
+  /* ---------- hero ---------- */
+  .hero{padding-top:2.4rem;}
+  .hero .eyebrow{color:var(--accent);}
+  .cta-row{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin:.4rem 0 .8rem;}
+  .fineprint{
+    font-family:'IBM Plex Mono',monospace;font-size:.76rem;line-height:1.5;
+    color:var(--muted);margin:.3rem 0 0;
+  }
+
+  .btn{
+    display:inline-flex;align-items:center;gap:.4rem;
+    font-family:'Archivo',sans-serif;font-weight:800;font-size:1rem;
+    padding:.8rem 1.2rem;border-radius:13px;text-decoration:none;
+    border:2px solid var(--accent-deep);background:var(--accent);color:var(--paper);
+    cursor:pointer;box-shadow:0 5px 0 var(--accent-deep);
+    transition:transform .1s,box-shadow .1s;
+  }
+  .btn:active{transform:translateY(5px);box-shadow:0 0 0 var(--accent-deep);}
+  .btn--ghost{
+    background:var(--card);color:var(--ink);
+    border-color:var(--ink);box-shadow:0 5px 0 var(--ink);
+  }
+  .btn--ghost:active{box-shadow:0 0 0 var(--ink);}
+  .btn--soon{
+    background:var(--paper-deep);color:var(--muted);
+    border:2px dashed var(--line);box-shadow:none;cursor:default;
+    font-weight:700;
+  }
+  .btn--soon::before{content:"○ ";font-weight:700;}
+
+  /* ---------- feature cards ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem;}
+  .feature{
+    background:var(--card);border:2px solid var(--line);border-radius:16px;
+    padding:1.15rem 1.2rem;box-shadow:0 4px 0 var(--line);
+  }
+  .feature .ico{
+    display:inline-flex;width:40px;height:40px;border-radius:11px;
+    align-items:center;justify-content:center;margin-bottom:.6rem;
+    background:rgba(55,97,140,.12);color:var(--accent);
+  }
+  .feature .ico svg{width:22px;height:22px;}
+  .feature h3{font-family:'Fraunces',serif;font-weight:700;font-size:1.15rem;margin:0 0 .35rem;}
+  .feature p{margin:0;font-size:.96rem;color:var(--ink);}
+
+  /* ---------- screenshots ---------- */
+  .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;}
+  .shot{margin:0;}
+  .shot .frame{
+    aspect-ratio:16/10;border-radius:14px;
+    border:2px dashed var(--accent);background:rgba(55,97,140,.07);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .shot .frame span{
+    font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.04em;
+    color:var(--accent);opacity:.8;
+  }
+  .shot figcaption{
+    margin-top:.5rem;font-family:'IBM Plex Mono',monospace;
+    font-size:.76rem;color:var(--muted);text-align:center;
+  }
+
+  /* ---------- use-cases ---------- */
+  .uses{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;list-style:none;margin:0;padding:0;}
+  .uses li{
+    background:var(--card);border:2px solid var(--line);border-radius:14px;padding:1rem 1.1rem;
+  }
+  .uses b{display:block;font-family:'Fraunces',serif;font-size:1.05rem;margin-bottom:.2rem;}
+  .uses p{margin:0;font-size:.94rem;}
+  .intro{font-size:1.05rem;max-width:58ch;margin:0 0 1.3rem;}
+
+  /* ---------- spec list ---------- */
+  .spec{margin:0;border-top:2px solid var(--line);}
+  .spec div{
+    display:flex;gap:1rem;justify-content:space-between;align-items:baseline;
+    padding:.7rem .1rem;border-bottom:2px solid var(--line);
+  }
+  .spec dt{font-weight:700;flex:none;}
+  .spec dd{margin:0;text-align:right;color:var(--ink);}
+  .spec dd .mono{font-family:'IBM Plex Mono',monospace;font-size:.9rem;}
+
+  /* ---------- install steps ---------- */
+  .steps{margin:0;padding-left:1.3rem;display:flex;flex-direction:column;gap:.75rem;max-width:64ch;}
+  .steps li{padding-left:.2rem;}
+  .steps b{color:var(--accent);}
+  kbd{
+    font-family:'IBM Plex Mono',monospace;font-size:.85em;
+    background:var(--paper-deep);border:1px solid var(--line);border-radius:6px;
+    padding:.05em .4em;
+  }
+  .note{
+    margin:1.4rem 0 0;padding:.9rem 1.1rem;
+    background:var(--card);border:2px solid var(--line);border-left:6px solid var(--accent);
+    border-radius:12px;font-size:.95rem;max-width:64ch;
+  }
+  .note b{color:var(--accent);}
+
+  /* ---------- footer ---------- */
+  footer{
+    background:var(--card);border-top:2px solid var(--line);
+    padding:1.6rem 1.1rem calc(1.6rem + env(safe-area-inset-bottom));
+    text-align:center;
+  }
+  footer .brand{font-family:'Fraunces',serif;font-weight:700;font-size:1.05rem;margin:0 0 .5rem;}
+  footer nav{display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;justify-content:center;align-items:center;}
+  footer nav a{font-weight:700;font-size:.92rem;text-decoration:none;}
+  footer nav a:hover{text-decoration:underline;}
+  footer .ver{font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--muted);}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="../" title="docmayscience.com" aria-label="Back to docmayscience.com"><img src="../assets/logo/dms-logo.svg" alt=""></a>
+  <h1><span class="t">t</span>scribe</h1>
+  <span class="sub">on-device transcription for macOS</span>
+  <a class="gh" href="https://github.com/jwmay/tscribe" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+</header>
+
+<main>
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Mac app · macOS 14+</p>
+      <h2 class="display">Transcribe audio &amp; video — entirely on your Mac.</h2>
+      <p class="lede">tscribe turns lectures, student feedback, and interviews into accurate, word-timed transcripts. Everything runs on-device with whisper.cpp and Metal — nothing is ever uploaded.</p>
+      <div class="cta-row">
+        <button type="button" class="btn btn--soon" disabled>Download for macOS — coming soon</button>
+        <a class="btn btn--ghost" href="https://github.com/jwmay/tscribe" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a>
+      </div>
+      <p class="fineprint">Final packaging in progress — check back shortly.<br>
+      Version 1.0.0 · Free &amp; open source · macOS 14 Sonoma or later · Apple silicon recommended.</p>
+    </div>
+  </section>
+
+  <!-- ===== FEATURES ===== -->
+  <section class="band">
+    <div class="wrap">
+      <p class="eyebrow">Under the hood</p>
+      <h2>Built to keep your recordings yours.</h2>
+      <div class="grid">
+        <div class="feature">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
+          <h3>Private by design</h3>
+          <p>No uploads, no accounts, no cloud. Every second of audio is processed on your machine and never leaves it — safe for student voices, oral exams, and IEP recordings.</p>
+        </div>
+        <div class="feature">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          <h3>Word-level timestamps</h3>
+          <p>A timestamp for every word, not just every line. Perfect for captions, pulling clips, and jumping straight to the moment that matters.</p>
+        </div>
+        <div class="feature">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span>
+          <h3>Metal-accelerated</h3>
+          <p>Powered by whisper.cpp (large-v3) with Metal GPU acceleration, so a full class period transcribes in minutes, not hours.</p>
+        </div>
+        <div class="feature">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg></span>
+          <h3>Audio and video</h3>
+          <p>Drop in a recording or a video. tscribe converts video to 16&nbsp;kHz mono with AVFoundation, then transcribes either one.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SCREENSHOTS ===== -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">A look inside</p>
+      <h2>See it in action.</h2>
+      <div class="shots">
+        <!-- When ready, replace each .frame with: <img src="../assets/screenshots/tscribe/01.png" alt="tscribe importing a lecture video" width="1600" height="1000"> -->
+        <figure class="shot">
+          <div class="frame"><span>Screenshot coming soon</span></div>
+          <figcaption>Drag-and-drop import</figcaption>
+        </figure>
+        <figure class="shot">
+          <div class="frame"><span>Screenshot coming soon</span></div>
+          <figcaption>Live transcription with word timestamps</figcaption>
+        </figure>
+        <figure class="shot">
+          <div class="frame"><span>Screenshot coming soon</span></div>
+          <figcaption>Export to SRT, VTT, or plain text</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOR TEACHERS ===== -->
+  <section class="band">
+    <div class="wrap">
+      <p class="eyebrow">In the classroom</p>
+      <h2>Made for teachers.</h2>
+      <p class="intro">Built by a chemistry teacher for the recordings that pile up every semester.</p>
+      <ul class="uses">
+        <li><b>Caption lecture videos</b><p>Generate captions for flipped-classroom and absent-student videos without shipping footage to a third party.</p></li>
+        <li><b>Student feedback &amp; oral exams</b><p>Transcribe recorded feedback, presentations, and oral assessments into text you can grade and keep.</p></li>
+        <li><b>Accessibility &amp; IEP accommodations</b><p>Provide transcripts as an accommodation — hearing access, note-taking support, language scaffolds — with student audio staying private.</p></li>
+        <li><b>Meeting &amp; IEP notes</b><p>Turn a recorded meeting into a searchable, word-timed transcript in a few minutes.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===== REQUIREMENTS ===== -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">Before you install</p>
+      <h2>What you'll need.</h2>
+      <dl class="spec">
+        <div><dt>macOS</dt><dd>14 (Sonoma) or later</dd></div>
+        <div><dt>Chip</dt><dd>Apple silicon recommended — uses the Metal GPU</dd></div>
+        <div><dt>Disk</dt><dd>a few GB free for the large-v3 model</dd></div>
+        <div><dt>Version</dt><dd><span class="mono">1.0.0</span> · released July 2026</dd></div>
+        <div><dt>License</dt><dd>Free &amp; open source</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ===== INSTALL ===== -->
+  <section class="band">
+    <div class="wrap">
+      <p class="eyebrow">Getting started</p>
+      <h2>Install in about a minute.</h2>
+      <ol class="steps">
+        <li><b>Download tscribe</b> and open the downloaded file.</li>
+        <li><b>Drag tscribe to your Applications folder.</b></li>
+        <li><b>First launch — Control-click, don't double-click.</b> Because tscribe is open source and not notarized by Apple, a normal double-click shows <em>"tscribe cannot be opened because it is from an unidentified developer."</em> Instead, <kbd>Control</kbd>-click (or right-click) tscribe in Applications, choose <b>Open</b>, then click <b>Open</b> in the dialog. You only do this once.</li>
+        <li><b>Still blocked? Open it anyway.</b> Go to <b>System Settings → Privacy &amp; Security</b>, scroll to Security, and click <b>Open Anyway</b> next to the tscribe message — then confirm with Touch&nbsp;ID or your password.</li>
+      </ol>
+      <p class="note"><b>Why the warning?</b> tscribe isn't code-signed with a paid Apple Developer certificate, so macOS Gatekeeper asks before the first launch. The full source is on GitHub — you can read exactly what it does before you run it.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p class="brand">tscribe — part of Doc May Science.</p>
+  <nav aria-label="tscribe">
+    <a href="../">← Back to docmayscience.com</a>
+    <a href="https://github.com/jwmay/tscribe" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a>
+    <a href="mailto:jwmay87@gmail.com">Say hello →</a>
+    <span class="ver">v1.0.0</span>
+  </nav>
+</footer>
+</body>
+</html>
