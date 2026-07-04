@@ -9,6 +9,7 @@
     --gold:       #e9a63a;
     --orange:     #d9672d;
     --moss:       #7d8c3f;
+    --steel:      #37618c;
     --shadow:     #2c1e42;
     /* periodic table category tints — 70s takes on the classic coloring */
     --cat-alkali:     #e2924e;
@@ -106,8 +107,20 @@
   .btn--grape{ background:var(--grape); color:var(--paper); }
   .btn--grape:hover{ background:var(--grape-deep); }
   .btn--ghost{ background:var(--card); }
-  .btn--sm{ font-size:.88rem; padding:.6em 1.1em; border-radius:11px; box-shadow:0 5px 0 var(--shadow); }
+  .btn--sm{ font-size:.88rem; padding:.6em 1.1em; border-radius:11px; box-shadow:0 5px 0 var(--shadow); overflow:hidden; }
   .btn--sm:hover{ box-shadow:0 2px 0 var(--shadow); }
+  /* Launch → arrow: on hover it accelerates across the full width of the button (a "taking
+     off for flight" ease-in) and flies off the right edge — clipped by the button's own
+     overflow. On leave it snaps back to rest and simply fades in place. */
+  .btn-arrow{ display:inline-block; transition:opacity .3s ease; }
+  .btn:hover .btn-arrow{
+    transform:translateX(360px); opacity:0;
+    transition:transform .32s cubic-bezier(.5,0,.85,.2), opacity .22s ease-in .12s;
+  }
+  @media (prefers-reduced-motion:reduce){
+    .btn-arrow{ transition:none; }
+    .btn:hover .btn-arrow{ transform:none; opacity:1; }
+  }
 
   /* ============ HEADER ============ */
   header{
@@ -642,6 +655,7 @@
   .sym-orange{ background:var(--orange); }
   .sym-gold  { background:var(--gold); color:var(--ink); }
   .sym-moss  { background:var(--moss); }
+  .sym-steel { background:var(--steel); }
   .tile-index{
     font-family:'IBM Plex Mono', monospace;
     font-weight:600;

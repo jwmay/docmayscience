@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "live-server --host=localhost --port=5500",
     "dev:quiet": "live-server --host=localhost --port=5500 --no-browser",
+    "ngrok": "ngrok http 5500",
     "lint": "html-validate *.html */index.html",
     "links": "linkinator . --recurse --skip \"^https?://(?!localhost)\"",
     "check": "npm run lint && npm run links",
