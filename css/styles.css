@@ -747,7 +747,7 @@
     box-shadow:12px 12px 0 var(--gold), 12px 12px 0 3px var(--ink);
     padding:32px;
   }
-  .about-figure .molecule{ width:100%; height:auto; display:block; }
+  .about-figure .portrait{ width:100%; height:auto; display:block; border-radius:14px; }
   .about h2{ font-size:clamp(2rem,4vw,2.8rem); margin:.3em 0 .5em; }
   .about p + p{ margin-top:1em; }
   .timeline{
