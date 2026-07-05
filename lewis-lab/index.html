@@ -79,6 +79,15 @@
     background:rgba(255,255,255,.92);border-radius:999px;padding:5px 11px;font-size:12px;
     font-weight:700;color:#6a6450;box-shadow:0 1px 3px var(--shadow);}
   .fitbtn:active{background:#f0ebe0;}
+  .gridbtn{position:absolute;bottom:10px;right:10px;z-index:4;border:1px solid var(--line);
+    background:rgba(255,255,255,.92);border-radius:999px;padding:5px 11px;font-size:12px;
+    font-weight:700;color:#6a6450;box-shadow:0 1px 3px var(--shadow);
+    display:inline-flex;align-items:center;gap:5px;line-height:1;}
+  .gridbtn svg{width:14px;height:14px;display:block;flex:none;}
+  .gridbtn:active{background:#f0ebe0;}
+  .gridbtn[aria-pressed="false"]{color:#b3a994;}
+  .gridbtn[aria-pressed="false"] svg{opacity:.45;}
+  #stage.grid-off #grid{display:none;}
   .ecount{position:absolute;bottom:10px;left:10px;z-index:4;
     background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;
     padding:4px 12px;font-size:12px;font-weight:700;color:#6a6450;pointer-events:none;
@@ -282,7 +291,7 @@
     .btn:hover{border-color:var(--accent);}
     .btn.go:hover{background:#24605c;}
     .btn.danger:hover{background:#fbeeea;}
-    .chip,.pt-cell,.helpbtn,.fitbtn,.sheet-x,.slot button,.chargectl button,.preset-btn,.iconbtn,.qm-item{cursor:pointer;}
+    .chip,.pt-cell,.helpbtn,.fitbtn,.gridbtn,.sheet-x,.slot button,.chargectl button,.preset-btn,.iconbtn,.qm-item{cursor:pointer;}
     .iconbtn{transition:border-color .12s;}
     .iconbtn:hover{border-color:var(--accent);}
     .chip{transition:border-color .12s,box-shadow .12s;}
@@ -291,7 +300,7 @@
     .pt-cell:hover{filter:brightness(.93);}
     .atom{cursor:grab;}
     .atom:active{cursor:grabbing;}
-    .fitbtn:hover,.helpbtn:hover{border-color:var(--accent);}
+    .fitbtn:hover,.gridbtn:hover,.helpbtn:hover{border-color:var(--accent);}
   }
   /* On wider screens keep the control bars in a centered column so they don't stretch */
   @media (min-width:820px){
@@ -336,6 +345,7 @@
     <button type="button" id="chPlus" aria-label="increase charge">+</button>
   </div>
   <button type="button" id="fitBtn" class="fitbtn" aria-label="fit view">⤢ Fit</button>
+  <button type="button" id="gridBtn" class="gridbtn" aria-pressed="true" title="Toggle grid lines"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>Grid</button>
   <div class="hint" id="hint">Drag atoms up from the tray, or tap one then tap the canvas.<br>Tap <b>two atoms</b> to bond · tap a <b>bond</b> to change it.<br>Drag the <b>:</b> chip onto an atom for a lone pair · repeat taps cycle to 4, then clear.<br><b>Long-press</b> an atom to delete it · drag empty space to pan, pinch to zoom.<br><b>Press &amp; hold</b> empty space for quick tools.</div>
 </div>
 
@@ -1613,6 +1623,14 @@ function fitView(){
   applyView();
 }
 document.getElementById("fitBtn").onclick=fitView;
+(function(){
+  const gridBtn=document.getElementById("gridBtn"), stageEl=document.getElementById("stage");
+  gridBtn.onclick=()=>{
+    const show=gridBtn.getAttribute("aria-pressed")!=="true"; // toggling to the opposite state
+    gridBtn.setAttribute("aria-pressed",show?"true":"false");
+    stageEl.classList.toggle("grid-off",!show);
+  };
+})();
 
 // tap canvas to use the armed element / lone pair
 stage.addEventListener("pointerup",e=>{
