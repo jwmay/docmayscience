@@ -161,6 +161,58 @@
     width:100%;height:auto;display:block;border-radius:14px;
     border:2px solid var(--line);box-shadow:0 4px 0 var(--line);
   }
+  .shot-open{
+    display:block;width:100%;padding:0;border:0;background:none;
+    cursor:zoom-in;border-radius:14px;transition:transform .15s ease;
+  }
+  .shot-open:hover{transform:translateY(-2px);}
+  .shot-open:hover img{border-color:var(--accent);}
+
+  /* ---------- lightbox ---------- */
+  body.lb-lock{overflow:hidden;}
+  .lightbox{
+    position:fixed;inset:0;z-index:100;
+    display:flex;align-items:center;justify-content:center;
+    padding:clamp(1rem,4vw,3rem);
+    background:rgba(20,14,30,.88);
+    opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .2s ease,visibility .2s ease;
+  }
+  .lightbox.open{opacity:1;visibility:visible;pointer-events:auto;}
+  .lb-stage{
+    margin:0;display:flex;flex-direction:column;align-items:center;gap:.75rem;
+    max-width:100%;max-height:100%;
+  }
+  .lb-img{
+    max-width:100%;max-height:80vh;width:auto;height:auto;
+    border-radius:12px;border:2px solid rgba(255,255,255,.15);
+    box-shadow:0 20px 55px rgba(0,0,0,.55);
+    transform:scale(.97);transition:transform .2s ease;
+  }
+  .lightbox.open .lb-img{transform:scale(1);}
+  .lb-cap{
+    font-family:'IBM Plex Mono',monospace;font-size:.82rem;letter-spacing:.03em;
+    color:rgba(255,255,255,.82);text-align:center;margin:0;
+  }
+  .lb-close,.lb-nav{
+    position:fixed;display:inline-flex;align-items:center;justify-content:center;
+    width:48px;height:48px;border-radius:50%;cursor:pointer;line-height:1;
+    background:rgba(255,255,255,.1);color:#fff;border:2px solid rgba(255,255,255,.28);
+  }
+  .lb-close:hover,.lb-nav:hover{background:rgba(255,255,255,.22);}
+  .lb-close{top:calc(1rem + env(safe-area-inset-top));right:1rem;font-size:1.15rem;}
+  .lb-nav{top:50%;transform:translateY(-50%);font-size:1.7rem;}
+  .lb-prev{left:.9rem;}
+  .lb-next{right:.9rem;}
+  @media (max-width:560px){
+    .lb-nav{top:auto;bottom:calc(1.1rem + env(safe-area-inset-bottom));transform:none;}
+    .lb-prev{left:50%;margin-left:-58px;}
+    .lb-next{right:50%;margin-right:-58px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .lightbox,.lb-img,.shot-open{transition:none;}
+    .lb-img{transform:none;}
+  }
   .shot figcaption{
     margin-top:.5rem;font-family:'IBM Plex Mono',monospace;
     font-size:.76rem;color:var(--muted);text-align:center;
@@ -305,15 +357,21 @@
       <h2>See it in action.</h2>
       <div class="shots">
         <figure class="shot">
-          <img src="../assets/tscribe/screenshot-01-import.webp" alt="Tscribe's window inviting you to drag a video or audio file to transcribe on-device" width="2024" height="1328">
+          <button type="button" class="shot-open" aria-label="View a larger screenshot: drag-and-drop import">
+            <img src="../assets/tscribe/screenshot-01-import.webp" alt="Tscribe's window inviting you to drag a video or audio file to transcribe on-device" width="2024" height="1328">
+          </button>
           <figcaption>Drag-and-drop import</figcaption>
         </figure>
         <figure class="shot">
-          <img src="../assets/tscribe/screenshot-02-transcribe.webp" alt="A Tscribe transcript with per-word timestamps and words color-coded by confidence" width="2024" height="1328">
+          <button type="button" class="shot-open" aria-label="View a larger screenshot: word timestamps and confidence coloring">
+            <img src="../assets/tscribe/screenshot-02-transcribe.webp" alt="A Tscribe transcript with per-word timestamps and words color-coded by confidence" width="2024" height="1328">
+          </button>
           <figcaption>Word timestamps &amp; confidence coloring</figcaption>
         </figure>
         <figure class="shot">
-          <img src="../assets/tscribe/screenshot-03-export.webp" alt="Tscribe's export menu — Word, PDF, Rich Text, plain text, SRT, and VTT" width="2024" height="1328">
+          <button type="button" class="shot-open" aria-label="View a larger screenshot: export to Word, PDF, subtitles and more">
+            <img src="../assets/tscribe/screenshot-03-export.webp" alt="Tscribe's export menu — Word, PDF, Rich Text, plain text, SRT, and VTT" width="2024" height="1328">
+          </button>
           <figcaption>Export to Word, PDF, subtitles &amp; more</figcaption>
         </figure>
       </div>
@@ -401,5 +459,67 @@
     <span class="ver">v1.1.0</span>
   </nav>
 </footer>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot viewer">
+  <button type="button" class="lb-nav lb-prev" aria-label="Previous screenshot">&#8249;</button>
+  <figure class="lb-stage">
+    <img class="lb-img" src="../assets/tscribe/screenshot-01-import.webp" alt="" width="2024" height="1328">
+    <figcaption class="lb-cap"></figcaption>
+  </figure>
+  <button type="button" class="lb-nav lb-next" aria-label="Next screenshot">&#8250;</button>
+  <button type="button" class="lb-close" aria-label="Close screenshot viewer">&#10005;</button>
+</div>
+
+<script>
+(function(){
+  var box = document.getElementById('lightbox');
+  if(!box) return;
+  var lbImg = box.querySelector('.lb-img');
+  var lbCap = box.querySelector('.lb-cap');
+  var figs = Array.prototype.slice.call(document.querySelectorAll('.shots .shot'));
+  var shots = figs.map(function(f){
+    var img = f.querySelector('img');
+    return { src: img.currentSrc || img.src, alt: img.alt, cap: f.querySelector('figcaption').textContent };
+  });
+  var i = 0, opener = null;
+  function show(n){
+    i = (n + shots.length) % shots.length;
+    var s = shots[i];
+    lbImg.src = s.src; lbImg.alt = s.alt; lbCap.textContent = s.cap;
+  }
+  function isOpen(){ return box.classList.contains('open'); }
+  function open(n, btn){
+    opener = btn || null; show(n);
+    box.classList.add('open');
+    document.body.classList.add('lb-lock');
+    box.querySelector('.lb-close').focus();
+  }
+  function close(){
+    box.classList.remove('open');
+    document.body.classList.remove('lb-lock');
+    if(opener){ opener.focus(); }
+  }
+  figs.forEach(function(f, n){
+    var b = f.querySelector('.shot-open');
+    if(b){ b.addEventListener('click', function(e){ open(n, e.currentTarget); }); }
+  });
+  box.querySelector('.lb-close').addEventListener('click', close);
+  box.querySelector('.lb-prev').addEventListener('click', function(){ show(i - 1); });
+  box.querySelector('.lb-next').addEventListener('click', function(){ show(i + 1); });
+  box.addEventListener('click', function(e){ if(e.target === box){ close(); } });
+  document.addEventListener('keydown', function(e){
+    if(!isOpen()){ return; }
+    if(e.key === 'Escape'){ close(); }
+    else if(e.key === 'ArrowLeft'){ show(i - 1); }
+    else if(e.key === 'ArrowRight'){ show(i + 1); }
+    else if(e.key === 'Tab'){
+      var btns = box.querySelectorAll('button');
+      var first = btns[0], last = btns[btns.length - 1];
+      if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+})();
+</script>
 </body>
 </html>
