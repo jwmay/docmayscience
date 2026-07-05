@@ -363,8 +363,14 @@
           <figcaption>Drag-and-drop import</figcaption>
         </figure>
         <figure class="shot">
-          <button type="button" class="shot-open" aria-label="View a larger screenshot: word timestamps and confidence coloring">
-            <img src="../assets/tscribe/screenshot-02-transcribe.webp" alt="A Tscribe transcript with per-word timestamps and words color-coded by confidence" width="2024" height="1328">
+          <button type="button" class="shot-open" aria-label="View a larger screenshot: on-device transcription in progress">
+            <img src="../assets/tscribe/screenshot-04-transcribing.webp" alt="Tscribe transcribing a video on-device, with a progress bar at 85 percent" width="2024" height="1328">
+          </button>
+          <figcaption>On-device transcription</figcaption>
+        </figure>
+        <figure class="shot">
+          <button type="button" class="shot-open" aria-label="View a larger screenshot: transcript with word timestamps and confidence coloring">
+            <img src="../assets/tscribe/screenshot-05-transcript-full.webp" alt="A Tscribe transcript of a full recording with per-word timestamps and words color-coded by confidence" width="2024" height="1328">
           </button>
           <figcaption>Word timestamps &amp; confidence coloring</figcaption>
         </figure>
@@ -373,6 +379,18 @@
             <img src="../assets/tscribe/screenshot-03-export.webp" alt="Tscribe's export menu — Word, PDF, Rich Text, plain text, SRT, and VTT" width="2024" height="1328">
           </button>
           <figcaption>Export to Word, PDF, subtitles &amp; more</figcaption>
+        </figure>
+        <figure class="shot">
+          <button type="button" class="shot-open" aria-label="View a larger screenshot: one-time model setup">
+            <img src="../assets/tscribe/screenshot-06-onboarding.webp" alt="Tscribe's one-time setup screen offering to download its speech model" width="2024" height="1328">
+          </button>
+          <figcaption>One-time model setup</figcaption>
+        </figure>
+        <figure class="shot">
+          <button type="button" class="shot-open" aria-label="View a larger screenshot: speech-model download">
+            <img src="../assets/tscribe/screenshot-07-download.webp" alt="Tscribe downloading its 3.1 GB speech model with a resumable progress bar" width="2024" height="1328">
+          </button>
+          <figcaption>Downloads once, then fully offline</figcaption>
         </figure>
       </div>
     </div>
@@ -420,7 +438,7 @@
           <span class="edition-badge">Recommended</span>
           <h3>Standard</h3>
           <p class="edition-meta">Tscribe.dmg · ~5&nbsp;MB · from GitHub</p>
-          <p>Downloads its ~2.9&nbsp;GB speech model once on first launch, then runs 100% offline. Best for most people.</p>
+          <p>Downloads its ~3.1&nbsp;GB speech model once on first launch, then runs 100% offline. Best for most people.</p>
           <a class="btn" href="https://github.com/jwmay/tscribe/releases/latest/download/Tscribe.dmg">Download Standard →</a>
         </div>
         <div class="edition">
@@ -443,7 +461,7 @@
         <li><b>Open the downloaded .dmg</b> and drag Tscribe to your Applications folder.</li>
         <li><b>First launch — Control-click, don't double-click.</b> Because Tscribe is open source and not notarized by Apple, a normal double-click shows <em>"Tscribe cannot be opened because it is from an unidentified developer."</em> Instead, <kbd>Control</kbd>-click (or right-click) Tscribe in Applications, choose <b>Open</b>, then click <b>Open</b> in the dialog. You only do this once.</li>
         <li><b>Still blocked? Open it anyway.</b> Go to <b>System Settings → Privacy &amp; Security</b>, scroll to Security, and click <b>Open Anyway</b> next to the Tscribe message — then confirm with Touch&nbsp;ID or your password.</li>
-        <li><b>Let it finish setting up.</b> The first time you open the Standard edition, Tscribe downloads its speech model (~2.9&nbsp;GB) once — keep your Mac online for that first run. Every transcription after that is fully offline. <em>(The Complete edition skips this — the model is already inside.)</em></li>
+        <li><b>Let it finish setting up.</b> The first time you open the Standard edition, Tscribe downloads its speech model (~3.1&nbsp;GB) once — keep your Mac online for that first run. Every transcription after that is fully offline. <em>(The Complete edition skips this — the model is already inside.)</em></li>
       </ol>
       <p class="note"><b>Why the warning?</b> Tscribe isn't code-signed with a paid Apple Developer certificate, so macOS Gatekeeper asks before the first launch. The full source is on GitHub — you can read exactly what it does before you run it.</p>
     </div>
