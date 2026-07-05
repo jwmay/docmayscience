@@ -99,6 +99,10 @@
   /* ---------- hero ---------- */
   .hero{padding-top:2.4rem;}
   .hero .eyebrow{color:var(--accent);}
+  .app-icon{
+    width:clamp(88px,20vw,116px);height:auto;display:block;margin:0 0 1.1rem;
+    filter:drop-shadow(0 8px 16px rgba(36,63,92,.28));
+  }
   .cta-row{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin:.4rem 0 .8rem;}
   .fineprint{
     font-family:'IBM Plex Mono',monospace;font-size:.76rem;line-height:1.5;
@@ -237,6 +241,7 @@
   <!-- ===== HERO ===== -->
   <section class="hero">
     <div class="wrap">
+      <img class="app-icon" src="../assets/tscribe/icon.png" width="512" height="512" alt="tscribe app icon">
       <p class="eyebrow">Mac app · Apple Silicon · macOS 14+</p>
       <h2 class="display">Transcribe audio &amp; video — entirely on your Mac.</h2>
       <p class="lede">tscribe turns lectures, student feedback, and interviews into accurate, word-timed transcripts. Everything runs on-device with whisper.cpp and Metal — nothing is ever uploaded.</p>
@@ -285,16 +290,19 @@
       <p class="eyebrow">A look inside</p>
       <h2>See it in action.</h2>
       <div class="shots">
-        <!-- When ready, replace each .frame with: <img src="../assets/screenshots/tscribe/01.png" alt="tscribe importing a lecture video" width="1600" height="1000"> -->
+        <!-- Drop finished shots into assets/tscribe/ and replace each .frame div with the <img> shown. -->
         <figure class="shot">
+          <!-- <img src="../assets/tscribe/screenshot-01-import.png" alt="tscribe's drag-and-drop import window" width="1600" height="1000"> -->
           <div class="frame"><span>Screenshot coming soon</span></div>
           <figcaption>Drag-and-drop import</figcaption>
         </figure>
         <figure class="shot">
+          <!-- <img src="../assets/tscribe/screenshot-02-transcribe.png" alt="tscribe showing a live transcription with word-level timestamps" width="1600" height="1000"> -->
           <div class="frame"><span>Screenshot coming soon</span></div>
           <figcaption>Live transcription with word timestamps</figcaption>
         </figure>
         <figure class="shot">
+          <!-- <img src="../assets/tscribe/screenshot-03-export.png" alt="tscribe's export options — SRT, VTT, or plain text" width="1600" height="1000"> -->
           <div class="frame"><span>Screenshot coming soon</span></div>
           <figcaption>Export to SRT, VTT, or plain text</figcaption>
         </figure>
