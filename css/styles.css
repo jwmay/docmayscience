@@ -256,7 +256,7 @@
     font-family:'Fraunces', serif;
     font-weight:900;
   }
-  .pt-id{ display:flex; align-items:center; gap:18px; flex:none; }
+  .pt-id{ display:flex; align-items:center; gap:18px; flex:0 1 auto; min-width:0; }
   /* the selected element, drawn as one of the site's element tiles */
   .pt-id-tile{
     position:relative;
@@ -281,6 +281,7 @@
   }
   .pt-id-tile .num{ top:6px; }
   .pt-id-tile .mass{ bottom:6px; }
+  .pt-id-text{ min-width:0; } /* let the identity text wrap instead of forcing the card wider than a phone */
   .pt-id-text h3{
     font-family:'Fraunces', serif;
     font-weight:900;
@@ -304,6 +305,7 @@
     font-size:.72rem; font-weight:600;
     color:var(--grape);
     line-height:1.7;
+    overflow-wrap:break-word;
   }
   .pt-data{
     flex:1 1 300px;
@@ -747,7 +749,7 @@
     box-shadow:12px 12px 0 var(--gold), 12px 12px 0 3px var(--ink);
     padding:32px;
   }
-  .about-figure .molecule{ width:100%; height:auto; display:block; }
+  .about-figure .portrait{ width:100%; height:auto; display:block; border-radius:14px; }
   .about h2{ font-size:clamp(2rem,4vw,2.8rem); margin:.3em 0 .5em; }
   .about p + p{ margin-top:1em; }
   .timeline{
