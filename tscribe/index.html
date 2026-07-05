@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light only">
 <meta name="theme-color" content="#f4ecda">
-<meta name="description" content="tscribe — a native macOS app that transcribes audio & video entirely on your Mac, with word-level timestamps. On-device with whisper.cpp and Metal; nothing is ever uploaded. From Doc May Science.">
-<title>tscribe · on-device transcription for macOS · Doc May Science</title>
+<meta name="description" content="Tscribe — a native macOS app that transcribes audio & video entirely on your Mac, with word-level timestamps. On-device with whisper.cpp and Metal; nothing is ever uploaded. From Doc May Science.">
+<title>Tscribe · on-device transcription for macOS · Doc May Science</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,7 +24,7 @@
     --gold:#e9a63a;
     --orange:#d9672d;
     --moss:#7d8c3f;
-    --accent:#37618c;        /* steel blue — tscribe's own accent (text / ink / transcription) */
+    --accent:#37618c;        /* steel blue — Tscribe's own accent (text / ink / transcription) */
     --accent-deep:#243f5c;
   }
   *{box-sizing:border-box;}
@@ -232,7 +232,7 @@
 <body>
 <header>
   <a class="logo" href="../" title="docmayscience.com" aria-label="Back to docmayscience.com"><img src="../assets/logo/dms-logo.svg" alt=""></a>
-  <h1><span class="t">t</span>scribe</h1>
+  <h1><span class="t">T</span>scribe</h1>
   <span class="sub">on-device transcription for macOS</span>
   <a class="gh" href="https://github.com/jwmay/tscribe" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
 </header>
@@ -241,10 +241,10 @@
   <!-- ===== HERO ===== -->
   <section class="hero">
     <div class="wrap">
-      <img class="app-icon" src="../assets/tscribe/icon.png" width="512" height="512" alt="tscribe app icon">
+      <img class="app-icon" src="../assets/tscribe/icon.png" width="512" height="512" alt="Tscribe app icon">
       <p class="eyebrow">Mac app · Apple Silicon · macOS 14+</p>
       <h2 class="display">Transcribe audio &amp; video — entirely on your Mac.</h2>
-      <p class="lede">tscribe turns lectures, student feedback, and interviews into accurate, word-timed transcripts. Everything runs on-device with whisper.cpp and Metal — nothing is ever uploaded.</p>
+      <p class="lede">Tscribe turns lectures, student feedback, and interviews into accurate, word-timed transcripts. Everything runs on-device with whisper.cpp and Metal — nothing is ever uploaded.</p>
       <div class="cta-row">
         <a class="btn" href="https://github.com/jwmay/tscribe/releases/latest/download/Tscribe.dmg">Download for macOS →</a>
         <a class="btn btn--ghost" href="https://github.com/jwmay/tscribe" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a>
@@ -278,7 +278,7 @@
         <div class="feature">
           <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg></span>
           <h3>Audio and video</h3>
-          <p>Drop in a recording or a video. tscribe converts video to 16&nbsp;kHz mono with AVFoundation, then transcribes either one.</p>
+          <p>Drop in a recording or a video. Tscribe converts video to 16&nbsp;kHz mono with AVFoundation, then transcribes either one.</p>
         </div>
       </div>
     </div>
@@ -292,17 +292,17 @@
       <div class="shots">
         <!-- Drop finished shots into assets/tscribe/ and replace each .frame div with the <img> shown. -->
         <figure class="shot">
-          <!-- <img src="../assets/tscribe/screenshot-01-import.png" alt="tscribe's drag-and-drop import window" width="1600" height="1000"> -->
+          <!-- <img src="../assets/tscribe/screenshot-01-import.png" alt="Tscribe's drag-and-drop import window" width="1600" height="1000"> -->
           <div class="frame"><span>Screenshot coming soon</span></div>
           <figcaption>Drag-and-drop import</figcaption>
         </figure>
         <figure class="shot">
-          <!-- <img src="../assets/tscribe/screenshot-02-transcribe.png" alt="tscribe showing a live transcription with word-level timestamps" width="1600" height="1000"> -->
+          <!-- <img src="../assets/tscribe/screenshot-02-transcribe.png" alt="Tscribe showing a live transcription with word-level timestamps" width="1600" height="1000"> -->
           <div class="frame"><span>Screenshot coming soon</span></div>
           <figcaption>Live transcription with word timestamps</figcaption>
         </figure>
         <figure class="shot">
-          <!-- <img src="../assets/tscribe/screenshot-03-export.png" alt="tscribe's export options — SRT, VTT, or plain text" width="1600" height="1000"> -->
+          <!-- <img src="../assets/tscribe/screenshot-03-export.png" alt="Tscribe's export options — SRT, VTT, or plain text" width="1600" height="1000"> -->
           <div class="frame"><span>Screenshot coming soon</span></div>
           <figcaption>Export to SRT, VTT, or plain text</figcaption>
         </figure>
@@ -373,19 +373,19 @@
       <p class="eyebrow">Getting started</p>
       <h2>Install in about a minute.</h2>
       <ol class="steps">
-        <li><b>Open the downloaded .dmg</b> and drag tscribe to your Applications folder.</li>
-        <li><b>First launch — Control-click, don't double-click.</b> Because tscribe is open source and not notarized by Apple, a normal double-click shows <em>"tscribe cannot be opened because it is from an unidentified developer."</em> Instead, <kbd>Control</kbd>-click (or right-click) tscribe in Applications, choose <b>Open</b>, then click <b>Open</b> in the dialog. You only do this once.</li>
-        <li><b>Still blocked? Open it anyway.</b> Go to <b>System Settings → Privacy &amp; Security</b>, scroll to Security, and click <b>Open Anyway</b> next to the tscribe message — then confirm with Touch&nbsp;ID or your password.</li>
-        <li><b>Let it finish setting up.</b> The first time you open the Standard edition, tscribe downloads its speech model (~2.9&nbsp;GB) once — keep your Mac online for that first run. Every transcription after that is fully offline. <em>(The Complete edition skips this — the model is already inside.)</em></li>
+        <li><b>Open the downloaded .dmg</b> and drag Tscribe to your Applications folder.</li>
+        <li><b>First launch — Control-click, don't double-click.</b> Because Tscribe is open source and not notarized by Apple, a normal double-click shows <em>"Tscribe cannot be opened because it is from an unidentified developer."</em> Instead, <kbd>Control</kbd>-click (or right-click) Tscribe in Applications, choose <b>Open</b>, then click <b>Open</b> in the dialog. You only do this once.</li>
+        <li><b>Still blocked? Open it anyway.</b> Go to <b>System Settings → Privacy &amp; Security</b>, scroll to Security, and click <b>Open Anyway</b> next to the Tscribe message — then confirm with Touch&nbsp;ID or your password.</li>
+        <li><b>Let it finish setting up.</b> The first time you open the Standard edition, Tscribe downloads its speech model (~2.9&nbsp;GB) once — keep your Mac online for that first run. Every transcription after that is fully offline. <em>(The Complete edition skips this — the model is already inside.)</em></li>
       </ol>
-      <p class="note"><b>Why the warning?</b> tscribe isn't code-signed with a paid Apple Developer certificate, so macOS Gatekeeper asks before the first launch. The full source is on GitHub — you can read exactly what it does before you run it.</p>
+      <p class="note"><b>Why the warning?</b> Tscribe isn't code-signed with a paid Apple Developer certificate, so macOS Gatekeeper asks before the first launch. The full source is on GitHub — you can read exactly what it does before you run it.</p>
     </div>
   </section>
 </main>
 
 <footer>
-  <p class="brand">tscribe — part of Doc May Science.</p>
-  <nav aria-label="tscribe">
+  <p class="brand">Tscribe — part of Doc May Science.</p>
+  <nav aria-label="Tscribe">
     <a href="../">← Back to docmayscience.com</a>
     <a href="https://github.com/jwmay/tscribe" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a>
     <a href="mailto:jwmay87@gmail.com">Say hello →</a>
