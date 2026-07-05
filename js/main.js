@@ -243,7 +243,7 @@
     if (selected) tileByNum[selected.n].classList.remove('is-selected');
     selected = el;
     tileByNum[el.n].classList.add('is-selected');
-    try { localStorage.setItem('pt-selected', el.n); } catch (e) {} // remember across visits
+    try { localStorage.setItem('dms.pt.selected', el.n); } catch (e) {} // remember across visits
 
     detail.innerHTML =
       '<div class="pt-bohr">' + bohrSvg(el) + '</div>' +
@@ -303,7 +303,7 @@
     // model shows off
     if (!selected){
       var saved;
-      try { saved = parseInt(localStorage.getItem('pt-selected'), 10); } catch (e) {}
+      try { saved = parseInt(localStorage.getItem('dms.pt.selected'), 10); } catch (e) {}
       select(byNum[saved] || byNum[79]);
     }
   }

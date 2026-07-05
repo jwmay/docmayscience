@@ -1625,10 +1625,18 @@ function fitView(){
 document.getElementById("fitBtn").onclick=fitView;
 (function(){
   const gridBtn=document.getElementById("gridBtn"), stageEl=document.getElementById("stage");
-  gridBtn.onclick=()=>{
-    const show=gridBtn.getAttribute("aria-pressed")!=="true"; // toggling to the opposite state
+  const KEY="dms.lewis.grid";
+  function apply(show){
     gridBtn.setAttribute("aria-pressed",show?"true":"false");
     stageEl.classList.toggle("grid-off",!show);
+  }
+  let show=true; // grid on by default
+  try{ if(localStorage.getItem(KEY)==="0") show=false; }catch(e){} // restore saved preference
+  apply(show);
+  gridBtn.onclick=()=>{
+    show=!show;
+    apply(show);
+    try{ localStorage.setItem(KEY,show?"1":"0"); }catch(e){}
   };
 })();
 
