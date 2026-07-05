@@ -243,6 +243,7 @@
     if (selected) tileByNum[selected.n].classList.remove('is-selected');
     selected = el;
     tileByNum[el.n].classList.add('is-selected');
+    try { localStorage.setItem('pt-selected', el.n); } catch (e) {} // remember across visits
 
     detail.innerHTML =
       '<div class="pt-bohr">' + bohrSvg(el) + '</div>' +
@@ -297,9 +298,14 @@
   // ---- open / close ----
   function open(){
     dialog.showModal();
-    // start on gold — data-complete, and its 6-shell Bohr model shows off
-    // (carbon, the house favorite, sublimes: its melt/boil read as "—")
-    if (!selected) select(byNum[79]);
+    // reopen on the user's last selection (saved in localStorage); with nothing
+    // saved it falls back to gold (Au, 79) — data-complete, and its 6-shell Bohr
+    // model shows off
+    if (!selected){
+      var saved;
+      try { saved = parseInt(localStorage.getItem('pt-selected'), 10); } catch (e) {}
+      select(byNum[saved] || byNum[79]);
+    }
   }
   openBtn.addEventListener('click', open);
   closeBtn.addEventListener('click', function(){ dialog.close(); });
