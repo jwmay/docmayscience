@@ -741,6 +741,70 @@
     text-underline-offset:2px;
   }
 
+  /* section head + school badge sit side by side, capped at the video's width so
+     the badge's right edge lines up with the video below it */
+  .classroom-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:32px;
+    max-width:920px;
+    margin-bottom:48px;
+  }
+  .classroom-head .section-head{ margin-bottom:0; }
+  /* below this width the row can't hold both comfortably, so the badge drops to
+     its own line between the heading and the video. Keep the head stretched
+     (align-items:stretch) so the big h2 wraps to the container instead of sizing
+     to its own width and overflowing; only the badge shrinks to its content. */
+  @media (max-width:960px){
+    .classroom-head{ flex-direction:column; align-items:stretch; gap:24px; }
+    .classroom-head .school-link{ align-self:flex-start; }
+  }
+
+  /* --- school badge: slab card linking out to my staff page --- */
+  .school-link{
+    display:inline-flex;
+    align-items:center;
+    gap:20px;
+    max-width:100%;
+    text-decoration:none;
+    color:var(--ink);
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:16px;
+    box-shadow:0 6px 0 var(--shadow);
+    padding:18px 24px;
+    transition:transform .14s ease, box-shadow .14s ease;
+  }
+  .school-link:hover{ transform:translateY(-3px); box-shadow:0 9px 0 var(--shadow); }
+  .school-crest{ flex:none; height:72px; width:auto; display:block; }
+  .school-copy{ display:flex; flex-direction:column; gap:.15em; min-width:0; }
+  .school-eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.68rem; font-weight:600;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--orange);
+  }
+  .school-name{
+    font-family:'Fraunces', serif;
+    font-weight:900;
+    font-size:1.3rem;
+    line-height:1.1;
+  }
+  .school-cta{
+    display:inline-flex;
+    align-items:center;
+    gap:.4em;
+    margin-top:.3em;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.8rem; font-weight:600;
+    letter-spacing:.03em;
+    color:var(--grape);
+  }
+  .school-cta .arrow{ display:inline-block; transition:transform .16s ease; }
+  .school-link:hover .school-cta .arrow{ transform:translateX(4px); }
+
   /* ============ RESOURCES ============ */
   .resources-band{
     background:var(--grape-deep);
@@ -805,6 +869,48 @@
     gap:.55em;
   }
   .timeline span b{ color:var(--orange); margin-right:.9em; }
+
+  /* --- education: degree list, grape year chips echo the publications years --- */
+  .education{ margin-top:1.9em; }
+  .edu-label{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:.72rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--grape);
+    margin-bottom:1em;
+  }
+  .edu-list{ list-style:none; display:grid; gap:.85em; }
+  .edu-list li{ display:flex; gap:14px; align-items:flex-start; }
+  .edu-year{
+    flex:none;
+    margin-top:.1em;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:.72rem;
+    letter-spacing:.03em;
+    color:var(--paper);
+    background:var(--grape);
+    border:2px solid var(--ink);
+    border-radius:7px;
+    padding:.22em .55em;
+    box-shadow:0 2px 0 var(--shadow);
+  }
+  .edu-body{ display:flex; flex-direction:column; gap:.1em; }
+  .edu-body b{
+    font-weight:800;
+    font-size:.98rem;
+    line-height:1.25;
+    color:var(--ink);
+  }
+  .edu-school{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.76rem;
+    font-weight:600;
+    color:var(--grape);
+  }
 
   /* ============ PUBLICATIONS ============ */
   .publications{ background:var(--paper-deep); }

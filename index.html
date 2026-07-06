@@ -190,10 +190,25 @@
   <!-- ================= CLASSROOM ================= -->
   <section id="classroom" class="classroom">
     <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">Step Inside</span>
-        <h2 class="display">Welcome to my classroom.</h2>
-        <p>One first-person drone flight through the whole campus — the trophy commons, the courtyards, and the chem lab where the reactions actually happen. Press play and come on in.</p>
+      <!-- section head + school badge share a row on wide screens; the badge
+           wraps to its own line between the head and the video on narrow ones -->
+      <div class="classroom-head">
+        <div class="section-head">
+          <span class="eyebrow">Step Inside</span>
+          <h2 class="display">Welcome to my classroom.</h2>
+          <p>One first-person drone flight through the whole campus — the trophy commons, the courtyards, and the chem lab where the reactions actually happen. Press play and come on in.</p>
+        </div>
+
+        <!-- Links to my staff page on the school's site (off-domain → new tab).
+             Crest lives in assets/ rather than hotlinked so it survives their CDN. -->
+        <a class="school-link" href="https://www.foothillhenderson.com/about-us/staff?utf8=%E2%9C%93&amp;const_search_group_ids=&amp;const_search_role_ids=187845&amp;const_search_keyword=&amp;const_search_first_name=Joseph&amp;const_search_last_name=May" target="_blank" rel="noopener noreferrer">
+          <img class="school-crest" src="assets/foothill-high-school-logo.png" width="256" height="279" alt="Foothill High School Falcons crest" loading="lazy" decoding="async">
+          <span class="school-copy">
+            <span class="school-eyebrow">Where I teach</span>
+            <span class="school-name">Foothill High&nbsp;School</span>
+            <span class="school-cta">View my staff page <span class="arrow" aria-hidden="true">&rarr;</span></span>
+          </span>
+        </a>
       </div>
 
       <figure class="classroom-video">
@@ -271,6 +286,28 @@
           <span><b>18+</b> Years teaching, in and out of the classroom</span>
           <span><b>12+</b> Years of high school chemistry</span>
           <span><b>Now</b> Building the chem classroom of the future</span>
+        </div>
+
+        <div class="education">
+          <span class="edu-label">Education</span>
+          <ul class="edu-list">
+            <li>
+              <span class="edu-year">2009</span>
+              <span class="edu-body"><b>B.S. Biochemistry</b><span class="edu-school">Southern Oregon University</span></span>
+            </li>
+            <li>
+              <span class="edu-year">2011</span>
+              <span class="edu-body"><b>M.S. Chemistry</b><span class="edu-school">University of Washington</span></span>
+            </li>
+            <li>
+              <span class="edu-year">2014</span>
+              <span class="edu-body"><b>Ph.D. Chemistry</b><span class="edu-school">University of Washington</span></span>
+            </li>
+            <li>
+              <span class="edu-year">2016</span>
+              <span class="edu-body"><b>M.Ed. Curriculum and Instruction in Secondary Science Education</b><span class="edu-school">University of Nevada, Las Vegas (UNLV)</span></span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
