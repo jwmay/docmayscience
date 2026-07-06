@@ -146,12 +146,13 @@
     transition:transform .15s ease;
   }
   .logo:hover .logo-svg{ transform:rotate(-6deg) translateY(-2px); }
-  nav ul{ display:flex; gap:6px; list-style:none; }
+  nav ul{ display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; list-style:none; }
   nav ul a{
     font-weight:700; font-size:.92rem;
     text-decoration:none; color:var(--ink);
     padding:.5em .9em; border-radius:10px;
     border:3px solid transparent;
+    white-space:nowrap;
     transition:all .12s ease;
   }
   nav ul a:hover{
@@ -804,6 +805,103 @@
     gap:.55em;
   }
   .timeline span b{ color:var(--orange); margin-right:.9em; }
+
+  /* ============ PUBLICATIONS ============ */
+  .publications{ background:var(--paper-deep); }
+  .pub-list{
+    list-style:none;
+    display:grid;
+    gap:18px;
+    max-width:920px;
+  }
+  .pub{
+    display:flex;
+    gap:20px;
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:16px;
+    box-shadow:0 6px 0 var(--shadow);
+    padding:22px 24px;
+    transition:transform .14s ease, box-shadow .14s ease;
+  }
+  .pub:hover{ transform:translateY(-3px); box-shadow:0 9px 0 var(--shadow); }
+  .pub-year{
+    flex:none;
+    align-self:flex-start;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:.82rem;
+    letter-spacing:.04em;
+    color:var(--paper);
+    background:var(--grape);
+    border:2.5px solid var(--ink);
+    border-radius:9px;
+    padding:.4em .7em;
+    box-shadow:0 3px 0 var(--shadow);
+  }
+  .pub-body{ min-width:0; }
+  .pub-title{
+    font-family:'Fraunces', serif;
+    font-weight:900;
+    font-size:1.14rem;
+    line-height:1.28;
+    margin-bottom:.4em;
+  }
+  /* linked title: grape reads as interactive; gold underline wipes in on hover */
+  .pub-title a{
+    color:var(--grape);
+    text-decoration:none;
+    background-image:linear-gradient(var(--gold), var(--gold));
+    background-size:0 .12em;
+    background-position:0 100%;
+    background-repeat:no-repeat;
+    transition:background-size .2s ease;
+  }
+  .pub-title a:hover{ background-size:100% .12em; }
+  .pub-authors{
+    font-size:.92rem;
+    line-height:1.5;
+    margin-bottom:.35em;
+  }
+  .pub-authors b{ color:var(--ink); background:var(--gold); padding:0 .18em; border-radius:3px; }
+  .pub-meta{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.76rem;
+    font-weight:600;
+    letter-spacing:.03em;
+    color:var(--orange);
+  }
+  .pub-meta cite{ font-style:italic; color:var(--grape); }
+  @media (max-width:560px){
+    .pub{ flex-direction:column; gap:12px; padding:20px; }
+  }
+
+  /* --- "show all" collapse (progressive enhancement: ships expanded, JS collapses) --- */
+  .pub-more{
+    display:grid;
+    grid-template-rows:1fr;              /* no-JS / pre-paint: fully expanded */
+    transition:grid-template-rows .55s cubic-bezier(.4,0,.2,1);
+    max-width:920px;
+  }
+  /* the clip wraps the padded list so 0fr collapses to a true zero height
+     (padding on an overflow:hidden box can't shrink under border-box) */
+  .pub-more-clip{ min-height:0; overflow:hidden; }
+  .pub-more-list{
+    padding-top:18px;                    /* the gap above the first revealed card */
+    padding-bottom:14px;                 /* room for the last card's drop shadow */
+  }
+  /* the js class (set by the inline head script) gates the collapse so no-JS shows all */
+  .js .pub-more.is-collapsed{ grid-template-rows:0fr; }
+  .pub-actions{
+    display:flex;
+    justify-content:center;
+    max-width:920px;
+    margin-top:24px;
+  }
+  .pub-toggle{ display:none; }           /* only surfaced when JS is available */
+  .js .pub-toggle{ display:inline-flex; }
+  .pub-chevron{ transition:transform .3s ease; }
+  .pub-toggle[aria-expanded="true"] .pub-chevron{ transform:rotate(180deg); }
 
   /* ============ FOOTER ============ */
   footer{
