@@ -2,3 +2,6 @@
 Thumbs.db
 *.log
 node_modules/
+
+# Raw video masters — the web-optimized versions live in assets/
+_masters/
