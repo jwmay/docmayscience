@@ -697,6 +697,49 @@
     padding:.6em 1.1em;
   }
 
+  /* ============ CLASSROOM ============ */
+  /* paper-deep sets this section apart from the paper Apps section above it */
+  .classroom{ background:var(--paper-deep); }
+  .classroom-video{
+    max-width:920px;
+    margin:0;
+    border:3px solid var(--ink);
+    border-radius:20px;
+    /* ink frame doubles as the letterbox behind the 16:9 video */
+    background:var(--ink);
+    box-shadow:0 12px 0 var(--shadow);
+    overflow:hidden;
+  }
+  .classroom-video video{
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:16/9;
+    background:var(--ink);
+  }
+  .video-fallback{
+    color:var(--paper);
+    padding:2em 1.5em;
+    text-align:center;
+  }
+  .video-fallback a{ color:var(--gold); }
+  .video-credit{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.8rem;
+    font-weight:600;
+    letter-spacing:.04em;
+    color:var(--grape);
+    background:var(--card);
+    border-top:3px solid var(--ink);
+    padding:.85em 1.2em;
+  }
+  .video-credit a{
+    color:var(--grape);
+    font-weight:700;
+    text-decoration:underline;
+    text-underline-offset:2px;
+  }
+
   /* ============ RESOURCES ============ */
   .resources-band{
     background:var(--grape-deep);

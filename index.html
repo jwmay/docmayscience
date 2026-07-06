@@ -32,6 +32,7 @@
       <nav aria-label="Main">
         <ul>
           <li><a href="#apps">Apps &amp; Games</a></li>
+          <li><a href="#classroom">Classroom</a></li>
           <li><a href="#resources">Teaching Resources</a></li>
           <li><a href="#about">About</a></li>
         </ul>
@@ -178,6 +179,34 @@
           <span class="soon">In the lab — coming soon</span>
         </article>
       </div>
+    </div>
+  </section>
+
+  <!-- ================= CLASSROOM ================= -->
+  <section id="classroom" class="classroom">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Step Inside</span>
+        <h2 class="display">Welcome to my classroom.</h2>
+        <p>One first-person drone flight through the whole campus — the trophy commons, the courtyards, and the chem lab where the reactions actually happen. Press play and come on in.</p>
+      </div>
+
+      <figure class="classroom-video">
+        <!-- preload="none" keeps the ~60 MB file from downloading until the visitor
+             presses play; the poster carries the frame until then. width/height match
+             the 16:9 encode so the box reserves its space (no layout shift). -->
+        <video class="classroom-player" controls preload="none" playsinline
+               poster="assets/classroom/classroom-poster.jpg"
+               width="1600" height="900">
+          <source src="assets/classroom/classroom-drone.mp4" type="video/mp4">
+          <p class="video-fallback">Your browser can't play embedded video —
+             <a href="assets/classroom/classroom-drone.mp4">download the classroom tour</a> instead.</p>
+        </video>
+        <figcaption class="video-credit">
+          Aerial video by Thomas Hergenrader,
+          <a href="https://dronebytenv.com/" target="_blank" rel="noopener noreferrer">DroneByte&nbsp;LLC</a>
+        </figcaption>
+      </figure>
     </div>
   </section>
 
