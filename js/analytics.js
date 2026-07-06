@@ -5,9 +5,12 @@
  * G-XXXXXXXXXX — Admin → Data Streams → your web stream, top-right).
  * Until then this file is a harmless no-op: no network requests, no data.
  *
- * Besides the pageview, this also records an `app_launch` event each time a
- * visitor clicks a "Launch" button in the #apps grid, so you can see which
- * tools get opened even though the app pages aren't tracked themselves. */
+ * Besides the pageview, this records two custom events:
+ *   • `app_launch`  — fired when a "Launch" button in the #apps grid is
+ *      clicked, so you can see which tools get opened even though the app
+ *      pages aren't tracked themselves.
+ *   • `section_view` — fired the first time each homepage <section> scrolls
+ *      into view, so you can see how far down the page visitors read. */
 (function () {
   'use strict';
 
@@ -53,9 +56,33 @@
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', trackAppClicks);
-  } else {
+  // Fire a GA4 `section_view` event the first time each homepage section
+  // scrolls into view. rootMargin trims the bottom 25% of the viewport so a
+  // section counts only once it's meaningfully on screen, not at the first
+  // sliver — and it works for sections taller than the viewport too.
+  function trackSectionViews() {
+    var sections = document.querySelectorAll('section[id]');
+    if (!sections.length || !('IntersectionObserver' in window)) return;
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        observer.unobserve(entry.target); // count each section once
+        gtag('event', 'section_view', { section_name: entry.target.id });
+      });
+    }, { threshold: 0, rootMargin: '0px 0px -25% 0px' });
+
+    sections.forEach(function (section) { observer.observe(section); });
+  }
+
+  function init() {
     trackAppClicks();
+    trackSectionViews();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
 })();
