@@ -315,3 +315,27 @@
   // #periodic-table deep-links straight into the modal
   if (location.hash === '#periodic-table') open();
 })();
+
+// Publications — collapse to the first three, with a "show all" toggle that
+// expands the rest. The list ships fully expanded (works with no JS and for
+// crawlers); the inline <script> in <head> adds the `js` class the CSS uses to
+// collapse it before first paint. Under reduced motion the grid-rows transition
+// is disabled globally, so the toggle just snaps.
+(function(){
+  var more = document.getElementById('pub-more');
+  var toggle = document.getElementById('pub-toggle');
+  if (!more || !toggle) return;
+  var label = toggle.querySelector('.pub-toggle-label');
+
+  function setOpen(open){
+    more.classList.toggle('is-collapsed', !open);
+    more.inert = !open; // keep the hidden cards out of tab order / off screen readers
+    toggle.setAttribute('aria-expanded', String(open));
+    if (label) label.textContent = open ? 'Show fewer' : 'Show all 10 publications';
+  }
+
+  setOpen(false); // start collapsed (CSS already collapsed it pre-paint)
+  toggle.addEventListener('click', function(){
+    setOpen(more.classList.contains('is-collapsed'));
+  });
+})();

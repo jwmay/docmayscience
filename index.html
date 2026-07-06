@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="light only">
+<!-- Flag JS up front so CSS can collapse the publications list before first paint (no flash) -->
+<script>document.documentElement.classList.add('js');</script>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <title>DocMayScience — Chemistry · Code · Classroom</title>
 <meta name="description" content="Joseph May, Ph.D. — high school chemistry teacher and computational chemistry PhD building apps, games, and teaching resources.">
@@ -35,6 +37,7 @@
           <li><a href="#classroom">Classroom</a></li>
           <li><a href="#resources">Teaching Resources</a></li>
           <li><a href="#about">About</a></li>
+          <li><a href="#publications">Publications</a></li>
         </ul>
       </nav>
       <!-- fa-slab-duo has no flask/grid glyph, so the trigger icon is a
@@ -267,6 +270,115 @@
           <span><b>12+</b> Years of high school chemistry</span>
           <span><b>Now</b> Building the chem classroom of the future</span>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PUBLICATIONS ================= -->
+  <section id="publications" class="publications">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Peer-Reviewed</span>
+        <h2 class="display">Before the classroom, the literature.</h2>
+        <p>Ten peer-reviewed papers from my computational chemistry PhD in the <a href="https://uwligroup.org/publications/" target="_blank" rel="noopener noreferrer">Li&nbsp;Group</a> at the University of Washington — density functional theory and real-time dynamics on doped semiconductor quantum dots.</p>
+      </div>
+
+      <ul class="pub-list">
+        <li class="pub">
+          <span class="pub-year">2014</span>
+          <div class="pub-body">
+            <h3 class="pub-title"><a href="https://pubs.acs.org/doi/abs/10.1021/jp5090229" target="_blank" rel="noopener noreferrer">Theoretical Characterization of Conduction-Band Electrons in Photodoped and Aluminum-Doped Zinc Oxide (AZO) Quantum Dots</a></h3>
+            <p class="pub-authors">J. J. Goings, A. Schimpf, <b>J. W. May</b>, R. Johns, D. R. Gamelin, X. Li</p>
+            <p class="pub-meta"><cite>J. Phys. Chem. C</cite>, 118, 26584</p>
+          </div>
+        </li>
+        <li class="pub">
+          <span class="pub-year">2014</span>
+          <div class="pub-body">
+            <h3 class="pub-title"><a href="https://pubs.rsc.org/en/Content/ArticleLanding/2014/CP/C4CP01683A" target="_blank" rel="noopener noreferrer">Non-adiabatic Molecular Dynamics Investigation of Photoionization State Formation and Lifetime in Mn<sup>2+</sup>-Doped ZnO Quantum Dots</a></h3>
+            <p class="pub-authors">S. A. Fischer, D. B. Lingerfelt, <b>J. W. May</b>, X. Li</p>
+            <p class="pub-meta"><cite>Phys. Chem. Chem. Phys.</cite>, 16, 17507</p>
+          </div>
+        </li>
+        <li class="pub">
+          <span class="pub-year">2014</span>
+          <div class="pub-body">
+            <h3 class="pub-title"><a href="https://pubs.acs.org/doi/full/10.1021/jp501360d" target="_blank" rel="noopener noreferrer">Effect of Excited-State Structural Relaxation on Midgap Excitations in Co<sup>2+</sup>-Doped ZnO Quantum Dots</a></h3>
+            <p class="pub-authors"><b>J. W. May</b>, J. Ma, E. Badaeva, X. Li</p>
+            <p class="pub-meta"><cite>J. Phys. Chem. C</cite>, 118, 13152</p>
+          </div>
+        </li>
+      </ul>
+
+      <!-- papers 4-10 collapse behind the "show all" toggle; ships expanded, JS collapses it (js/main.js) -->
+      <div class="pub-more is-collapsed" id="pub-more">
+        <div class="pub-more-clip">
+        <ul class="pub-list pub-more-list">
+        <li class="pub">
+          <span class="pub-year">2014</span>
+          <div class="pub-body">
+            <h3 class="pub-title"><a href="https://pubs.acs.org/doi/abs/10.1021/jp411250c" target="_blank" rel="noopener noreferrer">Effects of Crystallographic and Shape Anisotropies on Dopant-Carrier Exchange Interactions in Magnetic Semiconductor Quantum Dots</a></h3>
+            <p class="pub-authors">B. Peng, <b>J. W. May</b>, D. R. Gamelin, X. Li</p>
+            <p class="pub-meta"><cite>J. Phys. Chem. C</cite>, 118, 7630</p>
+          </div>
+        </li>
+        <li class="pub">
+          <span class="pub-year">2014</span>
+          <div class="pub-body">
+            <h3 class="pub-title"><a href="https://journals.aps.org/prb/abstract/10.1103/PhysRevB.89.115312" target="_blank" rel="noopener noreferrer">Ferromagnetic excited-state Mn<sup>2+</sup> dimers in Zn<sub>1-x</sub>Mn<sub>x</sub>Se quantum dots observed by time-resolved magnetophotoluminescence</a></h3>
+            <p class="pub-authors">L. R. Bradshaw, <b>J. W. May</b>, J. L. Dempsey, X. Li, D. R. Gamelin</p>
+            <p class="pub-meta"><cite>Phys. Rev. B</cite>, 89, 115312</p>
+          </div>
+        </li>
+        <li class="pub">
+          <span class="pub-year">2014</span>
+          <div class="pub-body">
+            <h3 class="pub-title"><a href="https://pubs.acs.org/doi/abs/10.1021/jp408665y" target="_blank" rel="noopener noreferrer">Dynamical Investigations of Inhomogeneous Vibrational Broadening in Diluted Magnetic Semiconductor Nanocrystals</a></h3>
+            <p class="pub-authors">D. B. Lingerfelt, S. A. Fischer, <b>J. W. May</b>, X. Li</p>
+            <p class="pub-meta"><cite>J. Phys. Chem. C</cite>, 118, 3266-3273</p>
+          </div>
+        </li>
+        <li class="pub">
+          <span class="pub-year">2012</span>
+          <div class="pub-body">
+            <h3 class="pub-title"><a href="https://pubs.acs.org/doi/abs/10.1021/ct300702v" target="_blank" rel="noopener noreferrer">Transition State Search using a Guided Direct Inversion in the Iterative Subspace Method</a></h3>
+            <p class="pub-authors"><b>J. W. May</b>, J. D. Lehner, M. J. Frisch, X. Li</p>
+            <p class="pub-meta"><cite>J. Chem. Theory Comput.</cite>, 8, 5175</p>
+          </div>
+        </li>
+        <li class="pub">
+          <span class="pub-year">2012</span>
+          <div class="pub-body">
+            <h3 class="pub-title"><a href="https://pubs.acs.org/doi/abs/10.1021/jz300273k" target="_blank" rel="noopener noreferrer">Ferromagnetism in p-Type Manganese-Doped Zinc Oxide Quantum Dots</a></h3>
+            <p class="pub-authors"><b>J. W. May</b>, R. J. McMorris, X. Li</p>
+            <p class="pub-meta"><cite>J. Phys. Chem. Lett.</cite>, 3, 1374</p>
+          </div>
+        </li>
+        <li class="pub">
+          <span class="pub-year">2011</span>
+          <div class="pub-body">
+            <h3 class="pub-title"><a href="https://journals.aps.org/prb/abstract/10.1103/PhysRevB.84.195324" target="_blank" rel="noopener noreferrer">Orbital pathways for Mn<sup>2+</sup>-carrier sp-d exchange in diluted magnetic semiconductor quantum dots</a></h3>
+            <p class="pub-authors">R. Beaulac, Y. Feng, <b>J. W. May</b>, E. Badaeva, D. R. Gamelin, X. Li</p>
+            <p class="pub-meta"><cite>Phys. Rev. B</cite>, 84, 195324</p>
+          </div>
+        </li>
+        <li class="pub">
+          <span class="pub-year">2011</span>
+          <div class="pub-body">
+            <h3 class="pub-title"><a href="https://pubs.acs.org/doi/abs/10.1021/jp206622e" target="_blank" rel="noopener noreferrer">Characterization of Excited-state Magnetic Exchange in Mn<sup>2+</sup>-doped ZnO Quantum Dots using Time-Dependent Density Functional Theory</a></h3>
+            <p class="pub-authors">E. Badaeva, <b>J. W. May</b>, J. Ma, D. R. Gamelin, X. Li</p>
+            <p class="pub-meta"><cite>J. Phys. Chem. C</cite>, 115, 20986</p>
+          </div>
+        </li>
+        </ul>
+        </div>
+      </div>
+
+      <div class="pub-actions">
+        <button type="button" class="btn btn--ghost pub-toggle" id="pub-toggle" aria-expanded="false" aria-controls="pub-more">
+          <span class="pub-toggle-label">Show all 10 publications</span>
+          <svg class="pub-chevron" viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
       </div>
     </div>
   </section>
