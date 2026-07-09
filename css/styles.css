@@ -11,6 +11,12 @@
     --moss:       #7d8c3f;
     --steel:      #37618c;
     --shadow:     #2c1e42;
+    /* chemlessons.xyz brand — scoped to the Teaching Resources band, where that
+       companion site's design blends into this one */
+    --cl-blue:      #3f6ea6;
+    --cl-blue-deep: #1d3a5c;
+    --cl-amber:     #dd974e;
+    --cl-amber-deep:#b97a2e;
     /* periodic table category tints — 70s takes on the classic coloring */
     --cat-alkali:     #e2924e;
     --cat-alkaline:   #edc46b;
@@ -106,6 +112,9 @@
   .btn:active{ transform:translateY(6px); box-shadow:0 0 0 var(--shadow); }
   .btn--grape{ background:var(--grape); color:var(--paper); }
   .btn--grape:hover{ background:var(--grape-deep); }
+  /* chemlessons.xyz steel-blue — used where that site blends into this one */
+  .btn--steel{ background:var(--cl-blue); color:var(--paper); }
+  .btn--steel:hover{ background:var(--cl-blue-deep); }
   .btn--ghost{ background:var(--card); }
   .btn--sm{ font-size:.88rem; padding:.6em 1.1em; border-radius:11px; box-shadow:0 5px 0 var(--shadow); overflow:hidden; }
   .btn--sm:hover{ box-shadow:0 2px 0 var(--shadow); }
@@ -805,43 +814,134 @@
   .school-cta .arrow{ display:inline-block; transition:transform .16s ease; }
   .school-link:hover .school-cta .arrow{ transform:translateX(4px); }
 
-  /* ============ RESOURCES ============ */
+  /* ============ RESOURCES ============
+     Where chemlessons.xyz blends into this site: the grape band melts into that
+     site's steel-blue (diagonal gradient of both brands' deep colors), the gold
+     eyebrow is joined by a Caveat hand, and chemlessons' soft icon-bubble cards
+     sit inside this site's thick-border, hard-shadow slab frames. */
   .resources-band{
-    background:var(--grape-deep);
     color:var(--paper);
     border-top:3px solid var(--ink);
     border-bottom:3px solid var(--ink);
+    background:
+      linear-gradient(125deg, var(--grape-deep) 0%, #33305f 42%, var(--cl-blue-deep) 100%);
   }
   .resources-band .eyebrow{ color:var(--gold); }
   .resources-band .eyebrow::before{ background:var(--gold); }
-  .resources-band .section-head p{ color:#e8ddf5; }
-  .res-grid{
+  .resources-band .section-head p{ color:#dbe4f0; }
+
+  /* Caveat accent — the chemlessons signature hand, lifted into this headline */
+  .cl-hand{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    color:var(--cl-amber);
+    font-size:1.15em;
+    letter-spacing:0;
+    white-space:nowrap;
+  }
+
+  /* handoff card + type grid share a row on wide screens, stack on narrow */
+  .res-layout{
     display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns:minmax(280px, 1fr) 1.5fr;
     gap:24px;
+    align-items:stretch;
+  }
+
+  /* --- Featured handoff card: chemlessons brand in this site's slab frame --- */
+  .res-feature{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:18px;
+    text-decoration:none;
+    color:var(--ink);
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:18px;
+    box-shadow:0 8px 0 rgba(0,0,0,.45);
+    padding:28px;
+    /* faint steel-blue wash + a chemlessons-amber corner glow */
+    background-image:
+      radial-gradient(120% 80% at 100% 0%, rgba(221,151,78,.16), transparent 60%),
+      linear-gradient(180deg, rgba(63,110,166,.06), transparent 40%);
+    transition:transform .16s ease, box-shadow .16s ease;
+  }
+  .res-feature:hover{ transform:translateY(-4px); box-shadow:0 12px 0 rgba(0,0,0,.5); }
+  .res-feature-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.68rem; font-weight:600;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--cl-blue);
+  }
+  .res-logo{ width:100%; max-width:340px; height:auto; display:block; }
+  .res-feature-lede{
+    font-size:.98rem;
+    line-height:1.55;
+    color:#4a3d5e;
+    flex:1;
+  }
+  /* button lives inside the card link, so it's a styled span, not an <a> */
+  .res-feature-cta{ margin-top:2px; }
+
+  /* --- Resource-type cards: chemlessons icon bubbles, this site's slab card --- */
+  .res-types{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:20px;
   }
   .res-card{
+    position:relative;
     background:var(--card);
     color:var(--ink);
     border:3px solid var(--ink);
     border-radius:16px;
     box-shadow:0 7px 0 rgba(0,0,0,.45);
-    padding:24px;
-    display:flex; flex-direction:column; gap:12px;
+    padding:22px;
+    text-decoration:none;
+    display:flex; flex-direction:column; gap:10px;
+    transition:transform .16s ease, box-shadow .16s ease;
   }
-  .res-card .badge{
+  .res-card:hover{ transform:translateY(-4px); box-shadow:0 11px 0 rgba(0,0,0,.5); }
+  /* soft rounded bubble — chemlessons' idiom, alternating blue / amber tints */
+  .res-bubble{
+    width:52px; height:52px;
+    display:grid; place-items:center;
+    border-radius:16px;
+    border:2px solid var(--ink);
+    transition:transform .28s cubic-bezier(.22,1,.36,1);
+  }
+  .res-card:hover .res-bubble{ transform:rotate(-8deg) scale(1.06); }
+  .res-bubble--blue{ background:rgba(63,110,166,.16); color:var(--cl-blue); }
+  .res-bubble--amber{ background:rgba(221,151,78,.2); color:var(--cl-amber-deep); }
+  .res-badge{
+    position:absolute;
+    top:16px; right:16px;
     font-family:'IBM Plex Mono', monospace;
-    font-size:.68rem; font-weight:600;
-    letter-spacing:.12em;
+    font-size:.6rem; font-weight:600;
+    letter-spacing:.08em;
     text-transform:uppercase;
-    color:var(--orange);
+    color:var(--cl-amber-deep);
+    background:rgba(221,151,78,.14);
+    border:2px solid var(--cl-amber-deep);
+    border-radius:999px;
+    padding:.2em .6em;
   }
   .res-card h3{
     font-family:'Fraunces', serif;
     font-weight:900;
-    font-size:1.25rem;
+    font-size:1.2rem;
+    margin-top:2px;
   }
-  .res-card p{ font-size:.93rem; flex:1; }
+  .res-card p{ font-size:.9rem; color:#4a3d5e; flex:1; }
+
+  @media (max-width:820px){
+    .res-layout{ grid-template-columns:1fr; }
+  }
+  @media (max-width:560px){
+    .res-types{ grid-template-columns:1fr; }
+  }
 
   /* ============ ABOUT ============ */
   .about .wrap{
