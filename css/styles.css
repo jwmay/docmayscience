@@ -1132,6 +1132,23 @@
     align-items:center;
     gap:20px;
   }
+  /* Ecosystem credit line — full-width row below the brand/contact row */
+  .footer-eco{
+    flex-basis:100%;
+    margin-top:8px;
+    padding-top:24px;
+    border-top:1px solid rgba(185,168,216,.22);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.72rem;
+    letter-spacing:.06em;
+    color:#b9a8d8;
+  }
+  .footer-eco a{
+    color:var(--gold);
+    text-decoration:underline;
+    text-underline-offset:2px;
+  }
+  .footer-eco a:hover{ color:var(--paper); }
 
   /* ============ RESPONSIVE ============ */
   @media (max-width:860px){
