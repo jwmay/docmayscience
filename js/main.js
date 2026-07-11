@@ -339,3 +339,10 @@
     setOpen(more.classList.contains('is-collapsed'));
   });
 })();
+
+// Footer copyright year — the markup ships a hardcoded year as a no-JS
+// fallback; refresh it to the current year on load so it never goes stale.
+(function(){
+  var year = document.getElementById('footer-year');
+  if (year) year.textContent = new Date().getFullYear();
+})();
