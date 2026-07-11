@@ -1132,7 +1132,8 @@
     align-items:center;
     gap:20px;
   }
-  /* Ecosystem credit line — full-width row below the brand/contact row */
+  /* Ecosystem credit line — full-width row below the brand/contact row.
+     Chem Cash style: copyright + the three ecosystem sites, this one plain. */
   .footer-eco{
     flex-basis:100%;
     margin-top:8px;
