@@ -342,6 +342,9 @@
 
 // Footer copyright year — the markup ships a hardcoded year as a no-JS
 // fallback; refresh it to the current year on load so it never goes stale.
+// Single footer, so getElementById is enough. If a second page ever gets its
+// own footer, switch to a [data-year] attribute selector so one script covers
+// all of them (as chemlessons.xyz does).
 (function(){
   var year = document.getElementById('footer-year');
   if (year) year.textContent = new Date().getFullYear();
