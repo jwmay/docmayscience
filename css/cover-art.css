@@ -1,0 +1,111 @@
+  /* ============================================================
+     Cover Art gallery — page-specific styles for /cover-art/.
+     Linked AFTER css/styles.css, so it inherits every design
+     token and the shared header/footer/button system; this file
+     only adds the gallery "plate" layout.
+     ============================================================ */
+
+  /* Intro band sits a touch tighter than a normal section head */
+  .art-intro{ padding-top:64px; padding-bottom:0; }
+  .art-intro .section-head{ margin-bottom:0; }
+  .art-intro h1{ font-size:clamp(2rem, 4.4vw, 3rem); margin:.3em 0 .35em; }
+
+  .art-gallery{ padding-top:48px; }
+
+  /* One cover = one plate: the artwork framed like a slab card, its
+     citation + credit alongside. Plates alternate sides as more land. */
+  .art-plate{
+    display:grid;
+    grid-template-columns:minmax(0, 46%) 1fr;
+    gap:44px;
+    align-items:center;
+  }
+  .art-plate + .art-plate{ margin-top:72px; }
+  .art-plate:nth-child(even) .art-figure{ order:2; }
+
+  .art-figure{ margin:0; }
+  .art-frame{
+    display:block;
+    border:3px solid var(--ink);
+    border-radius:16px;
+    box-shadow:0 12px 0 var(--shadow);
+    overflow:hidden;
+    background:var(--ink);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .art-frame:hover{ transform:translateY(-3px); box-shadow:0 15px 0 var(--shadow); }
+  .art-frame:focus-visible{ outline:3px dashed var(--orange); outline-offset:4px; }
+  .art-frame img{ display:block; width:100%; height:auto; }
+  .art-figcaption{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.72rem;
+    letter-spacing:.05em;
+    color:var(--grape);
+    margin-top:14px;
+  }
+
+  .art-eyebrow{ margin-bottom:14px; }
+  .art-title{
+    font-family:'Fraunces', serif;
+    font-variation-settings:'SOFT' 100, 'opsz' 96;
+    font-weight:800;
+    font-size:clamp(1.4rem, 2.6vw, 1.9rem);
+    line-height:1.12;
+    letter-spacing:-.01em;
+    margin-bottom:.5em;
+  }
+  .art-title a{
+    color:var(--ink);
+    text-decoration:none;
+    background-image:linear-gradient(var(--gold), var(--gold));
+    background-repeat:no-repeat;
+    background-position:0 100%;
+    background-size:0 .12em;
+    transition:background-size .2s ease;
+  }
+  .art-title a:hover{ background-size:100% .12em; }
+
+  .art-authors{ font-size:.98rem; margin-bottom:.35em; }
+  /* the credited paper is by others; the artist's name is highlighted like
+     J. W. May is in the Publications list, tying the two sections together */
+  .art-authors .art-artist{ color:var(--ink); background:var(--gold); padding:0 .18em; border-radius:3px; font-weight:700; }
+  .art-cite{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.82rem;
+    color:var(--grape);
+    margin-bottom:1.2em;
+  }
+  .art-cite cite{ font-style:italic; }
+  .art-desc{ max-width:52ch; margin-bottom:1.4em; }
+  .art-desc + .art-desc{ margin-top:-.6em; }
+
+  .art-actions{ display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
+  .art-fullres{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.78rem;
+    letter-spacing:.04em;
+    color:var(--grape);
+    text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  .art-fullres:hover{ color:var(--orange); }
+
+  /* "Another cover in the works" — mirrors the #apps .soon idiom so the
+     gallery doesn't read as finished while the second piece is located */
+  .art-upcoming{
+    margin-top:72px;
+    border:3px dashed var(--grape);
+    border-radius:18px;
+    background:var(--card);
+    padding:38px 28px;
+    text-align:center;
+  }
+  .art-upcoming .eyebrow{ justify-content:center; margin-bottom:12px; }
+  .art-upcoming p{ max-width:46ch; margin:0 auto; color:var(--grape-deep); }
+
+  @media (max-width:860px){
+    .art-plate{ grid-template-columns:1fr; gap:26px; }
+    /* keep the artwork on top regardless of alternation on narrow screens */
+    .art-plate:nth-child(even) .art-figure{ order:0; }
+    .art-figure{ max-width:440px; }
+  }

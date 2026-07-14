@@ -10,16 +10,20 @@ slab buttons, and a Bohr-atom hero.
 
 ```
 docmayscience/
-├── index.html          Homepage (hero, apps, resources, about)
+├── index.html          Homepage (hero, apps, classroom, resources, about, publications)
+├── cover-art/
+│   └── index.html      Science Illustration gallery — journal cover art; served at /cover-art/
 ├── lewis-lab/
 │   └── index.html      Lewis:Lab — touch-first Lewis structure builder; fully self-contained app, served at /lewis-lab/
 ├── css/
-│   └── styles.css      All site styles — design tokens live in :root at the top
+│   ├── styles.css      All site styles — design tokens live in :root at the top
+│   └── cover-art.css   Page styles for the /cover-art/ gallery (linked after styles.css)
 ├── js/
 │   ├── main.js         Parallax scroll, random Bohr-atom hero, periodic table modal (respects prefers-reduced-motion)
 │   └── elements.js     Periodic table data, all 118 elements — generated from Bowserinator/Periodic-Table-JSON (CC BY-SA 3.0); regenerate rather than hand-edit
 ├── assets/
 │   ├── favicon.svg     Browser tab icon (dms monogram)
+│   ├── cover-art/      Journal cover-art images (display JPEG + full-res original per piece)
 │   └── logo/
 │       ├── dms-logo.svg          Vector master — scales to any size
 │       ├── dms-logo-512.png      Transparent PNG for watermarks/overlays
@@ -52,6 +56,15 @@ docmayscience/
   `<span class="soon">` badge until its Drive folder is shared — swap the
   badge for an "Open in Drive" button (`<a class="btn btn--sm"
   target="_blank" rel="noopener">`) pointing at the shared Google Drive link.
+- **Cover art**: the Science Illustration gallery lives at
+  `cover-art/index.html` (served at `/cover-art/`) and shares `css/styles.css`
+  plus its own `css/cover-art.css`. Each cover is an `<article class="art-plate">`
+  — copy one to add another; plates alternate image side automatically. Put the
+  artwork in `assets/cover-art/` with an optimized display JPEG (~1500px, used as
+  the `<img>` src) and keep the full-resolution original for the "View full
+  resolution" link. Credit the paper's authors, and highlight the illustrator
+  with `<span class="art-artist">`. The homepage links here from a teaser at the
+  foot of the `#publications` section.
 - **Contact**: swap the placeholder in the footer `mailto:` link.
 - **Icons**: use Font Awesome — see [Icons](#icons) below.
 
