@@ -75,7 +75,10 @@ docmayscience/
   copy one to add another. Refresh a preview by re-screenshotting the live site
   into `assets/web-design/` (headless Chrome at `--window-size=1440,900`, then
   `sips -Z 1240` to an ~80%-quality JPEG). The homepage links here from a teaser
-  at the foot of the `#about` section.
+  at the foot of the `#about` section. Dead sites use `.browser--archived` — a
+  non-clickable card with an "Archived · YEAR" address bar and note in place of
+  the Visit button (never link a 404). An earlier design of a live site can ride
+  inside its entry as a `.site-prev` "then &amp; now" thumbnail.
 - **Contact**: swap the placeholder in the footer `mailto:` link.
 - **Icons**: use Font Awesome — see [Icons](#icons) below.
 
