@@ -1127,6 +1127,10 @@
     flex:none; width:88px; height:auto;
     border:3px solid var(--ink); border-radius:10px; display:block;
   }
+  /* landscape (browser-shot) thumbnail wants a wider box than the portrait cover thumb */
+  .pub-art-thumb--wide{ width:132px; }
+  /* the web-design teaser rides at the foot of the two-column About grid — span it full width */
+  .about .pub-art-teaser{ grid-column:1 / -1; margin-top:16px; }
   .pub-art-copy{ display:flex; flex-direction:column; gap:5px; min-width:0; }
   .pub-art-head{
     font-family:'Fraunces', serif;

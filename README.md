@@ -13,17 +13,21 @@ docmayscience/
 ├── index.html          Homepage (hero, apps, classroom, resources, about, publications)
 ├── cover-art/
 │   └── index.html      Science Illustration gallery — journal cover art; served at /cover-art/
+├── web-design/
+│   └── index.html      Web Design gallery — sites I've designed & built; served at /web-design/
 ├── lewis-lab/
 │   └── index.html      Lewis:Lab — touch-first Lewis structure builder; fully self-contained app, served at /lewis-lab/
 ├── css/
 │   ├── styles.css      All site styles — design tokens live in :root at the top
-│   └── cover-art.css   Page styles for the /cover-art/ gallery (linked after styles.css)
+│   ├── cover-art.css   Page styles for the /cover-art/ gallery (linked after styles.css)
+│   └── web-design.css  Page styles for the /web-design/ gallery (linked after styles.css)
 ├── js/
 │   ├── main.js         Parallax scroll, random Bohr-atom hero, periodic table modal (respects prefers-reduced-motion)
 │   └── elements.js     Periodic table data, all 118 elements — generated from Bowserinator/Periodic-Table-JSON (CC BY-SA 3.0); regenerate rather than hand-edit
 ├── assets/
 │   ├── favicon.svg     Browser tab icon (dms monogram)
 │   ├── cover-art/      Journal cover-art images (display JPEG + full-res original per piece)
+│   ├── web-design/     Screenshots of sites I've designed (optimized JPEG previews)
 │   └── logo/
 │       ├── dms-logo.svg          Vector master — scales to any size
 │       ├── dms-logo-512.png      Transparent PNG for watermarks/overlays
@@ -65,6 +69,13 @@ docmayscience/
   resolution" link. Credit the paper's authors, and highlight the illustrator
   with `<span class="art-artist">`. The homepage links here from a teaser at the
   foot of the `#publications` section.
+- **Web design**: the Web Design gallery lives at `web-design/index.html`
+  (served at `/web-design/`) with its own `css/web-design.css`. Each site is an
+  `<article class="site-plate">` — a "browser card" preview beside a write-up;
+  copy one to add another. Refresh a preview by re-screenshotting the live site
+  into `assets/web-design/` (headless Chrome at `--window-size=1440,900`, then
+  `sips -Z 1240` to an ~80%-quality JPEG). The homepage links here from a teaser
+  at the foot of the `#about` section.
 - **Contact**: swap the placeholder in the footer `mailto:` link.
 - **Icons**: use Font Awesome — see [Icons](#icons) below.
 
