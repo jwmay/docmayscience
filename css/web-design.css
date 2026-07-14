@@ -1,0 +1,173 @@
+  /* ============================================================
+     Web Design gallery — page-specific styles for /web-design/.
+     Linked AFTER css/styles.css, so it inherits every design token
+     and the shared header/footer/button system. Each site sits in a
+     "browser card" (window chrome in this site's palette) beside its
+     write-up; plates alternate sides as more land.
+     ============================================================ */
+
+  .wd-intro{ padding-top:64px; padding-bottom:0; }
+  .wd-intro .section-head{ margin-bottom:0; }
+  .wd-intro h1{ font-size:clamp(2rem, 4.4vw, 3rem); margin:.3em 0 .35em; }
+
+  .wd-gallery{ padding-top:48px; }
+
+  .site-plate{
+    display:grid;
+    grid-template-columns:minmax(0, 55%) 1fr;
+    gap:44px;
+    align-items:center;
+  }
+  .site-plate + .site-plate{ margin-top:72px; }
+  .site-plate:nth-child(even) .site-figure{ order:2; }
+  .site-figure{ margin:0; }
+
+  /* Browser window — dots use the site's orange/gold/moss, not mac colors */
+  .browser{
+    display:block;
+    border:3px solid var(--ink);
+    border-radius:15px;
+    box-shadow:0 12px 0 var(--shadow);
+    overflow:hidden;
+    background:var(--card);
+    text-decoration:none;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .browser:hover{ transform:translateY(-3px); box-shadow:0 15px 0 var(--shadow); }
+  .browser:focus-visible{ outline:3px dashed var(--orange); outline-offset:4px; }
+  .browser-bar{
+    display:flex; align-items:center; gap:12px;
+    padding:9px 14px;
+    background:var(--paper-deep);
+    border-bottom:3px solid var(--ink);
+  }
+  .browser-dots{ display:flex; gap:7px; flex:none; }
+  .browser-dot{ width:11px; height:11px; border-radius:50%; border:2px solid var(--ink); }
+  .browser-dot--r{ background:var(--orange); }
+  .browser-dot--y{ background:var(--gold); }
+  .browser-dot--g{ background:var(--moss); }
+  .browser-url{
+    flex:1; min-width:0;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.74rem; letter-spacing:.02em;
+    color:var(--grape);
+    background:var(--card);
+    border:2px solid var(--ink);
+    border-radius:8px;
+    padding:3px 11px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .browser-shot img{ display:block; width:100%; height:auto; }
+
+  .site-eyebrow{ margin-bottom:14px; }
+  .site-title{
+    font-family:'Fraunces', serif;
+    font-variation-settings:'SOFT' 100, 'opsz' 96;
+    font-weight:800;
+    font-size:clamp(1.5rem, 2.8vw, 2rem);
+    line-height:1.1;
+    letter-spacing:-.01em;
+    margin-bottom:.35em;
+  }
+  .site-title a{
+    color:var(--ink);
+    text-decoration:none;
+    background-image:linear-gradient(var(--gold), var(--gold));
+    background-repeat:no-repeat;
+    background-position:0 100%;
+    background-size:0 .12em;
+    transition:background-size .2s ease;
+  }
+  .site-title a:hover{ background-size:100% .12em; }
+
+  /* institution / type line, mono like the cover-art citations */
+  .site-context{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.8rem;
+    color:var(--grape);
+    margin-bottom:.5em;
+  }
+  /* role credit — J. W. May highlighted in gold, matching the site's other credits */
+  .site-role{ font-size:.98rem; margin-bottom:1.2em; }
+  .site-role .art-artist,
+  .site-role .site-artist{ color:var(--ink); background:var(--gold); padding:0 .18em; border-radius:3px; font-weight:700; }
+  .site-desc{ max-width:52ch; margin-bottom:1.5em; }
+  .site-actions{ display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
+
+  /* --- "then & now": a small previous-design thumbnail inside a live entry --- */
+  .site-prev{
+    display:flex; gap:14px; align-items:center;
+    margin:0 0 1.5em;
+    padding:12px 14px;
+    background:var(--paper-deep);
+    border:2px solid var(--ink);
+    border-radius:12px;
+  }
+  .site-prev img{
+    flex:none; width:118px; height:auto;
+    border:2px solid var(--ink); border-radius:7px; display:block;
+  }
+  .site-prev figcaption{ font-size:.84rem; line-height:1.45; color:var(--grape-deep); }
+  .site-prev-label{
+    font-family:'IBM Plex Mono', monospace; font-size:.66rem; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--orange); display:block; margin-bottom:.3em;
+  }
+
+  /* --- archived site: a browser card that ISN'T a live link (dead URL) --- */
+  .browser--archived{ cursor:default; }
+  .browser--archived:hover{ transform:none; box-shadow:0 12px 0 var(--shadow); }
+  /* address bar reads "archived" (with a hollow dot) instead of a live URL */
+  .browser-url--archived{
+    color:var(--grape); background:var(--paper-deep); opacity:.9;
+    display:inline-flex; align-items:center; gap:.55em;
+  }
+  .browser-url--archived::before{
+    content:''; width:8px; height:8px; border-radius:50%;
+    border:2px solid var(--grape); background:transparent; flex:none;
+  }
+  /* replaces the "Visit site" button when the site is offline */
+  .site-archived-note{
+    display:inline-flex; align-items:center; gap:.55em;
+    font-family:'IBM Plex Mono', monospace; font-size:.78rem; letter-spacing:.03em;
+    color:var(--grape-deep);
+    background:var(--paper-deep);
+    border:2px solid var(--ink); border-radius:9px;
+    padding:.5em .95em;
+  }
+  /* hollow dot marker, matching the archived address bar — no icon-kit dependency */
+  .site-archived-note::before{
+    content:''; width:8px; height:8px; border-radius:50%;
+    border:2px solid var(--grape-deep); background:transparent; flex:none;
+  }
+
+  /* --- print companion: the printed program pages, shown as a spread --- */
+  .print-companion{ margin-top:72px; }
+  .print-head{ max-width:60ch; margin-bottom:30px; }
+  .print-head .site-role{ margin-bottom:0; }
+  .print-desc{ max-width:56ch; margin-bottom:1em; }
+  .print-spread{
+    display:grid; grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:34px; max-width:820px;
+  }
+  .print-page{ margin:0; }
+  .print-frame{
+    display:block;
+    border:3px solid var(--ink); border-radius:12px;
+    box-shadow:0 10px 0 var(--shadow);
+    overflow:hidden; background:var(--card);
+  }
+  .print-frame img{ display:block; width:100%; height:auto; }
+  .print-figcaption{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.72rem; letter-spacing:.05em; color:var(--grape);
+    margin-top:12px; text-align:center;
+  }
+
+  @media (max-width:860px){
+    .site-plate{ grid-template-columns:1fr; gap:26px; }
+    .site-plate:nth-child(even) .site-figure{ order:0; }
+    .site-prev{ flex-direction:column; text-align:center; }
+  }
+  @media (max-width:560px){
+    .print-spread{ grid-template-columns:1fr; max-width:360px; }
+  }

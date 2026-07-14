@@ -10,16 +10,24 @@ slab buttons, and a Bohr-atom hero.
 
 ```
 docmayscience/
-├── index.html          Homepage (hero, apps, resources, about)
+├── index.html          Homepage (hero, apps, classroom, resources, about, publications)
+├── cover-art/
+│   └── index.html      Science Illustration gallery — journal cover art; served at /cover-art/
+├── web-design/
+│   └── index.html      Web Design gallery — sites I've designed & built; served at /web-design/
 ├── lewis-lab/
 │   └── index.html      Lewis:Lab — touch-first Lewis structure builder; fully self-contained app, served at /lewis-lab/
 ├── css/
-│   └── styles.css      All site styles — design tokens live in :root at the top
+│   ├── styles.css      All site styles — design tokens live in :root at the top
+│   ├── cover-art.css   Page styles for the /cover-art/ gallery (linked after styles.css)
+│   └── web-design.css  Page styles for the /web-design/ gallery (linked after styles.css)
 ├── js/
 │   ├── main.js         Parallax scroll, random Bohr-atom hero, periodic table modal (respects prefers-reduced-motion)
 │   └── elements.js     Periodic table data, all 118 elements — generated from Bowserinator/Periodic-Table-JSON (CC BY-SA 3.0); regenerate rather than hand-edit
 ├── assets/
 │   ├── favicon.svg     Browser tab icon (dms monogram)
+│   ├── cover-art/      Journal cover-art images (display JPEG + full-res original per piece)
+│   ├── web-design/     Screenshots of sites I've designed (optimized JPEG previews)
 │   └── logo/
 │       ├── dms-logo.svg          Vector master — scales to any size
 │       ├── dms-logo-512.png      Transparent PNG for watermarks/overlays
@@ -52,6 +60,25 @@ docmayscience/
   `<span class="soon">` badge until its Drive folder is shared — swap the
   badge for an "Open in Drive" button (`<a class="btn btn--sm"
   target="_blank" rel="noopener">`) pointing at the shared Google Drive link.
+- **Cover art**: the Science Illustration gallery lives at
+  `cover-art/index.html` (served at `/cover-art/`) and shares `css/styles.css`
+  plus its own `css/cover-art.css`. Each cover is an `<article class="art-plate">`
+  — copy one to add another; plates alternate image side automatically. Put the
+  artwork in `assets/cover-art/` with an optimized display JPEG (~1500px, used as
+  the `<img>` src) and keep the full-resolution original for the "View full
+  resolution" link. Credit the paper's authors, and highlight the illustrator
+  with `<span class="art-artist">`. The homepage links here from a teaser at the
+  foot of the `#publications` section.
+- **Web design**: the Web Design gallery lives at `web-design/index.html`
+  (served at `/web-design/`) with its own `css/web-design.css`. Each site is an
+  `<article class="site-plate">` — a "browser card" preview beside a write-up;
+  copy one to add another. Refresh a preview by re-screenshotting the live site
+  into `assets/web-design/` (headless Chrome at `--window-size=1440,900`, then
+  `sips -Z 1240` to an ~80%-quality JPEG). The homepage links here from a teaser
+  at the foot of the `#about` section. Dead sites use `.browser--archived` — a
+  non-clickable card with an "Archived · YEAR" address bar and note in place of
+  the Visit button (never link a 404). An earlier design of a live site can ride
+  inside its entry as a `.site-prev` "then &amp; now" thumbnail.
 - **Contact**: swap the placeholder in the footer `mailto:` link.
 - **Icons**: use Font Awesome — see [Icons](#icons) below.
 
